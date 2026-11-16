@@ -20,7 +20,7 @@ export function normalizeDatabaseUrl(url: string): string {
           type: 'postgres',
           url,
           autoLoadEntities: true,
-          synchronize: false, // MANDATORY: Schema is managed via versioned migrations
+          synchronize: process.env.DB_SYNCHRONIZE === 'true', // Auto-syncs schema in devcontainer when enabled
           logging: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
           ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
           extra: {

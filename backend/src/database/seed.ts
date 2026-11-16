@@ -58,7 +58,7 @@ async function seed() {
     type: 'postgres',
     url: dbUrl,
     entities: [RoleEntity, UserEntity, UserRoleEntity, ProjectEntity, ProjectMemberEntity, EnvironmentEntity],
-    synchronize: false,
+    synchronize: process.env.DB_SYNCHRONIZE === 'true',
   });
 
   await dataSource.initialize();

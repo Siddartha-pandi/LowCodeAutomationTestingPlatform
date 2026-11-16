@@ -1,4 +1,4 @@
-.PHONY: help install install-backend install-frontend backend-api backend-worker frontend build test test-backend clean up down
+.PHONY: help install install-backend install-frontend backend backend-api backend-worker frontend build test test-backend clean up down
 
 help:
 	@echo "Available commands:"
@@ -21,6 +21,8 @@ install-backend:
 
 install-frontend:
 	cd frontend && npm install
+
+backend: backend-api
 
 backend-api:
 	cd backend && npm run start:api

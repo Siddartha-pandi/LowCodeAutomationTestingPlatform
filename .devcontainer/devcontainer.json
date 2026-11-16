@@ -4,8 +4,7 @@
   "service": "app",
   "workspaceFolder": "/workspaces/LowCodeAutomationTestingPlatform",
   "shutdownAction": "stopCompose",
-  "remoteUser": "pwuser",
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "remoteUser": "TeamDolphin",
 
   "forwardPorts": [3000, 8000, 5432, 6379],
   "portsAttributes": {
