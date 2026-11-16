@@ -55,6 +55,10 @@ export class SuiteWorker implements OnModuleInit, OnModuleDestroy {
       },
     );
 
+    this.worker.on('error', (err) => {
+      this.logger.warn(`Suite worker Redis error: ${err.message}`);
+    });
+
     this.worker.on('completed', (job) => {
       this.logger.log(`Suite job ${job.id} completed.`);
     });

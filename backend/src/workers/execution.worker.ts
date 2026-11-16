@@ -60,6 +60,10 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       },
     );
 
+    this.worker.on('error', (err) => {
+      this.logger.warn(`Execution worker Redis error: ${err.message}`);
+    });
+
     this.worker.on('completed', (job) => {
       this.logger.log(`Job ${job.id} (execution: ${job.data.execution_id}) completed successfully.`);
     });

@@ -32,6 +32,9 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
       lazyConnect: true,
       maxRetriesPerRequest: 1,
     });
+    this.redisClient.on('error', (err) => {
+      this.logger.warn(`Redis connection error: ${err.message}`);
+    });
     this.redisClient.connect().catch((err) => {
       this.logger.warn(`Redis client in QueueService failed to connect: ${err.message}`);
     });
@@ -44,6 +47,9 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
         removeOnFail: 200,
       },
     });
+    this.executionQueue.on('error', (err) => {
+      this.logger.warn(`Execution queue Redis error: ${err.message}`);
+    });
 
     this.suiteQueue = new Queue('test-suite-execution', {
       connection: redisConnection,
@@ -52,6 +58,9 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
         removeOnComplete: 100,
         removeOnFail: 200,
       },
+    });
+    this.suiteQueue.on('error', (err) => {
+      this.logger.warn(`Suite queue Redis error: ${err.message}`);
     });
 
     this.maintenanceQueue = new Queue('maintenance', {
@@ -62,6 +71,9 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
         removeOnComplete: 50,
         removeOnFail: 100,
       },
+    });
+    this.maintenanceQueue.on('error', (err) => {
+      this.logger.warn(`Maintenance queue Redis error: ${err.message}`);
     });
 
     this.logger.log('BullMQ queues initialized: browser-execution, test-suite-execution, maintenance.');

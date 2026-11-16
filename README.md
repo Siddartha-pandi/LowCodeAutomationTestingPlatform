@@ -55,40 +55,70 @@ flowchart TD
 
 ---
 
-## 🐳 Quick Start with Dev Container (VS Code / Codespaces)
+## 📁 Repository Structure
 
-A complete, pre-configured development environment is included in [`.devcontainer/`](.devcontainer/README.md).
-
-- **One-Click Startup:** In VS Code, click **"Reopen in Container"** (or open in **GitHub Codespaces**).
-- **Pre-installed Stack:** Node.js, native Playwright browsers (Chromium, Firefox, WebKit), PostgreSQL 16 (`5432`), Redis 7 (`6379`), Jest runner, and database tools.
-- **Auto-install:** Dependencies for both backend and frontend are installed automatically on container creation.
-
-```bash
-# Launch PostgreSQL and Redis via Dev Container Compose (if running locally outside VS Code):
-docker compose -f .devcontainer/docker-compose.yml up -d
+```text
+AutomationTestingWithAgentBrowser/
+├── .devcontainer/         # Pre-configured container environment, Docker Compose & build scripts
+├── backend/               # Unified NestJS API & standalone Playwright BullMQ Worker
+│   ├── .env.example       # Backend environment configuration template
+│   ├── src/               # Application modules, entities, worker, and services
+│   └── test/              # Unit, integration, and E2E test suites
+├── frontend/              # Next.js 16 Web Dashboard & Visual Automation Flow Builder
+│   ├── .env.example       # Frontend environment configuration template
+│   └── src/               # App Router pages, components, and context providers
+├── .gitignore             # Comprehensive Git exclusion rules
+├── LICENSE                # MIT License
+└── README.md              # Project documentation and quick start guide
 ```
 
 ---
 
-### 1. Launch PostgreSQL and Redis:
+## 🐳 Quick Start with Dev Container (VS Code / Codespaces)
+
+A complete, pre-configured development environment is included in [`.devcontainer/`](.devcontainer/):
+
+- **One-Click Startup:** In VS Code, click **"Reopen in Container"** (or open in **GitHub Codespaces**).
+- **Pre-installed Stack:** Node.js 20, native Playwright browsers (Chromium, Firefox, WebKit), PostgreSQL 16 (`5432`), Redis 7 (`6379`), Jest runner, and database tools.
+- **Auto-install:** Dependencies for both backend and frontend are installed automatically on container creation.
+
 ```bash
-docker compose up -d postgres redis
+# Launch PostgreSQL and Redis via Dev Container Compose (if running locally outside VS Code):
+docker compose -f .devcontainer/docker-compose.yml up -d postgres redis
 ```
 
-### 2. Run Backend API:
+---
+
+## 🚀 Local Development Setup
+
+### 1. Launch PostgreSQL and Redis
+```bash
+docker compose -f .devcontainer/docker-compose.yml up -d postgres redis
+```
+
+### 2. Configure Environment Variables
+```bash
+# Backend configuration
+cp backend/.env.example backend/.env
+
+# Frontend configuration
+cp frontend/.env.example frontend/.env.local
+```
+
+### 3. Run Backend API Server
 ```bash
 cd backend
 npm install --legacy-peer-deps
 npm run start:api
 ```
 
-### 3. Run Standalone Playwright Worker:
+### 4. Run Standalone Playwright Worker
 ```bash
 cd backend
 npm run start:worker
 ```
 
-### 4. Run Frontend:
+### 5. Run Frontend Web Dashboard
 ```bash
 cd frontend
 npm install
@@ -111,10 +141,6 @@ npx tsc --noEmit
 
 ---
 
-## 📚 Documentation
-- [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md)
-- [Project Structure](docs/architecture/PROJECT_STRUCTURE.md)
-- [API Compatibility Matrix](docs/migration/API_COMPATIBILITY.md)
-- [Database Migration & Entity Baseline](docs/migration/DATABASE_MIGRATION.md)
-- [Local Development Guide](docs/development/LOCAL_SETUP.md)
-- [Production Docker Deployment](docs/deployment/DOCKER_DEPLOYMENT.md)
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
