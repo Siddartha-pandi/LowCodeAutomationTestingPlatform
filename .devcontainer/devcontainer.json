@@ -3,7 +3,6 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/LowCodeAutomationTestingPlatform",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/LowCodeAutomationTestingPlatform,type=bind,consistency=cached",
   "shutdownAction": "stopCompose",
   "remoteUser": "pwuser",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
