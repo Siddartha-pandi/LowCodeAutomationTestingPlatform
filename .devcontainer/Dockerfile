@@ -26,6 +26,11 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 RUN echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
+# Ensure /workspaces and target directory exist and are owned by pwuser
+RUN mkdir -p /workspaces/LowCodeAutomationTestingPlatform \
+    && chown -R ${USERNAME}:${USERNAME} /workspaces \
+    && ln -s /workspaces/LowCodeAutomationTestingPlatform /workspaces/AutomationTestingWithAgentBrowser
+
 # Set workspace directory
 WORKDIR /workspaces/LowCodeAutomationTestingPlatform
 
