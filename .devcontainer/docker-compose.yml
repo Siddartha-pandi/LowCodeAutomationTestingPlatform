@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devcontainer_app
+    restart: unless-stopped
+    shm_size: '2gb'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ..:/workspaces/LowCodeAutomationTestingPlatform:cached
+    environment:
+      # Database & Redis connectivity
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/automation_platform_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Unified Backend settings
+      PORT: 8000
+      JWT_SECRET: devcontainer-insecure-jwt-secret-key-32chars
+      CREDENTIALS_MASTER_KEY: devcontainer-master-encryption-key-32chars
+      INTERNAL_SERVICE_KEY: devcontainer-internal-secret-service-key-32chars
+      STORAGE_DIR: /workspaces/LowCodeAutomationTestingPlatform/storage
+      DEFAULT_TIMEZONE: UTC
+      CORS_ORIGIN: http://localhost:3000,http://127.0.0.1:3000
+      # Frontend settings
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_WS_URL: ws://localhost:8000
+    command: /bin/sh -c "while sleep 1000; do :; done"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: devcontainer_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: automation_platform_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - devcontainer_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d automation_platform_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: devcontainer_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  devcontainer_postgres_data:

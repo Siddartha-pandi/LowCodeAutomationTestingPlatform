@@ -1,0 +1,52 @@
+{
+  "name": "LowCode Automation Platform (Unified NestJS + Playwright + Next.js)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/LowCodeAutomationTestingPlatform",
+  "shutdownAction": "stopCompose",
+  "remoteUser": "pwuser",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "forwardPorts": [3000, 8000, 5432, 6379],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js Frontend",
+      "onAutoForward": "openBrowserOnce"
+    },
+    "8000": {
+      "label": "Unified NestJS API",
+      "onAutoForward": "silent"
+    },
+    "5432": {
+      "label": "PostgreSQL Database",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis BullMQ Queue",
+      "onAutoForward": "silent"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "typescript.tsdk": "backend/node_modules/typescript/lib",
+        "playwright.reuseBrowser": true
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-playwright.playwright",
+        "firsttris.vscode-jest-runner",
+        "Orta.vscode-jest",
+        "ckolkman.vscode-postgres",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "mikestead.dotenv"
+      ]
+    }
+  }
+}

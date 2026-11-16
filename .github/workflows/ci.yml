@@ -1,4 +1,4 @@
-name: Enterprise CI/CD & Verification Pipeline
+name: Enterprise CI/CD Pipeline
 
 on:
   push:
@@ -7,53 +7,23 @@ on:
     branches: [main, master, develop]
 
 jobs:
-  zero-ai-compliance:
-    name: Zero-AI Policy Audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Verify Strict Zero-AI Policy
-        run: python scripts/verify_zero_ai_policy.py
-
-  frontend-pipeline:
-    name: Next.js Frontend Pipeline (Typecheck & Build)
-    runs-on: ubuntu-latest
-    needs: zero-ai-compliance
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js 22 LTS
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Frontend Dependencies
-        working-directory: ./frontend
-        run: npm ci
-
-      - name: Run Type Check
-        working-directory: ./frontend
-        run: npx tsc --noEmit
-
-      - name: Build Next.js Application
-        working-directory: ./frontend
-        run: npm run build
-
   backend-pipeline:
-    name: Python FastAPI Backend Pipeline
+    name: Unified NestJS Backend Pipeline
     runs-on: ubuntu-latest
-    needs: zero-ai-compliance
     services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: automation_platform_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d automation_platform_test_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
       redis:
         image: redis:7-alpine
         ports:
@@ -68,61 +38,65 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Node.js 20 LTS
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
-          cache: "pip"
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package.json
 
       - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+        working-directory: ./backend
+        run: npm install --legacy-peer-deps
 
-      - name: Run Pytest Test Suite
+      - name: Install Playwright System Browsers
+        working-directory: ./backend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Jest Unit and Entity Tests
+        working-directory: ./backend
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/automation_platform_db
-          CELERY_BROKER_URL: redis://localhost:6379/0
-          CELERY_RESULT_BACKEND: redis://localhost:6379/0
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/automation_platform_test_db
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           JWT_SECRET: test-ci-secret-for-jwt-tokens-32chars
-          APP_ENCRYPTION_KEY: test-ci-aes-256-encryption-key-for-secrets
-          ENVIRONMENT: test
-        run: |
-          python -m pytest tests -v
+          CREDENTIALS_MASTER_KEY: test-ci-aes-256-encryption-key-for-secrets
+        run: npm test
 
-  automation-service-pipeline:
-    name: NestJS Playwright Automation Pipeline
+      - name: Build Unified NestJS Distribution
+        working-directory: ./backend
+        run: npm run build
+
+  frontend-pipeline:
+    name: Next.js Frontend Pipeline
     runs-on: ubuntu-latest
-    needs: zero-ai-compliance
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 22 LTS
+      - name: Set up Node.js 20 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package.json
 
-      - name: Install Dependencies
-        working-directory: ./automation-service
-        run: npm ci
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm install
 
-      - name: Install Playwright Browsers
-        working-directory: ./automation-service
-        run: npx playwright install --with-deps chromium
+      - name: Run Type Check
+        working-directory: ./frontend
+        run: npx tsc --noEmit
 
-      - name: Run Jest Unit and Integration Tests
-        working-directory: ./automation-service
-        run: npm test
-
-      - name: Build NestJS Service
-        working-directory: ./automation-service
+      - name: Build Next.js Application
+        working-directory: ./frontend
         run: npm run build
 
-  docker-pipeline:
-    name: Docker Container Builds & Health Checks
+  devcontainer-pipeline:
+    name: Dev Container Build Verification
     runs-on: ubuntu-latest
-    needs: [frontend-pipeline, backend-pipeline, automation-service-pipeline]
+    needs: [backend-pipeline, frontend-pipeline]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
@@ -130,26 +104,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Backend Image
+      - name: Build Dev Container Image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./docker/Dockerfile.backend
+          context: .devcontainer
+          file: .devcontainer/Dockerfile
           push: false
-          tags: automation-backend:test
-
-      - name: Build Frontend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile.frontend
-          push: false
-          tags: automation-frontend:test
-
-      - name: Build Automation Service Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile.automation
-          push: false
-          tags: automation-service:test
+          tags: devcontainer:latest

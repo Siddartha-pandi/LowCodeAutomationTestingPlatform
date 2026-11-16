@@ -1,2 +1,0 @@
-"""AutomationTestingWithAgentBrowser backend application package."""
-

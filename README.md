@@ -1,243 +1,120 @@
-# AutomationTestingWithAgentBrowser
-## Enterprise Multi-User Automation & Testing Platform
-### Strict Company Data Protection — Zero AI / No-LLM Processing
+# LowCodeAutomationTestingPlatform
+## Unified Enterprise Low-Code Automation & Testing Platform
+### Strict Company Data Protection — Zero AI / 100% Deterministic Processing
 
-**AutomationTestingWithAgentBrowser** is an enterprise-grade web platform combining visual workflow automation, deterministic testing automation, live browser DOM inspection, real-time WebSocket monitoring, and multi-factor deterministic self-healing using pure `agent-browser` CLI (`0.41.2`).
+**LowCodeAutomationTestingPlatform** is a unified, enterprise-grade test automation and visual workflow execution platform. It features visual DAG workflow creation, deterministic browser test automation, live WebSocket execution monitoring, interactive DOM recording, and deterministic self-healing using native **Playwright**.
 
 ---
 
 ## 🔒 Mandatory Company Data Protection Guarantee
 
-Company data must **NEVER** be shared with AI services. This application is architected and executed **strictly without AI**:
+Company data must **NEVER** be shared with AI services. This platform is architected and executed **strictly without AI**:
 
-- ❌ **Zero AI APIs:** No OpenAI, ChatGPT, Claude, Anthropic, Gemini, or Cohere APIs.
+- ❌ **Zero AI APIs:** No OpenAI, ChatGPT, Claude, Anthropic, Gemini, or external LLM APIs.
 - ❌ **Zero Local Inference:** No Ollama, vLLM, HuggingFace, or local model execution.
-- ❌ **Zero AI-Generated Locators or Flows:** 100% deterministic mathematical algorithms (Levenshtein edit-distance, Jaccard ancestor sets, ARIA semantics, attribute stability).
-- ❌ **Zero Outbound Telemetry:** DOM snapshots, screenshots, and logs remain in private approved storage with automatic secret redaction.
-- ✅ **Deterministic Self-Healing:** Rule-based heuristics with multi-factor scoring (95% auto-heal tier, 85–94% human-in-the-loop approval gate, ≥98% destructive safety check).
+- ❌ **Zero AI-Generated Locators or Flows:** 100% deterministic algorithms (multi-tier fallback, ARIA semantics, attribute stability, Levenshtein distance).
+- ❌ **Zero Outbound Telemetry:** DOM snapshots, screenshots, and logs remain in private storage with automatic secret redaction.
+- ✅ **Deterministic Self-Healing:** Rule-based heuristics with multi-factor scoring and human approval gates.
 
 ---
 
 ## 🛠 Technology Stack
 
-- **Frontend:** Next.js 16 (App Router), TypeScript, Tailwind CSS, `@xyflow/react` (React Flow), Recharts, Lucide Icons.
-- **Backend:** Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0 (PostgreSQL only via `psycopg` 3), Alembic.
-- **Execution & Queue:** Redis 7, Celery 5.4+, Celery Beat (periodic cron scheduling, timezone `Asia/Kolkata`).
-- **Browser Engine:** Pure `agent-browser` CLI (`0.41.2`) subprocess adapter with Chromium headless execution.
-- **Database:** PostgreSQL 16 (19 enterprise tables with UUID keys, foreign key cascades, and JSONB definitions).
-- **Security:** AES-256-GCM Credential Vault, SSRF Network Filtering, JWT RBAC, Immutable Audit Logging.
-- **Deployment:** Docker & Docker Compose multi-service orchestration with automated healthchecks.
+- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, `@xyflow/react` (React Flow), Recharts, Lucide Icons.
+- **Backend:** Node.js 20 LTS, NestJS 10, TypeScript, TypeORM (PostgreSQL only, `synchronize: false`).
+- **Browser Automation:** Playwright (Chromium isolated contexts).
+- **Execution & Queue:** Redis 7, BullMQ, WebSocket Gateway (Live streaming & Redis Pub/Sub).
+- **Database:** PostgreSQL 16 (21 enterprise tables with UUID keys, foreign key cascades, and JSONB definitions).
+- **Security:** AES-256-GCM Credential Vault, JWT RBAC, Immutable Audit Logging.
+- **Deployment:** Docker & Docker Compose 5-service orchestration with automated healthchecks.
 
 ---
 
-## 🏛 System Architecture
+## 🏛 Unified Architecture Overview
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       NEXT.JS ENTERPRISE FRONTEND UI                         │
-│  Visual Flow Builder • Live WS Viewport • Object Repository • RBAC Security │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │ HTTP / REST / JWT / WebSocket
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          FASTAPI BACKEND SERVICE                            │
-│  /api/v1/flows • /api/v1/tests • /api/v1/credentials • /api/v1/audit • /ws  │
-└──────────────┬───────────────────────┬──────────────────────────────┬───────┘
-               │                       │                              │
-               ▼                       ▼                              ▼
-┌─────────────────────────┐  ┌────────────────────┐  ┌────────────────────────┐
-               POSTGRESQL 16       │  │   REDIS BROKER     │  │ PRIVATE FILE STORAGE   │
-│  19 Tables • Neon DB    │  │   Celery Queue     │  │ ./reports/screenshots  │
-│  Immutable Versions     │  │   Result Backend   │  │ ./reports/dom_snapshots│
-│  AES-256 Credentials    │  │   Event Streaming  │  │ ./reports/artifacts    │
-└─────────────────────────┘  └─────────┬──────────┘  └────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          CELERY EXECUTION WORKERS                           │
-│  Flow DAG Runner  •  Test Assertion Engine  •  Periodic Beat Scheduler      │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │ Subprocess Isolation
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          AGENT BROWSER CLI 0.41.2                           │
-│     Isolated Sessions  •  DOM Extraction  •  Headless Chromium Execution   │
-└─────────────────────────────────────────────────────────────────────────────┘
+There is only **ONE unified backend codebase** (`backend/`):
+- **API Server (`main.ts`)**: Serves HTTP REST on port 8000, Swagger at `/api/docs`, and WebSocket at `/ws/executions/:id`.
+- **Worker Process (`worker.ts`)**: Standalone background BullMQ consumer with `shm_size: 2gb` running isolated Playwright browser executions. Never runs browser jobs inside the API process.
+
+```mermaid
+flowchart TD
+    Frontend["Next.js Frontend (Port 3000)"]
+    NestAPI["Unified NestJS API (Port 8000)"]
+    PostgresDB[("PostgreSQL 16 (21 Tables)")]
+    RedisQueue["Redis 7 (BullMQ & Pub/Sub)"]
+    PlaywrightWorker["Playwright Worker Process (2GB SHM)"]
+
+    Frontend -- "REST / JWT" --> NestAPI
+    Frontend -- "WebSocket Stream" --> NestAPI
+    NestAPI --> PostgresDB
+    NestAPI -- "Enqueue Job" --> RedisQueue
+    RedisQueue --> PlaywrightWorker
+    PlaywrightWorker --> PostgresDB
+    PlaywrightWorker -- "Live Events" --> RedisQueue
 ```
 
 ---
 
-## 🚀 Quick Start (Production via Docker Compose)
+## 🐳 Quick Start with Dev Container (VS Code / Codespaces)
 
-Deploy the complete multi-service platform with a single command:
+A complete, pre-configured development environment is included in [`.devcontainer/`](.devcontainer/README.md).
+
+- **One-Click Startup:** In VS Code, click **"Reopen in Container"** (or open in **GitHub Codespaces**).
+- **Pre-installed Stack:** Node.js, native Playwright browsers (Chromium, Firefox, WebKit), PostgreSQL 16 (`5432`), Redis 7 (`6379`), Jest runner, and database tools.
+- **Auto-install:** Dependencies for both backend and frontend are installed automatically on container creation.
 
 ```bash
-docker compose up -d --build
+# Launch PostgreSQL and Redis via Dev Container Compose (if running locally outside VS Code):
+docker compose -f .devcontainer/docker-compose.yml up -d
 ```
-
-### Services Launched:
-- **`postgres`**: PostgreSQL 16 relational database on port `5432` (healthy status check).
-- **`redis`**: Redis 7 message queue & cache on port `6379`.
-- **`backend`**: FastAPI REST API & WebSocket server on port `8000` with non-root security.
-- **`celery_worker`**: Isolated browser execution daemon running agent-browser CLI.
-- **`celery_beat`**: Periodic cron scheduler for automated tests and retention pruning.
-- **`frontend`**: Next.js SaaS Web UI on port `3000`.
 
 ---
 
-## 💻 Local Development Setup
-
-### 1. Prerequisites
-- Python 3.11+
-- Node.js 20 LTS
-- `agent-browser` CLI (`npm install -g agent-browser@0.41.2`)
-- PostgreSQL instance running or configured in `.env`
-- Redis instance running on port `6379`
-
-### 2. Backend Setup
+### 1. Launch PostgreSQL and Redis:
 ```bash
-# Install backend dependencies
-python -m pip install -r backend/requirements.txt
-
-# Launch FastAPI development server
-uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
-```
-API docs available at: `http://127.0.0.1:8000/docs`
-
-### 3. Background Workers (Celery & Redis)
-```bash
-# Start Celery execution worker
-celery -A backend.app.worker.celery_app worker -l INFO -c 4
-
-# Start Celery Beat periodic scheduler
-celery -A backend.app.worker.celery_app beat -l INFO
+docker compose up -d postgres redis
 ```
 
-### 4. Frontend Setup
+### 2. Run Backend API:
+```bash
+cd backend
+npm install --legacy-peer-deps
+npm run start:api
+```
+
+### 3. Run Standalone Playwright Worker:
+```bash
+cd backend
+npm run start:worker
+```
+
+### 4. Run Frontend:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Dashboard available at: `http://localhost:3000`
 
 ---
 
-## 🛡 Zero-AI Policy Compliance Auditor
-
-To run the automated compliance scanner verifying zero AI SDKs, zero LLM endpoints, and strict company data protection:
+## 🧪 Testing
 
 ```bash
-python scripts/verify_zero_ai_policy.py
-```
+# Run backend test suites
+cd backend
+npm test
 
-Expected output:
-```text
-======================================================================
-AUTOMATION TESTING WITH AGENT BROWSER
-Zero-AI & Company Data Protection Policy Audit
-======================================================================
-[+] Audit 1: 0 Prohibited AI SDKs installed in Python environment (PASS)
-[+] Audit 2: 0 External AI API endpoints referenced in codebase (PASS)
-[+] Audit 3: 0 AI/LLM SDK imports in backend/frontend source code (PASS)
-[+] Audit 4: 0 Prohibited AI routes in FastAPI application (PASS)
-[+] Audit 5: Pure deterministic rule-based matching engine verified (PASS)
-
-Policy Status: 100% VERIFIED COMPLIANT (Zero AI / Strict Data Protection)
-======================================================================
+# Typecheck frontend
+cd frontend
+npx tsc --noEmit
 ```
 
 ---
 
-## 🧪 Comprehensive Automated Test Suites
-
-The project follows a clean architecture separating unit tests from integration suites:
-
-```bash
-# Run all tests
-make test
-# Or with pytest directly:
-python -m pytest tests -v
-
-# Run fast, isolated unit tests only
-make test-unit
-# Or:
-python -m pytest tests/unit -v
-
-# Run live integration and regression test suites
-make test-integration
-# Or:
-python -m pytest tests/integration -v
-
-# Run Playwright automation service test suites
-make test-automation
-```
-
-### Clean Architecture Directory Layout
-
-```text
-.
-├── alembic/                 # PostgreSQL database migrations
-├── automation-service/      # NestJS Playwright browser automation engine
-├── backend/                 # FastAPI REST & WebSocket backend service
-│   ├── app/
-│   │   ├── api/v1/          # REST endpoints (auth, flows, tests, audit, etc.)
-│   │   ├── browser/         # Agent-browser adapter & session isolation
-│   │   ├── core/            # Core settings & configuration
-│   │   ├── db/              # SQLAlchemy sessions & models base
-│   │   ├── engine/          # Flow DAG executor & test runner engines
-│   │   ├── models/          # PostgreSQL SQLAlchemy ORM models
-│   │   ├── reports/         # Executive reporting & artifact manager
-│   │   ├── schemas/         # Pydantic schemas (auth, flows, testing, etc.)
-│   │   ├── security/        # JWT, Argon2/Scrypt, RBAC, AES-256 Vault
-│   │   └── worker/          # Celery background tasks & beat schedules
-│   ├── config.py            # Backward-compatible configuration re-export
-│   ├── main.py              # Application entrypoint & FastAPI startup
-│   └── requirements.txt     # Python dependencies
-├── docker/                  # Isolated container build configurations
-│   ├── Dockerfile.automation
-│   ├── Dockerfile.backend
-│   └── Dockerfile.frontend
-├── docs/                    # Technical architecture & handover documentation
-├── frontend/                # Next.js 16 SaaS frontend application
-├── reports/                 # Private storage (screenshots, snapshots, exports)
-├── scripts/                 # Compliance & production audit scripts
-└── tests/                   # Pytest test suites
-    ├── conftest.py          # Shared test fixtures & database configuration
-    ├── unit/                # Fast, isolated unit & security policy tests
-    └── integration/         # Database, worker, and phase regression suites
-```
-
-### Verified Test Modules (64 Passing Tests):
-- **Phase 1: Stabilization & Security (`test_phase1_stabilization.py`)**:
-  - `SessionManager` & `AgentBrowserAdapter` dependency injection and session isolation.
-  - Flow and test suite execution cancellation lifecycle.
-  - Multi-tenant RBAC and project authorization.
-  - SSRF protection: loopback and cloud metadata service blocks.
-- **Phase 2: Automation Engine Reliability (`test_phase2_engine.py`)**:
-  - Native selector validation (`css`, `xpath`, `text`, `role`, `testid`, `ref`).
-  - Fallback resolver with deterministic ID, attribute, and testid variants.
-  - Dynamic wait engine: `element_visible`, `wait_for_text`, `wait_for_url`, `clickable`.
-  - Smart retry policy with exponential backoff and fast-fail security violations.
-- **Phase 4: Live Monitoring & Reporting (`test_phase4_monitoring_reporting.py`)**:
-  - `ExecutionEventBus` real-time pub/sub buffer and clearing.
-  - WebSocket monitor authentication, authorization, and ping/pong.
-  - Structured log streaming, level filtering, and text/JSON downloads.
-  - Executive HTML report generator with inline SVG donut charts and step waterfalls.
-- **Phase 5: Multi-User Platform & Enterprise Features (`test_phase5_multiuser_enterprise.py`)**:
-  - Environment management with AES-256 encrypted variables.
-  - AES-256-GCM Credential Vault with secret rotation, write-only masking, and domain scoping.
-  - Role-based access control with implied permissions (`owner`, `admin`, `developer`, `tester`, `viewer`).
-  - Immutable audit logs with JSON/CSV export and automatic retention cleanup.
-- **Phase 6: Production Readiness & DevOps (`test_phase6_production_readiness.py`)**:
-  - PostgreSQL settings validation and immediate SQLite prohibition.
-  - SecretManager AES-256 key derivation and tamper detection.
-  - Headless Chromium flag forwarding (`--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`).
-  - Celery Beat schedule verification and task registration.
-
----
-
-## 📄 License & Compliance
-
-All rights reserved. Proprietary enterprise software for internal browser automation and QA testing.
-No customer data, source code, or execution logs may be transmitted to external machine learning or AI models under any circumstances.
+## 📚 Documentation
+- [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md)
+- [Project Structure](docs/architecture/PROJECT_STRUCTURE.md)
+- [API Compatibility Matrix](docs/migration/API_COMPATIBILITY.md)
+- [Database Migration & Entity Baseline](docs/migration/DATABASE_MIGRATION.md)
+- [Local Development Guide](docs/development/LOCAL_SETUP.md)
+- [Production Docker Deployment](docs/deployment/DOCKER_DEPLOYMENT.md)

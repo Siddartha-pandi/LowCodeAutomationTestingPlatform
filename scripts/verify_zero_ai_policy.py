@@ -46,7 +46,7 @@ PROHIBITED_ENDPOINTS = [
 ]
 
 # Folders to scan
-SCAN_DIRECTORIES = ["backend", "frontend/src", "tests", "automation-service/src"]
+SCAN_DIRECTORIES = ["backend", "frontend/src", "tests"]
 IGNORED_DIRS = {
     ".git",
     "node_modules",

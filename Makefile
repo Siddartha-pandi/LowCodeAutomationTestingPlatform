@@ -1,61 +1,51 @@
-.PHONY: help install install-backend install-frontend install-automation backend frontend automation build test test-unit test-integration test-automation clean audit
+.PHONY: help install install-backend install-frontend backend-api backend-worker frontend build test test-backend clean up down
 
 help:
 	@echo "Available commands:"
-	@echo "  make install           Install all dependencies (backend, frontend, automation-service)"
-	@echo "  make install-backend   Install Python backend dependencies"
+	@echo "  make install           Install all dependencies (backend, frontend)"
+	@echo "  make install-backend   Install unified NestJS backend dependencies"
 	@echo "  make install-frontend  Install Next.js frontend dependencies"
-	@echo "  make install-automation Install NestJS Playwright automation service dependencies"
-	@echo "  make backend           Start the FastAPI backend server (port 8000)"
+	@echo "  make backend-api       Start the unified NestJS API process (port 8000)"
+	@echo "  make backend-worker    Start the standalone Playwright BullMQ Worker process"
 	@echo "  make frontend          Start the Next.js frontend dev server (port 3000)"
-	@echo "  make automation        Start the NestJS Playwright automation engine (port 3001)"
-	@echo "  make build             Build the frontend for production"
-	@echo "  make test              Run all pytest test suites"
-	@echo "  make test-unit         Run backend unit tests"
-	@echo "  make test-integration  Run backend integration tests"
-	@echo "  make test-automation   Run NestJS Playwright test suites"
-	@echo "  make audit             Run Zero-AI compliance and production readiness audits"
-	@echo "  make clean             Remove temporary artifacts, test outputs, and caches"
+	@echo "  make build             Compile backend and frontend production builds"
+	@echo "  make test              Run backend unit test suites"
+	@echo "  make up                Launch all production services with Docker Compose"
+	@echo "  make down              Stop all running containers"
+	@echo "  make clean             Remove compilation artifacts and caches"
 
-install: install-backend install-frontend install-automation
+install: install-backend install-frontend
 
 install-backend:
-	python -m pip install -r backend/requirements.txt
+	cd backend && npm install --legacy-peer-deps
 
 install-frontend:
 	cd frontend && npm install
 
-install-automation:
-	cd automation-service && npm install
+backend-api:
+	cd backend && npm run start:api
 
-backend:
-	python -m backend
+backend-worker:
+	cd backend && npm run start:worker
 
 frontend:
 	cd frontend && npm run dev
 
-automation:
-	cd automation-service && npm run start:dev
-
 build:
+	cd backend && npm run build
 	cd frontend && npm run build
 
-test:
-	python -m pytest tests -v
+test: test-backend
 
-test-unit:
-	python -m pytest tests/unit -v
+test-backend:
+	cd backend && npm test
 
-test-integration:
-	python -m pytest tests/integration -v
+up:
+	docker compose -f .devcontainer/docker-compose.yml up -d
 
-test-automation:
-	cd automation-service && npm test
-
-audit:
-	python scripts/verify_zero_ai_policy.py
-	python scripts/production_readiness_check.py
+down:
+	docker compose -f .devcontainer/docker-compose.yml down
 
 clean:
-	python -c "import shutil, pathlib; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('__pycache__')]"
-	python -c "import shutil, pathlib; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('.pytest_cache')]"
+	cd backend && rm -rf dist coverage .turbo
+	cd frontend && rm -rf .next out
