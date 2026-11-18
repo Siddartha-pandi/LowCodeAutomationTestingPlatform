@@ -24,6 +24,9 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { ArtifactsModule } from './modules/artifacts/artifacts.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { SchedulingModule } from './modules/scheduling/scheduling.module';
+import { WorkersModule } from './workers/workers.module';
+
+const isEmbeddedWorkerEnabled = process.env.EMBED_WORKER !== 'false';
 
 @Module({
   imports: [
@@ -54,10 +57,8 @@ import { SchedulingModule } from './modules/scheduling/scheduling.module';
     ArtifactsModule,
     AuditModule,
     SchedulingModule,
+    ...(isEmbeddedWorkerEnabled ? [WorkersModule] : []),
   ],
-  providers: [
-    // Note: ExecutionWorker is intentionally omitted from AppModule to ensure
-    // the HTTP API process never registers BullMQ consumers.
-  ],
+  providers: [],
 })
 export class AppModule {}

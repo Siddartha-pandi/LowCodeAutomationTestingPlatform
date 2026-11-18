@@ -8,6 +8,8 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AppWsAdapter } from './common/adapters/app-ws.adapter';
 
+declare const module: any;
+
 async function bootstrap() {
   const logger = new Logger('UnifiedBackendBootstrap');
   const app = await NestFactory.create(AppModule);
@@ -83,12 +85,19 @@ async function bootstrap() {
 
   // 7. Start HTTP Server
   await app.listen(port, '0.0.0.0');
+  const isEmbeddedWorker = process.env.EMBED_WORKER !== 'false';
   logger.log('================================================================');
   logger.log(`🚀 Unified NestJS API Backend is Running on Port ${port}`);
   logger.log(`   Healthcheck: http://localhost:${port}/health`);
   logger.log(`   Swagger Docs: http://localhost:${port}/api/docs`);
   logger.log(`   API v1 Base: http://localhost:${port}/api/v1/*`);
+  logger.log(`   Embedded Worker: ${isEmbeddedWorker ? 'Active (All-in-One Mode: BullMQ + Playwright)' : 'Disabled (Standalone Mode)'}`);
   logger.log('================================================================');
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 }
 
 bootstrap().catch((err) => {

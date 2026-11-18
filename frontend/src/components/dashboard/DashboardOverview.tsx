@@ -8,15 +8,12 @@ import {
   AlertTriangle,
   GitBranch,
   CheckSquare,
-  ShieldCheck,
   TrendingUp,
-  Compass,
   ArrowRight,
   RefreshCw,
   Sparkles,
   Layers,
   Clock,
-  PlusCircle,
   Calendar,
   FileText,
   Activity,
@@ -125,49 +122,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* 1. TOP BANNER: Strict Company Zero-AI Guarantee */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#111827] via-[#161F30] to-[#1E293B] text-white shadow-md border border-slate-800 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/40">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Company Data Protection Policy — STRICT ZERO-AI</span>
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-white">
-              Enterprise Browser Automation & Deterministic Testing
-            </h1>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              Every workflow execution, DOM inspection, and multi-factor self-healing action runs via the private
-              agent-browser CLI engine using deterministic mathematical algorithms. Zero company data or DOM snapshots are ever transmitted to AI models.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => onNavigate("automation_create_flow")}
-              className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Create Flow</span>
-            </button>
-            <button
-              onClick={() => onNavigate("testing_builder")}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
-            >
-              <CheckSquare className="w-4 h-4 text-emerald-400" />
-              <span>Create Test</span>
-            </button>
-            <button
-              onClick={() => onNavigate("browser_live")}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
-            >
-              <Compass className="w-4 h-4 text-blue-400" />
-              <span>Live Browser</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. TOP KPI CARDS (6 Metrics Required in Section 5) */}
+      {/* TOP KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
         {/* KPI 1: Total Flows */}
         <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">

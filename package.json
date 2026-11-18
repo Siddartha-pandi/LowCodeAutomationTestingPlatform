@@ -1,0 +1,25 @@
+{
+  "name": "low-code-automation-testing-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified Enterprise Low-Code Automation & Deterministic Testing Platform",
+  "scripts": {
+    "backend": "npm --prefix backend run start:api",
+    "frontend": "npm --prefix frontend run dev",
+    "worker": "npm --prefix backend run start:worker",
+    "dev": "concurrently -k --prefix \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"cyan.bold,green.bold\" \"npm --prefix backend run start:api\" \"npm --prefix frontend run dev\"",
+    "install-backend": "npm --prefix backend install --legacy-peer-deps",
+    "install-frontend": "npm --prefix frontend install",
+    "install": "npm --prefix backend install --legacy-peer-deps && npm --prefix frontend install",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "build-backend": "npm --prefix backend run build",
+    "build-frontend": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test",
+    "test-backend": "npm --prefix backend test",
+    "test-frontend": "npm --prefix frontend run lint",
+    "start": "concurrently -k --prefix \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"blue.bold,green.bold\" \"npm --prefix backend run start:prod:api\" \"npm --prefix frontend run start\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
+}

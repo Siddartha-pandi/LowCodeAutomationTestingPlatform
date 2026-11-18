@@ -3,6 +3,8 @@ import { WorkerModule } from './worker.module';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+declare const module: any;
+
 async function bootstrap() {
   const logger = new Logger('PlaywrightWorkerBootstrap');
   logger.log('Starting standalone Playwright BullMQ Worker Process...');
@@ -21,6 +23,11 @@ async function bootstrap() {
   logger.log(`   Worker Concurrency: ${concurrency}`);
   logger.log(`   Target Queues: browser-execution, test-suite-execution, maintenance`);
   logger.log('================================================================');
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 }
 
 bootstrap().catch((err) => {

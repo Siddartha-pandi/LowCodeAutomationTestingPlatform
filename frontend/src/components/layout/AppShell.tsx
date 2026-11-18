@@ -398,19 +398,6 @@ export function AppShell({
           ))}
         </div>
 
-        {/* Company Data Protection Guarantee Badge */}
-        {!collapsed && (
-          <div className="mx-3 my-2 p-2 rounded-lg border border-emerald-800/60 bg-emerald-950/40 text-[10px] text-emerald-300 space-y-0.5">
-            <div className="flex items-center gap-1 font-bold text-emerald-400">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Company Data Protection</span>
-            </div>
-            <div className="text-emerald-300/90 leading-tight">
-              100% Deterministic Engine. Zero AI / No-LLMs.
-            </div>
-          </div>
-        )}
-
         {/* User Info / Profile footer */}
         <div className="p-3 border-t border-[#1F2937] bg-[#111827] flex items-center justify-between gap-2">
           {!collapsed ? (
@@ -481,16 +468,6 @@ export function AppShell({
                 Ctrl K
               </kbd>
             </button>
-
-            {/* Deterministic Agent Browser status pill */}
-            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>agent-browser v0.41.2</span>
-              <span className="text-slate-400 dark:text-slate-500">•</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-sans font-medium text-[10px]">
-                Deterministic DOM
-              </span>
-            </div>
 
             {/* Quick action buttons */}
             <button

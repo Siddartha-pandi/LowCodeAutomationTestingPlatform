@@ -2,7 +2,7 @@ import { registerAs } from '@nestjs/config';
 
 export const appConfig = registerAs('app', () => ({
   port: parseInt(process.env.PORT || process.env.AUTOMATION_SERVICE_PORT || '8000', 10),
-  jwtSecret: process.env.JWT_SECRET || 'enterprise-production-jwt-secret-key-32chars',
+  jwtSecret: process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || 'enterprise-production-jwt-secret-key-32chars',
   tokenExpiryMinutes: parseInt(process.env.TOKEN_EXPIRY_MINUTES || '480', 10),
   appEncryptionKey:
     process.env.APP_ENCRYPTION_KEY ||

@@ -105,24 +105,41 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env.local
 ```
 
-### 3. Run Backend API Server
-```bash
-cd backend
-npm install --legacy-peer-deps
-npm run start:api
-```
+### 3. All-In-One Single Start Commands (HMR Included)
 
-### 4. Run Standalone Playwright Worker
-```bash
-cd backend
-npm run start:worker
-```
+Start the entire platform (NestJS API, Playwright BullMQ Worker, Next.js Web Dashboard) with Hot Module Replacement built in:
 
-### 5. Run Frontend Web Dashboard
 ```bash
-cd frontend
-npm install
+# Start all 3 services concurrently with HMR (API on :8000, Worker, Frontend on :3000):
+make dev
+# Or using npm:
 npm run dev
+
+# Start web stack only with HMR (API + Frontend without worker):
+make dev-web
+# Or using npm:
+npm run dev-web
+```
+
+### 4. Individual Service Commands (HMR Included)
+
+If you prefer running services in separate terminal tabs (Hot Module Replacement is active by default):
+
+```bash
+# 4a. Install Dependencies
+make install-backend
+make install-frontend
+# Or both:
+make install
+
+# 4b. Run Backend API Server (Port 8000 with Webpack HMR)
+make backend
+
+# 4c. Run Standalone Playwright Worker Process
+make worker            # or: make backend-worker
+
+# 4d. Run Frontend Web Dashboard (Port 3000 with Fast Refresh & HMR polling)
+make frontend
 ```
 
 ---

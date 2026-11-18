@@ -1,6 +1,6 @@
 # Development Container Dockerfile for LowCodeAutomationTestingPlatform
 # Uses Microsoft Playwright base image (includes Node.js, Playwright, Chromium, Firefox, WebKit, and system dependencies)
-FROM mcr.microsoft.com/playwright:v1.49.1-noble
+FROM mcr.microsoft.com/playwright:v1.65.0-noble
 
 ARG USERNAME=TeamDolphin
 ARG USER_UID=1000

@@ -1,6 +1,8 @@
 {
-  "name": "LowCodeAutomationTestingPlatform",
-  "dockerComposeFile": "docker-compose.yml",
+  "name": "Dolphin-Apps",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
   "service": "app",
   "workspaceFolder": "/workspaces/LowCodeAutomationTestingPlatform",
   "shutdownAction": "stopCompose",

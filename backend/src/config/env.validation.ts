@@ -6,6 +6,7 @@ export const environmentSchema = z.object({
   REDIS_HOST: z.string().optional().default('127.0.0.1'),
   REDIS_PORT: z.string().optional().default('6379'),
   JWT_SECRET: z.string().optional().default('enterprise-production-jwt-secret-key-32chars'),
+  JWT_SECRET_KEY: z.string().optional(),
   APP_ENCRYPTION_KEY: z.string().optional(),
   STORAGE_DIR: z.string().optional(),
 });
