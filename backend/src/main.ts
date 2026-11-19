@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AppWsAdapter } from './common/adapters/app-ws.adapter';
@@ -37,7 +37,8 @@ async function bootstrap() {
   });
 
   // 2. Cookie Parser Middleware
-  app.use(cookieParser());
+  const parseCookies = typeof cookieParser === 'function' ? cookieParser : (cookieParser as any)?.default;
+  app.use(parseCookies());
 
   // 3. Global Exception Handling & Logging
   app.useGlobalFilters(new GlobalExceptionFilter());

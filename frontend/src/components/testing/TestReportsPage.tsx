@@ -114,9 +114,9 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
 
   // Chart 3: Pass/Fail Distribution
   const pieData = [
-    { name: "Passed", value: passed, color: "#10B981" },
-    { name: "Failed", value: failed, color: "#EF4444" },
-    { name: "Skipped", value: skipped, color: "#94A3B8" },
+    { name: "Passed", value: passed, color: "#ffffff" },
+    { name: "Failed", value: failed, color: "#525252" },
+    { name: "Skipped", value: skipped, color: "#a3a3a3" },
   ];
 
   // Most Failed Tests Table
@@ -174,7 +174,7 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#2563EB]" />
+            <FileText className="w-5 h-5 text-black dark:text-white" />
             <span>Test Reports & Analytics</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -192,7 +192,7 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
           </button>
           <button
             onClick={handleDownloadFullReport}
-            className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+            className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
           >
             <Download className="w-4 h-4" />
             <span>Download Report</span>
@@ -201,7 +201,7 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
       </div>
 
       {/* Filter Toolbar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-3">
           {/* Date Range */}
           <div className="flex items-center gap-1.5">
@@ -256,34 +256,34 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
 
       {/* KPI Cards (5 Metrics Required in Section 13) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <span className="text-[10px] font-bold text-slate-400 uppercase">Total Tests</span>
           <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{totalTests}</p>
           <span className="text-[10px] text-slate-500">Across 3 suites</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <span className="text-[10px] font-bold text-emerald-600 uppercase">Passed</span>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{passed}</p>
-          <span className="text-[10px] text-emerald-600 font-medium">95.1% pass rate</span>
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
+          <span className="text-[10px] font-bold text-black dark:text-white uppercase">Passed</span>
+          <p className="text-2xl font-bold text-black dark:text-white mt-1">{passed}</p>
+          <span className="text-[10px] text-black dark:text-white font-medium">95.1% pass rate</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <span className="text-[10px] font-bold text-rose-600 uppercase">Failed</span>
-          <p className="text-2xl font-bold text-rose-600 mt-1">{failed}</p>
-          <span className="text-[10px] text-rose-500">Requires triage</span>
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
+          <span className="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 uppercase">Failed</span>
+          <p className="text-2xl font-bold text-neutral-700 dark:text-neutral-300 mt-1">{failed}</p>
+          <span className="text-[10px] text-neutral-600 dark:text-neutral-300">Requires triage</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <span className="text-[10px] font-bold text-slate-400 uppercase">Skipped</span>
           <p className="text-2xl font-bold text-slate-700 dark:text-slate-300 mt-1">{skipped}</p>
           <span className="text-[10px] text-slate-400">Condition branches</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <span className="text-[10px] font-bold text-blue-600 uppercase">Success Rate</span>
-          <p className="text-2xl font-bold text-[#2563EB] mt-1">{successRate}%</p>
-          <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
+          <span className="text-[10px] font-bold text-black dark:text-white uppercase">Success Rate</span>
+          <p className="text-2xl font-bold text-black dark:text-white mt-1">{successRate}%</p>
+          <span className="text-[10px] text-black dark:text-white font-medium flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
             <span>+1.8% this week</span>
           </span>
@@ -293,7 +293,7 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
       {/* Charts Grid: 3 Recharts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart 1: Execution Trend */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">Test Execution Trend</h3>
@@ -307,28 +307,28 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                <XAxis dataKey="day" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333333" opacity={0.2} />
+                <XAxis dataKey="day" stroke="#a3a3a3" fontSize={10} tickLine={false} />
+                <YAxis stroke="#a3a3a3" fontSize={10} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#111827",
-                    borderColor: "#1F2937",
+                    backgroundColor: "var(--bg-surface)",
+                    borderColor: "var(--border-color)",
                     borderRadius: "8px",
-                    color: "#ffffff",
+                    color: "var(--text-primary)",
                     fontSize: "11px",
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: "11px" }} />
-                <Bar dataKey="Passed" fill="#10b981" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="Failed" fill="#ef4444" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Passed" fill="#ffffff" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Failed" fill="#525252" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Chart 2: Environment Comparison */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div>
             <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">Environment Comparison</h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">Pass rate by deployed target</p>
@@ -337,20 +337,20 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={envComparisonData} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" opacity={0.2} />
-                <XAxis type="number" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                <YAxis dataKey="environment" type="category" stroke="#94a3b8" fontSize={9} tickLine={false} width={75} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333333" opacity={0.2} />
+                <XAxis type="number" stroke="#a3a3a3" fontSize={10} tickLine={false} />
+                <YAxis dataKey="environment" type="category" stroke="#a3a3a3" fontSize={9} tickLine={false} width={75} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#111827",
-                    borderColor: "#1F2937",
+                    backgroundColor: "var(--bg-surface)",
+                    borderColor: "var(--border-color)",
                     borderRadius: "8px",
-                    color: "#ffffff",
+                    color: "var(--text-primary)",
                     fontSize: "11px",
                   }}
                 />
-                <Bar dataKey="Passed" fill="#10b981" stackId="a" />
-                <Bar dataKey="Failed" fill="#ef4444" stackId="a" />
+                <Bar dataKey="Passed" fill="#ffffff" stackId="a" />
+                <Bar dataKey="Failed" fill="#525252" stackId="a" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -360,10 +360,10 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
       {/* Tables: Most Failed Tests & Top Performing Suites */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Most Failed Tests */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div>
             <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-              <XCircle className="w-4 h-4 text-rose-500" />
+              <XCircle className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
               <span>Most Frequently Failed Tests</span>
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -386,7 +386,7 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Suite: {t.suite} • Last: {t.last_failure}
                 </p>
-                <p className="text-[11px] text-rose-700 dark:text-rose-400 font-mono">
+                <p className="text-[11px] text-rose-700 dark:text-neutral-400 dark:text-neutral-200 font-mono">
                   Root Cause: {t.root_cause}
                 </p>
               </div>
@@ -395,10 +395,10 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
         </div>
 
         {/* Top Performing Suites */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div>
             <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <CheckCircle2 className="w-4 h-4 text-black dark:text-white" />
               <span>Top Performing Test Suites</span>
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -419,7 +419,7 @@ export function TestReportsPage({ projectId, onNavigate, onSelectExecution }: Te
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-bold text-emerald-600">{s.pass_rate}%</span>
+                  <span className="text-sm font-bold text-black dark:text-white">{s.pass_rate}%</span>
                   <span className="text-[10px] text-slate-400 block">Pass Rate</span>
                 </div>
               </div>

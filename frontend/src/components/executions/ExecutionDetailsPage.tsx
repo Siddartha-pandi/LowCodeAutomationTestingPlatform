@@ -163,7 +163,7 @@ export function ExecutionDetailsPage({
   if (!execution) {
     return (
       <div className="p-6 max-w-4xl mx-auto space-y-6">
-        <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 space-y-3">
+        <div className="p-12 text-center rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 space-y-3">
           <Terminal className="w-10 h-10 text-slate-400 mx-auto" />
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">No Execution Selected</h2>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -193,7 +193,7 @@ export function ExecutionDetailsPage({
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-bold text-[#2563EB]">
+              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-bold text-black dark:text-white">
                 {execution.id}
               </span>
               <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -207,7 +207,7 @@ export function ExecutionDetailsPage({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span className="capitalize">{execution.status}</span>
           </span>
@@ -218,7 +218,7 @@ export function ExecutionDetailsPage({
             rel="noopener noreferrer"
             className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-500" />
+            <Download className="w-3.5 h-3.5 text-black dark:text-white" />
             <span>HTML Report</span>
           </a>
 
@@ -226,7 +226,7 @@ export function ExecutionDetailsPage({
             onClick={handleRerun}
             className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-blue-500" />
+            <RotateCcw className="w-3.5 h-3.5 text-black dark:text-white" />
             <span>Rerun Safe</span>
           </button>
         </div>
@@ -250,7 +250,7 @@ export function ExecutionDetailsPage({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-1.5 px-4 py-2.5 font-bold border-b-2 transition ${
                 isActive
-                  ? "border-[#2563EB] text-[#2563EB] dark:text-blue-400"
+                  ? "border-black dark:border-white text-black dark:text-white"
                   : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
               }`}
             >
@@ -265,37 +265,37 @@ export function ExecutionDetailsPage({
       {activeTab === "overview" && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Triggered By</span>
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1">{execution.user}</p>
               <span className="text-[10px] text-slate-500">{execution.trigger_type}</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Start Time</span>
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1">{execution.start_time}</p>
               <span className="text-[10px] text-slate-500">Asia/Kolkata</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Total Duration</span>
-              <p className="text-sm font-bold font-mono text-emerald-600 mt-1">{execution.duration}</p>
+              <p className="text-sm font-bold font-mono text-black dark:text-white mt-1">{execution.duration}</p>
               <span className="text-[10px] text-slate-500">5/5 steps passed</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Browser Engine</span>
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1">
                 {execution?.summary?.engine === "playwright" ? "Playwright Native" : "agent-browser (Legacy)"}
               </p>
-              <span className="text-[10px] text-blue-600 font-mono">
+              <span className="text-[10px] text-black dark:text-white font-mono">
                 {execution?.summary?.engine === "playwright" ? "Ephemeral Isolated Context" : "Subprocess Adapter"}
               </span>
             </div>
           </div>
 
           {execution.liveViewport && (
-            <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-blue-500/30 shadow-sm space-y-2">
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-blue-500/30 shadow-sm space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -317,7 +317,7 @@ export function ExecutionDetailsPage({
 
       {/* TAB 2: STEPS */}
       {activeTab === "steps" && (
-        <div className="bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+        <div className="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
@@ -342,7 +342,7 @@ export function ExecutionDetailsPage({
                       </span>
                     </td>
                     <td className="py-3 px-3">
-                      <span className="text-emerald-600 font-bold flex items-center gap-1 text-[11px]">
+                      <span className="text-black dark:text-white font-bold flex items-center gap-1 text-[11px]">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Passed</span>
                       </span>
@@ -350,7 +350,7 @@ export function ExecutionDetailsPage({
                     <td className="py-3 px-3 font-mono text-slate-500">{st.duration}</td>
                     <td className="py-3 px-3 font-mono text-[11px] text-slate-700 dark:text-slate-300">
                       <div>Exp: {st.expected}</div>
-                      <div className="text-emerald-600">Act: {st.actual}</div>
+                      <div className="text-black dark:text-white">Act: {st.actual}</div>
                     </td>
                     <td className="py-3 px-3 text-slate-400">{st.error || "-"}</td>
                   </tr>
@@ -368,7 +368,7 @@ export function ExecutionDetailsPage({
             <div
               key={s.id || s.name}
               onClick={() => setZoomScreenshot(s.url)}
-              className="p-3 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2 cursor-pointer group hover:border-blue-500 transition"
+              className="p-3 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2 cursor-pointer group hover:border-blue-500 transition"
             >
               <div className="aspect-video bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center">
                 <img src={s.url} alt={s.name} className="w-full h-full object-contain group-hover:scale-105 transition" />
@@ -385,7 +385,7 @@ export function ExecutionDetailsPage({
       {/* TAB 4: LOGS */}
       {activeTab === "logs" && (
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
             <div className="flex items-center gap-1.5">
               {["ALL", "INFO", "WARNING", "ERROR", "DEBUG"].map((lvl) => (
                 <button
@@ -416,7 +416,7 @@ export function ExecutionDetailsPage({
                 rel="noopener noreferrer"
                 className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-1.5 transition"
               >
-                <Download className="w-3.5 h-3.5 text-blue-500" />
+                <Download className="w-3.5 h-3.5 text-black dark:text-white" />
                 <span>Export TXT</span>
               </a>
             </div>
@@ -435,12 +435,12 @@ export function ExecutionDetailsPage({
                   <span
                     className={`font-bold shrink-0 ${
                       l.level === "ERROR"
-                        ? "text-rose-400"
+                        ? "text-neutral-400 dark:text-neutral-200"
                         : l.level === "WARNING"
-                        ? "text-amber-400"
+                        ? "text-neutral-400 dark:text-neutral-200"
                         : l.level === "DEBUG"
                         ? "text-purple-400"
-                        : "text-blue-400"
+                        : "text-neutral-400 dark:text-neutral-200"
                     }`}
                   >
                     [{l.level}]
@@ -454,12 +454,12 @@ export function ExecutionDetailsPage({
 
       {/* TAB 5: DOM SNAPSHOTS */}
       {activeTab === "dom" && (
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3 text-xs">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3 text-xs">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-slate-900 dark:text-slate-100">Synchronized Accessibility Snapshot</h3>
             <span className="font-mono text-[10px] text-slate-400">Captured at Step 4</span>
           </div>
-          <div className="p-4 rounded-xl bg-slate-950 font-mono text-[11px] text-emerald-400 overflow-x-auto">
+          <div className="p-4 rounded-xl bg-slate-950 font-mono text-[11px] text-neutral-400 dark:text-neutral-200 overflow-x-auto">
             {`<main role="main" id="dashboard-root">\n  <nav class="sidebar" role="navigation">\n  <div class="user-profile" role="region" aria-label="Administrator">\n</main>`}
           </div>
         </div>
@@ -467,8 +467,8 @@ export function ExecutionDetailsPage({
 
       {/* TAB 6: SELF-HEALING EVENTS */}
       {activeTab === "healing" && (
-        <div className="p-6 text-center bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
-          <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+        <div className="p-6 text-center bg-white dark:bg-neutral-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
+          <CheckCircle2 className="w-8 h-8 text-black dark:text-white mx-auto" />
           <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Zero Mutations Required</h3>
           <p className="text-xs text-slate-400">
             All selectors resolved with 100% attribute stability on first attempt. No self-healing triggered.

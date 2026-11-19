@@ -248,7 +248,7 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Database className="w-6 h-6 text-blue-600" />
+            <Database className="w-6 h-6 text-black dark:text-white" />
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Test Data Management
             </h1>
@@ -302,7 +302,7 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
                     <span
                       className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
                         ds.format === "csv"
-                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-neutral-400 dark:text-neutral-200"
                           : "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-400"
                       }`}
                     >
@@ -323,7 +323,7 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
                         e.stopPropagation();
                         handleDeleteDataset(ds);
                       }}
-                      className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                      className="p-1 rounded text-slate-400 hover:text-neutral-700 dark:text-neutral-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                       title="Delete Dataset"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -368,17 +368,17 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
                 </button>
                 <button
                   onClick={() => handleDeleteDataset(activeDataset)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold text-rose-600 rounded-lg shadow-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold text-neutral-700 dark:text-neutral-300 rounded-lg shadow-sm transition-colors"
                   title="Delete Dataset"
                 >
-                  <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                  <Trash2 className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-300" />
                   <span>Delete</span>
                 </button>
                 <button
                   onClick={handleAddRow}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 rounded-lg shadow-sm transition-colors"
                 >
-                  <Plus className="w-3.5 h-3.5 text-blue-600" />
+                  <Plus className="w-3.5 h-3.5 text-black dark:text-white" />
                   <span>Add Row</span>
                 </button>
                 <button
@@ -444,7 +444,7 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
                       <td className="py-1 px-4 text-right">
                         <button
                           onClick={() => handleDeleteRow(rIdx)}
-                          className="p-1 text-slate-400 hover:text-rose-600 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="p-1 text-slate-400 hover:text-neutral-700 dark:text-neutral-300 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                           title="Delete row"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -459,7 +459,7 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
             {/* Table Footer */}
             <div className="p-3 bg-slate-50/60 dark:bg-slate-950/40 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
               <span className="flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                <Shield className="w-3.5 h-3.5 text-black dark:text-white" />
                 <span>Zero Secret Leak Policy: Masked values are redacted from execution logs.</span>
               </span>
               <span>Total iterations: {activeDataset.rowCount}</span>
@@ -471,10 +471,10 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
       {/* Dataset Metadata Modal */}
       {datasetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Database className="w-4 h-4 text-blue-600" />
+                <Database className="w-4 h-4 text-black dark:text-white" />
                 <span>Edit Dataset Details</span>
               </h3>
               <button

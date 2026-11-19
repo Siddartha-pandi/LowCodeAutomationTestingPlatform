@@ -111,10 +111,10 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
   // Chart 3: Execution Status Distribution Data from actual runs
   const queuedExecutions = executions.filter((e) => e.status === "queued" || e.status === "pending").length;
   const statusDistributionData = [
-    { name: "Passed", value: passedExecutions, color: "#10B981" },
-    { name: "Failed", value: failedExecutions, color: "#EF4444" },
-    { name: "Running", value: runningExecutions, color: "#2563EB" },
-    { name: "Queued", value: queuedExecutions, color: "#F59E0B" },
+    { name: "Passed", value: passedExecutions, color: "#ffffff" },
+    { name: "Failed", value: failedExecutions, color: "#525252" },
+    { name: "Running", value: runningExecutions, color: "#a3a3a3" },
+    { name: "Queued", value: queuedExecutions, color: "#d4d4d4" },
   ];
 
   // Recent Executions list
@@ -125,29 +125,29 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
       {/* TOP KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
         {/* KPI 1: Total Flows */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Total Flows</span>
-            <GitBranch className="w-4 h-4 text-[#2563EB]" />
+            <GitBranch className="w-4 h-4 text-black dark:text-white" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-2">{totalFlows}</h3>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium flex items-center gap-1">
+          <p className="text-[10px] text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 mt-1 font-medium flex items-center gap-1">
             <span>Visual DAG flows</span>
           </p>
         </div>
 
         {/* KPI 2: Total Tests */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Total Tests</span>
-            <CheckSquare className="w-4 h-4 text-emerald-500" />
+            <CheckSquare className="w-4 h-4 text-black dark:text-white" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-2">{totalTests}</h3>
           <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">12 Assertion Types</p>
         </div>
 
         {/* KPI 3: Total Executions */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Executions</span>
             <Activity className="w-4 h-4 text-purple-500" />
@@ -157,40 +157,40 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
         </div>
 
         {/* KPI 4: Success Rate */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Success Rate</span>
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
+            <TrendingUp className="w-4 h-4 text-black dark:text-white" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-2">{successRate}%</h3>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">+2.4% vs last week</p>
+          <p className="text-[10px] text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 mt-1 font-medium">+2.4% vs last week</p>
         </div>
 
         {/* KPI 5: Failed Executions */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Failed</span>
-            <XCircle className="w-4 h-4 text-rose-500" />
+            <XCircle className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-2">{failedExecutions}</h3>
-          <p className="text-[10px] text-rose-500 mt-1 font-medium">Requires triage</p>
+          <p className="text-[10px] text-neutral-600 dark:text-neutral-300 mt-1 font-medium">Requires triage</p>
         </div>
 
         {/* KPI 6: Running Executions */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Running</span>
-            <PlayCircle className="w-4 h-4 text-[#2563EB] animate-spin" />
+            <PlayCircle className="w-4 h-4 text-black dark:text-white animate-spin" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-2">{runningExecutions}</h3>
-          <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 font-medium">Active Celery task</p>
+          <p className="text-[10px] text-black dark:text-white dark:text-white mt-1 font-medium">Active Celery task</p>
         </div>
       </div>
 
       {/* 3. CHARTS GRID (3 Required Charts: Trend, Success vs Failure, Status Distribution) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart 1: Execution Trend */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Execution Trend</h3>
@@ -213,23 +213,23 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                 <AreaChart data={trendData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorExec" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#ffffff" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#ffffff" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                  <XAxis dataKey="day" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333333" opacity={0.2} />
+                  <XAxis dataKey="day" stroke="#a3a3a3" fontSize={10} tickLine={false} />
+                  <YAxis stroke="#a3a3a3" fontSize={10} tickLine={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#111827",
-                      borderColor: "#1F2937",
+                      backgroundColor: "var(--bg-surface)",
+                      borderColor: "var(--border-color)",
                       borderRadius: "8px",
-                      color: "#ffffff",
+                      color: "var(--text-primary)",
                       fontSize: "11px",
                     }}
                   />
-                  <Area type="monotone" dataKey="executions" stroke="#2563eb" strokeWidth={2} fillOpacity={1} fill="url(#colorExec)" />
+                  <Area type="monotone" dataKey="executions" stroke="#ffffff" strokeWidth={2} fillOpacity={1} fill="url(#colorExec)" />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -237,7 +237,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
         </div>
 
         {/* Chart 2: Success vs Failure */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Success vs Failure</h3>
@@ -262,20 +262,20 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={successFailureData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                  <XAxis dataKey="category" stroke="#94a3b8" fontSize={9} tickLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333333" opacity={0.2} />
+                  <XAxis dataKey="category" stroke="#a3a3a3" fontSize={9} tickLine={false} />
+                  <YAxis stroke="#a3a3a3" fontSize={10} tickLine={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#111827",
-                      borderColor: "#1F2937",
+                      backgroundColor: "var(--bg-surface)",
+                      borderColor: "var(--border-color)",
                       borderRadius: "8px",
-                      color: "#ffffff",
+                      color: "var(--text-primary)",
                       fontSize: "11px",
                     }}
                   />
-                  <Bar dataKey="Passed" fill="#10b981" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Failed" fill="#ef4444" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Passed" fill="#ffffff" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Failed" fill="#525252" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -283,7 +283,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
         </div>
 
         {/* Chart 3: Execution Status Distribution */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div>
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Status Distribution</h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">Breakdown of recent execution states</p>
@@ -314,10 +314,10 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#111827",
-                      borderColor: "#1F2937",
+                      backgroundColor: "var(--bg-surface)",
+                      borderColor: "var(--border-color)",
                       borderRadius: "8px",
-                      color: "#ffffff",
+                      color: "var(--text-primary)",
                       fontSize: "11px",
                     }}
                   />
@@ -341,7 +341,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
       {/* 4. RECENT EXECUTIONS & SYSTEM HEALTH */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Executions Table */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Recent Executions</h3>
@@ -349,7 +349,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
             </div>
             <button
               onClick={() => onNavigate("executions_history")}
-              className="text-xs font-semibold text-[#2563EB] dark:text-blue-400 hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-black dark:text-white dark:text-white hover:underline flex items-center gap-1"
             >
               <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -383,7 +383,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                         <button
                           type="button"
                           onClick={() => onNavigate("automation_create_flow")}
-                          className="mt-1 px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-medium transition"
+                          className="mt-1 px-3 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-medium transition"
                         >
                           Create First Flow
                         </button>
@@ -413,10 +413,10 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                             item.status === "completed" || item.status === "passed"
-                              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
                               : item.status === "running"
                               ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 animate-pulse"
-                              : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                              : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-neutral-400 dark:text-neutral-200 border border-rose-200 dark:border-rose-800"
                           }`}
                         >
                           {item.status === "completed" || item.status === "passed" ? (
@@ -442,10 +442,10 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
         {/* Environment Health & Agent Browser Status Cards */}
         <div className="space-y-4">
           {/* Agent Browser Engine Status */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
+          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-[#2563EB]" />
+                <Terminal className="w-4 h-4 text-black dark:text-white" />
                 <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Agent Browser Status</h3>
               </div>
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -458,7 +458,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
               </div>
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Session Adapter</span>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">Subprocess Active</span>
+                <span className="font-mono text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 font-bold">Subprocess Active</span>
               </div>
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Domain Whitelist</span>
@@ -466,7 +466,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
               </div>
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Deterministic DOM</span>
-                <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">100% Rule-Based</span>
+                <span className="font-mono text-black dark:text-white dark:text-white font-bold">100% Rule-Based</span>
               </div>
             </div>
 
@@ -479,15 +479,15 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
           </div>
 
           {/* Environment Health */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
+          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Server className="w-4 h-4 text-emerald-500" />
+                <Server className="w-4 h-4 text-black dark:text-white" />
                 <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Environment Health</h3>
               </div>
               <button
                 onClick={() => onNavigate("config_environments")}
-                className="text-[11px] text-[#2563EB] dark:text-blue-400 hover:underline"
+                className="text-[11px] text-black dark:text-white dark:text-white hover:underline"
               >
                 Manage
               </button>
@@ -499,7 +499,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                   <div className="font-semibold text-slate-800 dark:text-slate-200">Staging</div>
                   <div className="text-[10px] text-slate-400 truncate max-w-[140px]">staging.internal.company.net</div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 font-bold">
                   Healthy
                 </span>
               </div>
@@ -509,7 +509,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                   <div className="font-semibold text-slate-800 dark:text-slate-200">Production</div>
                   <div className="text-[10px] text-slate-400 truncate max-w-[140px]">app.company.internal</div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-neutral-400 dark:text-neutral-200 font-bold">
                   Guarded
                 </span>
               </div>

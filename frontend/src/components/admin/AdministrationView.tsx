@@ -220,7 +220,7 @@ export function AdministrationView({ initialSubTab = "users" }: AdministrationVi
                     </td>
                     <td className="py-2.5 px-3">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <CheckCircle2 className="w-3 h-3 text-black dark:text-white" />
                         <span>Active</span>
                       </span>
                     </td>
@@ -256,7 +256,7 @@ export function AdministrationView({ initialSubTab = "users" }: AdministrationVi
                   </span>
                   {r.permissions.map((perm) => (
                     <div key={perm} className="text-xs text-slate-700 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black dark:text-white shrink-0" />
                       <span>{perm}</span>
                     </div>
                   ))}

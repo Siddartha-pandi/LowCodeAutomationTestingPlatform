@@ -8,6 +8,7 @@ import {
   OneToMany,
   JoinColumn,
   Unique,
+  type Relation,
 } from 'typeorm';
 import { ProjectEntity } from './project.entity';
 import { LocatorHistoryEntity } from './locator-history.entity';
@@ -53,5 +54,5 @@ export class ElementProfileEntity {
   project: ProjectEntity;
 
   @OneToMany(() => LocatorHistoryEntity, (lh) => lh.elementProfile)
-  locators: LocatorHistoryEntity[];
+  locators: Relation<LocatorHistoryEntity[]>;
 }

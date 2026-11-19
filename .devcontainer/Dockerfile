@@ -15,7 +15,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         curl \
         wget \
         jq \
+        postgresql \
+        postgresql-contrib \
         postgresql-client \
+        redis-server \
         redis-tools \
         procps \
         ca-certificates \
@@ -53,6 +56,8 @@ RUN mkdir -p /workspaces/LowCodeAutomationTestingPlatform \
 
 # Configure bashrc with custom prompt and convenience aliases
 RUN echo '\n# Dev Container Convenience Aliases\n\
+alias dev="npm run dev"\n\
+alias dev:all="npm run dev"\n\
 alias dev:api="npm --prefix /workspaces/LowCodeAutomationTestingPlatform/backend run start:api"\n\
 alias dev:worker="npm --prefix /workspaces/LowCodeAutomationTestingPlatform/backend run start:worker"\n\
 alias dev:frontend="npm --prefix /workspaces/LowCodeAutomationTestingPlatform/frontend run dev"\n\

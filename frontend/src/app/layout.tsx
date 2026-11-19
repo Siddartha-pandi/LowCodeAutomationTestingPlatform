@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/common/ThemeProvider";
-import { ToastProvider } from "@/components/common/ToastProvider";
-import { ConfirmProvider } from "@/components/common/ConfirmModal";
-import { AuthProvider } from "@/context/AuthContext";
+import { Providers } from "@/components/common/Providers";
 
 export const metadata: Metadata = {
   title: "Enterprise Browser Automation & Deterministic Testing Platform",
@@ -18,15 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
-        <ThemeProvider>
-          <ToastProvider>
-            <ConfirmProvider>
-              <AuthProvider>
-                {children}
-              </AuthProvider>
-            </ConfirmProvider>
-          </ToastProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

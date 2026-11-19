@@ -108,7 +108,7 @@ export function AuditLogsPage({ onNavigate }: AuditLogsPageProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-[#2563EB]" />
+            <ClipboardList className="w-5 h-5 text-black dark:text-white" />
             <span>Compliance Audit Trail</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -118,7 +118,7 @@ export function AuditLogsPage({ onNavigate }: AuditLogsPageProps) {
 
         <button
           onClick={handleExportAudit}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <Download className="w-4 h-4" />
           <span>Export Audit Log</span>
@@ -126,7 +126,7 @@ export function AuditLogsPage({ onNavigate }: AuditLogsPageProps) {
       </div>
 
       {/* Filter and Security Tag */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
@@ -150,15 +150,15 @@ export function AuditLogsPage({ onNavigate }: AuditLogsPageProps) {
             <option value="warning">Warning</option>
           </select>
 
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
             <span>Immutable Append-Only Mode</span>
           </div>
         </div>
       </div>
 
       {/* Audit Log Table */}
-      <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-neutral-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -183,7 +183,7 @@ export function AuditLogsPage({ onNavigate }: AuditLogsPageProps) {
                   </td>
 
                   <td className="py-3 px-3">
-                    <span className="font-mono text-xs text-[#2563EB] dark:text-blue-400 font-bold">
+                    <span className="font-mono text-xs text-black dark:text-white dark:text-white font-bold">
                       {r.user}
                     </span>
                   </td>
@@ -204,10 +204,10 @@ export function AuditLogsPage({ onNavigate }: AuditLogsPageProps) {
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${
                         r.result === "success"
-                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
                           : r.result === "blocked"
-                          ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
-                          : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                          ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-neutral-400 dark:text-neutral-200 border border-rose-200 dark:border-rose-800"
+                          : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-neutral-400 dark:text-neutral-200 border border-amber-200 dark:border-amber-800"
                       }`}
                     >
                       {r.result === "success" && <CheckCircle2 className="w-3 h-3" />}

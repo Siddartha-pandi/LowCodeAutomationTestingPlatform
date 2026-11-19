@@ -199,7 +199,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Compass className="w-5 h-5 text-[#2563EB]" />
+            <Compass className="w-5 h-5 text-black dark:text-white" />
             <span>Live Browser Monitor</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -221,7 +221,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
             <button
               onClick={handleStartSession}
               disabled={isLoading}
-              className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition disabled:opacity-50 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -244,10 +244,10 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
       </div>
 
       {/* URL Navigation Bar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
         <form onSubmit={handleNavigate} className="flex items-center gap-2 text-xs">
           <div className="flex items-center gap-2 flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-            <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <Lock className="w-3.5 h-3.5 text-black dark:text-white shrink-0" />
             <input
               type="text"
               required
@@ -261,7 +261,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
           <button
             type="submit"
             disabled={isLoading}
-            className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
           >
             {isLoading && browserStatus === "Navigating" ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -301,7 +301,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
           </span>
           <span className="font-mono">
             Session ID:{" "}
-            <strong className="text-blue-600">{sessionId || "Disconnected"}</strong>
+            <strong className="text-black dark:text-white">{sessionId || "Disconnected"}</strong>
           </span>
         </div>
       </div>
@@ -309,10 +309,10 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
       {/* Main Viewport & Console Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Browser Viewport Preview (2 cols) */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
+        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Laptop className="w-4 h-4 text-[#2563EB]" />
+              <Laptop className="w-4 h-4 text-black dark:text-white" />
               <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">
                 Agent Browser Viewport (1280x800)
               </h3>
@@ -332,7 +332,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
           <div className="w-full aspect-video rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center relative shadow-inner">
             {isLoading && (
               <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-2xs flex flex-col items-center justify-center gap-2 z-10 animate-in fade-in">
-                <Loader2 className="w-7 h-7 text-[#2563EB] animate-spin" />
+                <Loader2 className="w-7 h-7 text-black dark:text-white animate-spin" />
                 <span className="text-xs font-mono text-slate-300">
                   {browserStatus === "Navigating" ? "Navigating and rendering DOM..." : "Capturing viewport..."}
                 </span>
@@ -360,7 +360,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
         </div>
 
         {/* Browser Logs & Diagnostic Info (1 col) */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col space-y-3">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Terminal className="w-4 h-4 text-purple-500" />
@@ -391,7 +391,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
 
           {/* Zero-AI Note */}
           <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white shrink-0" />
             <span>Pure subprocess isolation. No external telemetry or cloud renderers.</span>
           </div>
         </div>

@@ -8,7 +8,7 @@ interface BrowserLogoProps {
 export function BrowserAutomationLogo({ className = "w-12 h-12", size = 48 }: BrowserLogoProps) {
   return (
     <div
-      className={`relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] p-2.5 shadow-xl shadow-blue-600/30 ring-1 ring-white/20 select-none ${className}`}
+      className={`relative flex items-center justify-center rounded-2xl bg-black dark:bg-white text-white dark:text-black p-2.5 shadow-md border border-neutral-700 dark:border-neutral-300 select-none ${className}`}
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
@@ -16,7 +16,7 @@ export function BrowserAutomationLogo({ className = "w-12 h-12", size = 48 }: Br
         viewBox="0 0 40 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full text-white"
+        className="w-full h-full text-current"
       >
         {/* Browser Window Outline */}
         <rect
@@ -27,7 +27,7 @@ export function BrowserAutomationLogo({ className = "w-12 h-12", size = 48 }: Br
           rx="5"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-white/90"
+          className="opacity-90"
         />
         {/* Browser Top Navigation Bar */}
         <line
@@ -37,12 +37,12 @@ export function BrowserAutomationLogo({ className = "w-12 h-12", size = 48 }: Br
           y2="13"
           stroke="currentColor"
           strokeWidth="1.5"
-          className="text-white/40"
+          className="opacity-40"
         />
         {/* Window Dots */}
-        <circle cx="7.5" cy="9" r="1.25" fill="currentColor" className="text-white/80" />
-        <circle cx="11.5" cy="9" r="1.25" fill="currentColor" className="text-white/80" />
-        <circle cx="15.5" cy="9" r="1.25" fill="currentColor" className="text-white/80" />
+        <circle cx="7.5" cy="9" r="1.25" fill="currentColor" className="opacity-80" />
+        <circle cx="11.5" cy="9" r="1.25" fill="currentColor" className="opacity-80" />
+        <circle cx="15.5" cy="9" r="1.25" fill="currentColor" className="opacity-80" />
         {/* Mini URL Bar */}
         <rect
           x="19"
@@ -51,7 +51,7 @@ export function BrowserAutomationLogo({ className = "w-12 h-12", size = 48 }: Br
           height="3"
           rx="1.5"
           fill="currentColor"
-          className="text-white/25"
+          className="opacity-30"
         />
         {/* Automation Node & Direct Cursor Arrow */}
         <path
@@ -60,7 +60,6 @@ export function BrowserAutomationLogo({ className = "w-12 h-12", size = 48 }: Br
           stroke="currentColor"
           strokeWidth="1"
           strokeLinejoin="round"
-          className="text-white"
         />
         {/* Deterministic Execution Target Reticle Ring */}
         <circle
@@ -70,10 +69,9 @@ export function BrowserAutomationLogo({ className = "w-12 h-12", size = 48 }: Br
           stroke="currentColor"
           strokeWidth="1.5"
           strokeDasharray="2 2"
-          className="text-cyan-300 animate-spin-slow origin-center"
+          className="opacity-60 animate-spin-slow origin-center"
         />
       </svg>
     </div>
   );
 }
-

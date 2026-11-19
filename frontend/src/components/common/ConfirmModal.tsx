@@ -46,55 +46,41 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
       {modalState && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-black rounded-2xl max-w-md w-full border border-neutral-300 dark:border-neutral-800 shadow-2xl p-6 space-y-4 text-black dark:text-white">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    modalState.variant === "danger"
-                      ? "bg-rose-100 dark:bg-rose-950/60 text-rose-600"
-                      : modalState.variant === "warning"
-                      ? "bg-amber-100 dark:bg-amber-950/60 text-amber-600"
-                      : "bg-blue-100 dark:bg-blue-950/60 text-blue-600"
-                  }`}
-                >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-black dark:text-white">
                   {modalState.variant === "danger" && <AlertTriangle className="w-5 h-5" />}
                   {modalState.variant === "warning" && <AlertCircle className="w-5 h-5" />}
                   {(!modalState.variant || modalState.variant === "primary") && <HelpCircle className="w-5 h-5" />}
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{modalState.title}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{modalState.message}</p>
+                  <h3 className="text-sm font-bold text-black dark:text-white">{modalState.title}</h3>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">{modalState.message}</p>
                 </div>
               </div>
               <button
                 onClick={handleClose}
                 disabled={loading}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg"
+                className="text-neutral-400 hover:text-black dark:hover:text-white p-1 rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-neutral-200 dark:border-neutral-800">
               <button
                 onClick={handleClose}
                 disabled={loading}
-                className="px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition"
+                className="px-3.5 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition"
               >
                 {modalState.cancelText || "Cancel"}
               </button>
               <button
                 onClick={handleProceed}
                 disabled={loading}
-                className={`px-4 py-2 rounded-lg text-white text-xs font-semibold transition shadow-xs disabled:opacity-50 ${
-                  modalState.variant === "danger"
-                    ? "bg-rose-600 hover:bg-rose-700"
-                    : modalState.variant === "warning"
-                    ? "bg-amber-600 hover:bg-amber-700"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                className="px-4 py-2 rounded-lg bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 text-xs font-semibold transition shadow-xs disabled:opacity-50"
               >
                 {loading ? "Processing..." : modalState.confirmText || "Confirm Action"}
               </button>

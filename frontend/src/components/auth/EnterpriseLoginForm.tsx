@@ -185,55 +185,63 @@ export function EnterpriseLoginForm({
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#0B0F17] flex flex-col justify-between py-8 px-4 sm:px-6 lg:px-8 selection:bg-blue-600 selection:text-white">
-      {/* Top Bar / Branding Status */}
-      <header className="w-full max-w-7xl mx-auto flex items-center justify-between py-2 text-xs text-slate-400">
-        <div className="flex items-center gap-2">
-          <Terminal className="w-3.5 h-3.5 text-blue-400" />
-          <span className="font-mono text-[11px] tracking-wider uppercase text-slate-400">
-            Agent-Browser CLI v0.41.2 Native
-          </span>
-        </div>
+    <div
+      className={
+        standalone
+          ? "min-h-screen w-full bg-neutral-50 dark:bg-black text-black dark:text-white flex flex-col justify-between py-8 px-4 sm:px-6 lg:px-8 selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200"
+          : "w-full max-w-lg mx-auto py-4 text-black dark:text-white selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200"
+      }
+    >
+      {/* Top Bar / Branding Status - displayed in standalone mode */}
+      {standalone && (
+        <header className="w-full max-w-7xl mx-auto flex items-center justify-between py-2 text-xs text-neutral-500 dark:text-neutral-400">
+          <div className="flex items-center gap-2">
+            <Terminal className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+            <span className="font-mono text-[11px] tracking-wider uppercase text-neutral-500 dark:text-neutral-400">
+              Agent-Browser CLI v0.41.2 Native
+            </span>
+          </div>
 
-        {/* Zero-AI / No-LLM Policy Badge with Tooltip */}
-        <div className="relative">
-          <button
-            type="button"
-            onMouseEnter={() => setShowPolicyTooltip(true)}
-            onMouseLeave={() => setShowPolicyTooltip(false)}
-            onFocus={() => setShowPolicyTooltip(true)}
-            onBlur={() => setShowPolicyTooltip(false)}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-[11px] font-medium hover:bg-emerald-950/60 hover:border-emerald-500/50 transition cursor-help focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            aria-label="Zero-AI and No-LLM Policy Compliance Information"
-            aria-expanded={showPolicyTooltip}
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Strict Zero-AI / No-LLM Policy Active</span>
-            <HelpCircle className="w-3 h-3 text-emerald-400/80" />
-          </button>
-
-          {/* Accessible Tooltip Popover */}
-          {showPolicyTooltip && (
-            <div
-              ref={policyTooltipRef}
-              role="tooltip"
-              className="absolute right-0 top-full mt-2 w-80 p-3.5 bg-[#161F30] border border-slate-700 rounded-xl shadow-2xl text-xs text-slate-300 z-50 animate-in fade-in zoom-in-95 duration-150"
+          {/* Zero-AI / No-LLM Policy Badge with Tooltip */}
+          <div className="relative">
+            <button
+              type="button"
+              onMouseEnter={() => setShowPolicyTooltip(true)}
+              onMouseLeave={() => setShowPolicyTooltip(false)}
+              onFocus={() => setShowPolicyTooltip(true)}
+              onBlur={() => setShowPolicyTooltip(false)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-300 text-[11px] font-medium hover:bg-neutral-200 dark:hover:bg-neutral-800 transition cursor-help focus:outline-none focus:ring-2 focus:ring-neutral-400"
+              aria-label="Zero-AI and No-LLM Policy Compliance Information"
+              aria-expanded={showPolicyTooltip}
             >
-              <div className="flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-semibold text-white">
-                    Corporate Zero-AI Compliance
-                  </p>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    This platform operates 100% deterministically. No DOM elements, session logs, or test artifacts are ever transmitted to third-party AI APIs (OpenAI, Gemini, Claude, Ollama, etc.). Element recognition and self-healing algorithms rely strictly on localized mathematical heuristics.
-                  </p>
+              <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
+              <span>Strict Zero-AI / No-LLM Policy Active</span>
+              <HelpCircle className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+            </button>
+
+            {/* Accessible Tooltip Popover */}
+            {showPolicyTooltip && (
+              <div
+                ref={policyTooltipRef}
+                role="tooltip"
+                className="absolute right-0 top-full mt-2 w-80 p-3.5 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl text-xs text-neutral-700 dark:text-neutral-300 z-50 animate-in fade-in zoom-in-95 duration-150"
+              >
+                <div className="flex items-start gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-black dark:text-white shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-black dark:text-white">
+                      Corporate Zero-AI Compliance
+                    </p>
+                    <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      This platform operates 100% deterministically. No DOM elements, session logs, or test artifacts are ever transmitted to third-party AI APIs (OpenAI, Gemini, Claude, Ollama, etc.). Element recognition and self-healing algorithms rely strictly on localized mathematical heuristics.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </header>
+            )}
+          </div>
+        </header>
+      )}
 
       {/* Main Centered Login Section */}
       <main className="flex-1 flex items-center justify-center my-6">
@@ -247,23 +255,23 @@ export function EnterpriseLoginForm({
             <div className="space-y-1">
               <h1
                 id="login-title"
-                className="text-2xl font-bold tracking-tight text-white"
+                className="text-2xl font-bold tracking-tight text-black dark:text-white"
               >
-                AutomationTesting<span className="text-blue-500">WithAgentBrowser</span>
+                AutomationTesting<span className="text-black dark:text-white underline decoration-neutral-400 dark:decoration-neutral-500">WithAgentBrowser</span>
               </h1>
-              <p className="text-xs text-slate-400 font-normal">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-normal">
                 Enterprise Multi-User Automation & Testing Platform
               </p>
             </div>
           </div>
 
           {/* Crisp White Centered Login Card */}
-          <div className="bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl transition-all duration-200">
+          <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 sm:p-8 shadow-2xl transition-all duration-200">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                 Enterprise Sign In
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                 Enter your credentials to access your testing workspace
               </p>
             </div>
@@ -273,12 +281,12 @@ export function EnterpriseLoginForm({
               <div
                 role="alert"
                 aria-live="polite"
-                className="mb-5 p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5 animate-in fade-in"
+                className="mb-5 p-3.5 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-xl text-black dark:text-white text-xs flex items-start gap-2.5 animate-in fade-in"
               >
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
+                <AlertCircle className="w-4 h-4 shrink-0 text-black dark:text-white mt-0.5" />
                 <div className="space-y-0.5">
                   <span className="font-semibold">Authentication Failed:</span>
-                  <p className="text-[11px] leading-relaxed">{authError}</p>
+                  <p className="text-[11px] leading-relaxed text-neutral-700 dark:text-neutral-300">{authError}</p>
                 </div>
               </div>
             )}
@@ -315,17 +323,17 @@ export function EnterpriseLoginForm({
                     placeholder="name@company.domain"
                     aria-invalid={!!errors.email}
                     aria-describedby={errors.email ? "email-error" : undefined}
-                    className={`w-full min-h-[44px] pl-10 pr-3.5 py-2.5 text-sm rounded-xl border bg-slate-50/50 dark:bg-slate-900/60 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-[#161F30] ${
+                    className={`w-full min-h-[44px] pl-10 pr-3.5 py-2.5 text-sm rounded-xl border bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-neutral-950 ${
                       errors.email
-                        ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20"
-                        : "border-slate-300 dark:border-slate-700 focus:border-blue-600 focus:ring-blue-500/20 hover:border-slate-400 dark:hover:border-slate-600"
+                        ? "border-neutral-500 focus:border-neutral-700 focus:ring-neutral-400/20"
+                        : "border-neutral-300 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-neutral-400/20 hover:border-neutral-400 dark:hover:border-neutral-600"
                     }`}
                   />
                 </div>
                 {touched.email && errors.email && (
                   <p
                     id="email-error"
-                    className="text-[11px] text-rose-600 dark:text-rose-400 flex items-center gap-1 mt-1 font-medium"
+                    className="text-[11px] text-neutral-700 dark:text-neutral-300 flex items-center gap-1 mt-1 font-medium"
                     role="alert"
                   >
                     <AlertCircle className="w-3 h-3 shrink-0" />
@@ -339,21 +347,21 @@ export function EnterpriseLoginForm({
                 <div className="flex items-center justify-between">
                   <label
                     htmlFor="login-password"
-                    className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+                    className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider"
                   >
                     Password
                   </label>
                   <button
                     type="button"
                     onClick={() => setIsForgotModalOpen(true)}
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium transition focus:outline-none focus:underline"
+                    className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:underline font-medium transition focus:outline-none focus:underline"
                   >
                     Forgot password?
                   </button>
                 </div>
 
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
                     <Lock className="w-4 h-4" aria-hidden="true" />
                   </div>
                   <input
@@ -368,16 +376,16 @@ export function EnterpriseLoginForm({
                     placeholder="Enter your security password"
                     aria-invalid={!!errors.password}
                     aria-describedby={errors.password ? "password-error" : undefined}
-                    className={`w-full min-h-[44px] pl-10 pr-11 py-2.5 text-sm rounded-xl border bg-slate-50/50 dark:bg-slate-900/60 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-[#161F30] ${
+                    className={`w-full min-h-[44px] pl-10 pr-11 py-2.5 text-sm rounded-xl border bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-neutral-950 ${
                       errors.password
-                        ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20"
-                        : "border-slate-300 dark:border-slate-700 focus:border-blue-600 focus:ring-blue-500/20 hover:border-slate-400 dark:hover:border-slate-600"
+                        ? "border-neutral-500 focus:border-neutral-700 focus:ring-neutral-400/20"
+                        : "border-neutral-300 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-neutral-400/20 hover:border-neutral-400 dark:hover:border-neutral-600"
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition focus:outline-none"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition focus:outline-none"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -390,7 +398,7 @@ export function EnterpriseLoginForm({
                 {touched.password && errors.password && (
                   <p
                     id="password-error"
-                    className="text-[11px] text-rose-600 dark:text-rose-400 flex items-center gap-1 mt-1 font-medium"
+                    className="text-[11px] text-neutral-700 dark:text-neutral-300 flex items-center gap-1 mt-1 font-medium"
                     role="alert"
                   >
                     <AlertCircle className="w-3 h-3 shrink-0" />
@@ -407,9 +415,9 @@ export function EnterpriseLoginForm({
                     id="remember-me"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#2563EB] focus:ring-blue-500 dark:focus:ring-offset-[#161F30] cursor-pointer"
+                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-black dark:text-white focus:ring-neutral-500 dark:focus:ring-offset-neutral-950 cursor-pointer"
                   />
-                  <span className="text-xs text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition">
+                  <span className="text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition">
                     Remember me on this device
                   </span>
                 </label>
@@ -419,11 +427,11 @@ export function EnterpriseLoginForm({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-medium text-sm transition-all duration-150 shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#161F30]"
+                className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-[0.99] text-white dark:text-black font-semibold text-sm transition-all duration-150 shadow-md flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <Loader2 className="w-4 h-4 animate-spin text-white dark:text-black" />
                     <span>Verifying Credentials...</span>
                   </>
                 ) : (
@@ -437,11 +445,11 @@ export function EnterpriseLoginForm({
           </div>
 
           {/* Registration / Account Request Link */}
-          <div className="text-center text-xs text-slate-400">
+          <div className="text-center text-xs text-neutral-500 dark:text-neutral-400">
             Need an enterprise tenant account?{" "}
             <Link
               href="/register"
-              className="text-blue-400 hover:text-blue-300 font-medium hover:underline transition"
+              className="text-black dark:text-white hover:underline font-medium transition"
             >
               Request Workspace Access
             </Link>
@@ -457,23 +465,23 @@ export function EnterpriseLoginForm({
           aria-labelledby="forgot-modal-title"
           className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
         >
-          <div className="bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <h3
                   id="forgot-modal-title"
-                  className="text-base font-semibold text-slate-900 dark:text-white"
+                  className="text-base font-semibold text-neutral-900 dark:text-white"
                 >
                   Reset Enterprise Password
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   Enter your corporate email address to receive authorization instructions.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsForgotModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-white p-1 rounded-lg transition"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
@@ -481,12 +489,12 @@ export function EnterpriseLoginForm({
             </div>
 
             {forgotSubmitted ? (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-800 dark:text-emerald-300 text-xs space-y-1">
+              <div className="p-4 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-neutral-100 text-xs space-y-1">
                 <div className="font-semibold flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-600" />
+                  <Check className="w-4 h-4 text-black dark:text-white" />
                   <span>Instruction Sent</span>
                 </div>
-                <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
                   If this email exists in our directory, a secure one-time password reset link has been dispatched to your corporate inbox.
                 </p>
               </div>
@@ -495,7 +503,7 @@ export function EnterpriseLoginForm({
                 <div className="space-y-1">
                   <label
                     htmlFor="forgot-email"
-                    className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+                    className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
                   >
                     Corporate Email
                   </label>
@@ -506,7 +514,7 @@ export function EnterpriseLoginForm({
                     value={forgotEmail}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder="name@company.domain"
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400"
                   />
                 </div>
 
@@ -514,13 +522,13 @@ export function EnterpriseLoginForm({
                   <button
                     type="button"
                     onClick={() => setIsForgotModalOpen(false)}
-                    className="px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+                    className="px-3 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-xs font-medium bg-[#2563EB] hover:bg-blue-600 text-white rounded-lg transition shadow"
+                    className="px-4 py-2 text-xs font-medium bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black rounded-lg transition shadow"
                   >
                     Dispatch Reset Link
                   </button>
@@ -528,8 +536,8 @@ export function EnterpriseLoginForm({
               </form>
             )}
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 shrink-0 text-blue-400" />
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-[11px] text-neutral-400 flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
               <span>
                 SSO-governed users must reset credentials via company Identity Provider (Okta / Azure AD).
               </span>
@@ -538,19 +546,21 @@ export function EnterpriseLoginForm({
         </div>
       )}
 
-      {/* Enterprise Security Footer */}
-      <footer className="w-full max-w-7xl mx-auto pt-4 border-t border-slate-800/80 text-[11px] text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-        <div>
-          <span>AutomationTestingWithAgentBrowser &bull; Enterprise SaaS v1.0.0</span>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <span className="text-slate-400 font-medium">SOC2 Type II Compliant</span>
-          <span>&bull;</span>
-          <span className="text-slate-400 font-medium">ISO/IEC 27001 Certified</span>
-          <span>&bull;</span>
-          <span>Deterministic Zero-AI Engine</span>
-        </div>
-      </footer>
+      {/* Enterprise Security Footer - displayed in standalone mode */}
+      {standalone && (
+        <footer className="w-full max-w-7xl mx-auto pt-4 border-t border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-500 dark:text-neutral-400 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div>
+            <span>AutomationTestingWithAgentBrowser &bull; Enterprise SaaS v1.0.0</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <span className="text-neutral-600 dark:text-neutral-400 font-medium">SOC2 Type II Compliant</span>
+            <span>&bull;</span>
+            <span className="text-neutral-600 dark:text-neutral-400 font-medium">ISO/IEC 27001 Certified</span>
+            <span>&bull;</span>
+            <span>Deterministic Zero-AI Engine</span>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }

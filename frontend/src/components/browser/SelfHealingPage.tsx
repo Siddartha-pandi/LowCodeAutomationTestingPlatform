@@ -179,35 +179,35 @@ export function SelfHealingPage({ projectId, onNavigate }: SelfHealingPageProps)
 
       {/* 4 KPI Cards (Section 18) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <span className="text-[10px] font-bold text-slate-400 uppercase">Total Attempts</span>
           <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{totalAttempts}</p>
           <span className="text-[10px] text-slate-500">Recorded mutations</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <span className="text-[10px] font-bold text-emerald-600 uppercase">Successful Recoveries</span>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{successfulRecoveries}</p>
-          <span className="text-[10px] text-emerald-600 font-medium">Auto-healed (≥95%)</span>
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
+          <span className="text-[10px] font-bold text-black dark:text-white uppercase">Successful Recoveries</span>
+          <p className="text-2xl font-bold text-black dark:text-white mt-1">{successfulRecoveries}</p>
+          <span className="text-[10px] text-black dark:text-white font-medium">Auto-healed (≥95%)</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <span className="text-[10px] font-bold text-amber-600 uppercase">Pending Reviews</span>
-          <p className="text-2xl font-bold text-amber-600 mt-1">{pendingReviews}</p>
-          <span className="text-[10px] text-amber-600 font-medium">85-94% approval tier</span>
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
+          <span className="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 uppercase">Pending Reviews</span>
+          <p className="text-2xl font-bold text-neutral-700 dark:text-neutral-300 mt-1">{pendingReviews}</p>
+          <span className="text-[10px] text-neutral-700 dark:text-neutral-300 font-medium">85-94% approval tier</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <span className="text-[10px] font-bold text-rose-600 uppercase">Failed / Rejected</span>
-          <p className="text-2xl font-bold text-rose-600 mt-1">{failedRecoveries}</p>
-          <span className="text-[10px] text-rose-500 font-medium">Safely halted</span>
+        <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
+          <span className="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 uppercase">Failed / Rejected</span>
+          <p className="text-2xl font-bold text-neutral-700 dark:text-neutral-300 mt-1">{failedRecoveries}</p>
+          <span className="text-[10px] text-neutral-600 dark:text-neutral-300 font-medium">Safely halted</span>
         </div>
       </div>
 
       {/* Main 2-Column Layout: Left Table, Right Details Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Table Column (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+        <div className="lg:col-span-7 bg-white dark:bg-neutral-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">
               Recovery Audit Log
@@ -244,7 +244,7 @@ export function SelfHealingPage({ projectId, onNavigate }: SelfHealingPageProps)
                     </td>
 
                     <td className="py-3 px-3">
-                      <span className="font-mono text-[11px] font-bold text-[#2563EB] dark:text-blue-400">
+                      <span className="font-mono text-[11px] font-bold text-black dark:text-white dark:text-white">
                         {r.element_id}
                       </span>
                     </td>
@@ -257,10 +257,10 @@ export function SelfHealingPage({ projectId, onNavigate }: SelfHealingPageProps)
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${
                           r.result === "auto_healed"
-                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
                             : r.result === "requires_approval"
-                            ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 animate-pulse"
-                            : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                            ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-neutral-400 dark:text-neutral-200 border border-amber-200 dark:border-amber-800 animate-pulse"
+                            : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-neutral-400 dark:text-neutral-200 border border-rose-200 dark:border-rose-800"
                         }`}
                       >
                         {r.result === "auto_healed" && <CheckCircle2 className="w-3 h-3" />}
@@ -278,7 +278,7 @@ export function SelfHealingPage({ projectId, onNavigate }: SelfHealingPageProps)
 
         {/* Details Panel (5 cols) */}
         {activeRecord && (
-          <div className="lg:col-span-5 p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs">
+          <div className="lg:col-span-5 p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">
                 Healing Evidence Details
@@ -336,7 +336,7 @@ export function SelfHealingPage({ projectId, onNavigate }: SelfHealingPageProps)
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
                 <button
                   onClick={() => handleReject(activeRecord)}
-                  className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold"
+                  className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-neutral-700 dark:text-neutral-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold"
                 >
                   Reject Replacement
                 </button>

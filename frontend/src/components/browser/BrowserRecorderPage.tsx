@@ -459,7 +459,7 @@ export function BrowserRecorderPage({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Video className="w-6 h-6 text-[#2563EB]" />
+            <Video className="w-6 h-6 text-black dark:text-white" />
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Browser Recorder
             </h1>
@@ -469,8 +469,8 @@ export function BrowserRecorderPage({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900">
-          <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-white border border-blue-200 dark:border-blue-900">
+          <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
           <span>Verified CLI Recording Mode • Subprocess Isolated</span>
         </div>
       </div>
@@ -494,7 +494,7 @@ export function BrowserRecorderPage({
             <button
               onClick={handleStartRecording}
               disabled={isLoading}
-              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2 bg-[#2563EB] hover:bg-blue-600 text-white rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -559,12 +559,12 @@ export function BrowserRecorderPage({
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs flex flex-col">
             <div className="p-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
               <span className="flex items-center gap-1.5">
-                <Camera className="w-3.5 h-3.5 text-blue-500" />
+                <Camera className="w-3.5 h-3.5 text-black dark:text-white" />
                 <span>Session Viewport {sessionId ? `(#${sessionId.slice(0, 10)})` : ""}</span>
               </span>
               <div className="flex items-center gap-2">
                 {isRecording && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-900 animate-pulse font-mono">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-900 animate-pulse font-mono">
                     &bull; REC LIVE
                   </span>
                 )}
@@ -575,7 +575,7 @@ export function BrowserRecorderPage({
             <div className="relative min-h-[380px] bg-slate-950 flex items-center justify-center p-2 overflow-hidden shadow-inner">
               {isLoading && (
                 <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-2xs flex flex-col items-center justify-center gap-2 z-10 animate-in fade-in">
-                  <Loader2 className="w-7 h-7 text-[#2563EB] animate-spin" />
+                  <Loader2 className="w-7 h-7 text-black dark:text-white animate-spin" />
                   <span className="text-xs font-mono text-slate-300">
                     Executing action and capturing frame...
                   </span>
@@ -590,7 +590,7 @@ export function BrowserRecorderPage({
                 />
               ) : (
                 <div className="text-center text-slate-400 space-y-2 p-8">
-                  <Video className="w-10 h-10 mx-auto opacity-30 text-[#2563EB]" />
+                  <Video className="w-10 h-10 mx-auto opacity-30 text-black dark:text-white" />
                   <p className="text-xs font-medium">
                     {isRecording ? "Capturing viewport from agent-browser..." : "Browser session idle"}
                   </p>
@@ -606,14 +606,14 @@ export function BrowserRecorderPage({
               <div className="p-3 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 space-y-2">
                 <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                   <span className="flex items-center gap-1">
-                    <MousePointer className="w-3.5 h-3.5 text-blue-500" />
+                    <MousePointer className="w-3.5 h-3.5 text-black dark:text-white" />
                     <span>Execute & Record Interaction</span>
                   </span>
 
                   <button
                     onClick={handleInspectElements}
                     disabled={inspecting}
-                    className="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-700 dark:text-blue-400 capitalize font-medium cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[10px] text-black dark:text-white hover:text-blue-700 dark:text-white capitalize font-medium cursor-pointer"
                   >
                     {inspecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Crosshair className="w-3 h-3" />}
                     <span>{inspecting ? "Scanning DOM..." : "Inspect Page Elements"}</span>
@@ -648,7 +648,7 @@ export function BrowserRecorderPage({
                   <button
                     disabled={isLoading}
                     onClick={handleExecuteAction}
-                    className="px-3 py-1.5 bg-[#2563EB] hover:bg-blue-600 text-white rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
+                    className="px-3 py-1.5 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
                   >
                     {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                     <span>{isLoading ? "Running..." : "Dispatch & Record"}</span>
@@ -683,10 +683,10 @@ export function BrowserRecorderPage({
                         <button
                           key={i}
                           onClick={() => handleSelectElement(el)}
-                          className="px-2 py-0.5 rounded bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-950/60 text-[10px] text-slate-700 dark:text-slate-300 hover:text-blue-600 border border-slate-200 dark:border-slate-700 flex items-center gap-1 cursor-pointer transition truncate max-w-[200px]"
+                          className="px-2 py-0.5 rounded bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-950/60 text-[10px] text-slate-700 dark:text-slate-300 hover:text-black dark:text-white border border-slate-200 dark:border-slate-700 flex items-center gap-1 cursor-pointer transition truncate max-w-[200px]"
                           title={`${el.tag}: ${el.selector}`}
                         >
-                          <span className="font-bold uppercase text-[9px] text-blue-500">{el.tag}</span>
+                          <span className="font-bold uppercase text-[9px] text-black dark:text-white">{el.tag}</span>
                           <span className="truncate">{el.text || el.selector}</span>
                         </button>
                       ))}
@@ -712,7 +712,7 @@ export function BrowserRecorderPage({
             {recordedActions.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="text-[11px] text-rose-600 hover:underline cursor-pointer"
+                className="text-[11px] text-neutral-700 dark:text-neutral-300 hover:underline cursor-pointer"
               >
                 Clear All
               </button>
@@ -726,7 +726,7 @@ export function BrowserRecorderPage({
                 className="p-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between gap-2 group hover:border-blue-500/50 transition-colors"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold">
+                  <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-white flex items-center justify-center text-[10px] font-bold">
                     {idx + 1}
                   </span>
                   <div className="min-w-0">
@@ -734,7 +734,7 @@ export function BrowserRecorderPage({
                       <span className="text-[11px] font-bold uppercase text-slate-800 dark:text-slate-200">
                         {act.action}
                       </span>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                      <span className="text-[10px] text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 font-medium">
                         ✓ Verified
                       </span>
                     </div>
@@ -752,14 +752,14 @@ export function BrowserRecorderPage({
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleOpenEditAction(act)}
-                    className="p-1 text-slate-400 hover:text-blue-600 rounded transition cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-black dark:text-white rounded transition cursor-pointer"
                     title="Edit step"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteAction(act.id)}
-                    className="p-1 text-slate-400 hover:text-rose-600 rounded transition cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-neutral-700 dark:text-neutral-300 rounded transition cursor-pointer"
                     title="Remove step"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -851,7 +851,7 @@ export function BrowserRecorderPage({
                 type="button"
                 onClick={handleSaveRecording}
                 disabled={isLoading || !saveTitle.trim()}
-                className="px-4 py-2 bg-[#2563EB] hover:bg-blue-600 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {isLoading ? "Saving..." : "Save Definition"}
               </button>
@@ -863,10 +863,10 @@ export function BrowserRecorderPage({
       {/* Edit Recorded Step Modal */}
       {editingAction && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-[#2563EB]" />
+                <Edit2 className="w-4 h-4 text-black dark:text-white" />
                 <span>Edit Recorded Step</span>
               </h3>
               <button
@@ -937,7 +937,7 @@ export function BrowserRecorderPage({
                 <button
                   type="button"
                   onClick={handleSaveEditAction}
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
                 >
                   Save Step
                 </button>

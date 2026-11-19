@@ -203,7 +203,7 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-emerald-500" />
+            <Globe className="w-5 h-5 text-black dark:text-white" />
             <span>Environment Management</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -213,7 +213,7 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
 
         <button
           onClick={handleOpenCreateModal}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <Plus className="w-4 h-4" />
           <span>New Environment</span>
@@ -225,7 +225,7 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
         {environments.map((env) => (
           <div
             key={env.id}
-            className={`p-5 rounded-2xl bg-white dark:bg-[#161F30] border shadow-2xs space-y-4 transition ${
+            className={`p-5 rounded-2xl bg-white dark:bg-neutral-950 border shadow-2xs space-y-4 transition ${
               env.is_production
                 ? "border-amber-300 dark:border-amber-900/60 ring-1 ring-amber-400/20"
                 : "border-slate-200 dark:border-slate-800"
@@ -253,8 +253,8 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${
                     env.status === "healthy"
-                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                      : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
+                      : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-neutral-400 dark:text-neutral-200 border border-amber-200 dark:border-amber-800"
                   }`}
                 >
                   {env.status}
@@ -268,7 +268,7 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
                 </button>
                 <button
                   onClick={() => handleDeleteEnvironment(env)}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 transition"
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-neutral-700 dark:text-neutral-300 dark:text-neutral-400 dark:text-neutral-200 transition"
                   title="Delete Environment"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -306,7 +306,7 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
                 className={`px-3 py-1.5 rounded-lg text-white font-semibold transition shadow-xs ${
                   env.is_production
                     ? "bg-amber-600 hover:bg-amber-700"
-                    : "bg-[#2563EB] hover:bg-blue-600"
+                    : "bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
                 }`}
               >
                 {env.is_production ? "Test with Confirmation" : "Run Workflow Here"}
@@ -323,10 +323,10 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
       {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-emerald-500" />
+                <Globe className="w-4 h-4 text-black dark:text-white" />
                 <span>{editingEnv ? "Edit Environment" : "Create Environment"}</span>
               </h3>
               <button
@@ -378,7 +378,7 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
                   type="checkbox"
                   checked={isProdInput}
                   onChange={(e) => setIsProdInput(e.target.checked)}
-                  className="rounded text-amber-600"
+                  className="rounded text-neutral-700 dark:text-neutral-300"
                 />
                 <span className="font-semibold text-slate-700 dark:text-slate-300">
                   Mark as Production (Enforces Confirmation Gate)
@@ -398,7 +398,7 @@ export function EnvironmentsPage({ projectId, onNavigate }: EnvironmentsPageProp
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
                 >
                   {editingEnv ? "Save Changes" : "Create Environment"}
                 </button>

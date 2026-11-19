@@ -64,36 +64,36 @@ import { useConfirm } from "../common/ConfirmModal";
 const ActionNode = ({ data, selected }: NodeProps) => {
   const getIcon = () => {
     switch (data.action) {
-      case "navigate": return <Globe className="w-4 h-4 text-blue-500" />;
-      case "click": return <MousePointer className="w-4 h-4 text-indigo-500" />;
-      case "double_click": return <MousePointer className="w-4 h-4 text-purple-500" />;
-      case "right_click": return <MousePointer className="w-4 h-4 text-pink-500" />;
-      case "hover": return <Eye className="w-4 h-4 text-sky-500" />;
-      case "fill": return <Edit3 className="w-4 h-4 text-amber-500" />;
-      case "type": return <Edit3 className="w-4 h-4 text-orange-500" />;
-      case "select": return <ListOrdered className="w-4 h-4 text-teal-500" />;
-      case "check": return <CheckSquare className="w-4 h-4 text-emerald-500" />;
-      case "uncheck": return <CheckSquare className="w-4 h-4 text-slate-400" />;
-      case "scroll": return <ArrowDown className="w-4 h-4 text-blue-500" />;
-      case "extract_text": return <FileText className="w-4 h-4 text-emerald-500" />;
-      case "extract_attribute": return <FileText className="w-4 h-4 text-cyan-500" />;
-      case "extract_table": return <Table className="w-4 h-4 text-blue-600" />;
-      case "wait": return <Clock className="w-4 h-4 text-slate-500" />;
-      case "wait_until": return <Clock className="w-4 h-4 text-amber-500" />;
-      case "browser_back": return <ArrowLeft className="w-4 h-4 text-indigo-500" />;
-      case "browser_forward": return <ArrowRight className="w-4 h-4 text-indigo-500" />;
-      case "refresh": return <RotateCw className="w-4 h-4 text-teal-500" />;
-      case "switch": return <Split className="w-4 h-4 text-amber-500" />;
-      case "loop": return <Repeat className="w-4 h-4 text-violet-500" />;
-      case "set_variable": return <Code className="w-4 h-4 text-blue-500" />;
-      case "string_operation": return <Code className="w-4 h-4 text-emerald-500" />;
-      case "number_operation": return <Calculator className="w-4 h-4 text-amber-500" />;
-      case "json_operation": return <Braces className="w-4 h-4 text-purple-500" />;
-      case "date_operation": return <Calendar className="w-4 h-4 text-rose-500" />;
-      case "array_operation": return <ListOrdered className="w-4 h-4 text-cyan-500" />;
-      case "screenshot": return <Camera className="w-4 h-4 text-purple-500" />;
-      case "approval": return <ShieldCheck className="w-4 h-4 text-amber-600" />;
-      default: return <Play className="w-4 h-4 text-blue-500" />;
+      case "navigate": return <Globe className="w-4 h-4 text-black dark:text-white" />;
+      case "click": return <MousePointer className="w-4 h-4 text-black dark:text-white" />;
+      case "double_click": return <MousePointer className="w-4 h-4 text-black dark:text-white" />;
+      case "right_click": return <MousePointer className="w-4 h-4 text-black dark:text-white" />;
+      case "hover": return <Eye className="w-4 h-4 text-black dark:text-white" />;
+      case "fill": return <Edit3 className="w-4 h-4 text-black dark:text-white" />;
+      case "type": return <Edit3 className="w-4 h-4 text-black dark:text-white" />;
+      case "select": return <ListOrdered className="w-4 h-4 text-black dark:text-white" />;
+      case "check": return <CheckSquare className="w-4 h-4 text-black dark:text-white" />;
+      case "uncheck": return <CheckSquare className="w-4 h-4 text-neutral-400" />;
+      case "scroll": return <ArrowDown className="w-4 h-4 text-black dark:text-white" />;
+      case "extract_text": return <FileText className="w-4 h-4 text-black dark:text-white" />;
+      case "extract_attribute": return <FileText className="w-4 h-4 text-black dark:text-white" />;
+      case "extract_table": return <Table className="w-4 h-4 text-black dark:text-white" />;
+      case "wait": return <Clock className="w-4 h-4 text-neutral-500" />;
+      case "wait_until": return <Clock className="w-4 h-4 text-neutral-400" />;
+      case "browser_back": return <ArrowLeft className="w-4 h-4 text-black dark:text-white" />;
+      case "browser_forward": return <ArrowRight className="w-4 h-4 text-black dark:text-white" />;
+      case "refresh": return <RotateCw className="w-4 h-4 text-black dark:text-white" />;
+      case "switch": return <Split className="w-4 h-4 text-black dark:text-white" />;
+      case "loop": return <Repeat className="w-4 h-4 text-black dark:text-white" />;
+      case "set_variable": return <Code className="w-4 h-4 text-black dark:text-white" />;
+      case "string_operation": return <Code className="w-4 h-4 text-black dark:text-white" />;
+      case "number_operation": return <Calculator className="w-4 h-4 text-black dark:text-white" />;
+      case "json_operation": return <Braces className="w-4 h-4 text-black dark:text-white" />;
+      case "date_operation": return <Calendar className="w-4 h-4 text-black dark:text-white" />;
+      case "array_operation": return <ListOrdered className="w-4 h-4 text-black dark:text-white" />;
+      case "screenshot": return <Camera className="w-4 h-4 text-black dark:text-white" />;
+      case "approval": return <ShieldCheck className="w-4 h-4 text-black dark:text-white" />;
+      default: return <Play className="w-4 h-4 text-black dark:text-white" />;
     }
   };
 
@@ -101,15 +101,15 @@ const ActionNode = ({ data, selected }: NodeProps) => {
 
   return (
     <div
-      className={`px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#161F30] border transition shadow-sm min-w-[190px] text-xs ${
+      className={`px-3.5 py-2.5 rounded-xl bg-white dark:bg-neutral-950 border transition shadow-sm min-w-[190px] text-xs ${
         selected
-          ? "border-blue-600 ring-2 ring-blue-500/20 shadow-md"
-          : "border-slate-200 dark:border-slate-800"
+          ? "border-black dark:border-white ring-2 ring-neutral-400/20 shadow-md"
+          : "border-neutral-200 dark:border-neutral-800"
       }`}
     >
-      <Handle type="target" position={Position.Top} className="!bg-slate-400 !w-2 !h-2" />
+      <Handle type="target" position={Position.Top} className="!bg-neutral-400 !w-2 !h-2" />
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100">
+        <div className="flex items-center gap-2 font-bold text-black dark:text-white">
           {getIcon()}
           <span className="capitalize">{String(data.action || "Action").replace(/_/g, " ")}</span>
         </div>
@@ -117,15 +117,15 @@ const ActionNode = ({ data, selected }: NodeProps) => {
           <span
             className={`w-2 h-2 rounded-full ${
               status === "passed"
-                ? "bg-emerald-500"
+                ? "bg-white border border-neutral-600"
                 : status === "running"
-                ? "bg-blue-500 animate-pulse"
-                : "bg-rose-500"
+                ? "bg-neutral-400 animate-pulse"
+                : "bg-neutral-800"
             }`}
           />
         )}
       </div>
-      <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
+      <div className="mt-1 text-[11px] text-neutral-600 dark:text-neutral-400 truncate max-w-[180px]">
         {String(
           (data as any).summary ||
           (data as any).config?.url ||
@@ -135,25 +135,25 @@ const ActionNode = ({ data, selected }: NodeProps) => {
           ""
         )}
       </div>
-      <Handle type="source" position={Position.Bottom} className="!bg-[#2563EB] !w-2 !h-2" />
+      <Handle type="source" position={Position.Bottom} className="!bg-black dark:!bg-white !w-2 !h-2" />
     </div>
   );
 };
 
 const ConditionNode = ({ data, selected }: NodeProps) => (
   <div
-    className={`px-3.5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border transition shadow-sm min-w-[190px] text-xs ${
+    className={`px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border transition shadow-sm min-w-[190px] text-xs ${
       selected
-        ? "border-amber-600 ring-2 ring-amber-500/20 shadow-md"
-        : "border-amber-200 dark:border-amber-800"
+        ? "border-black dark:border-white ring-2 ring-neutral-400/20 shadow-md"
+        : "border-neutral-300 dark:border-neutral-700"
     }`}
   >
-    <Handle type="target" position={Position.Top} className="!bg-amber-600 !w-2 !h-2" />
-    <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+    <Handle type="target" position={Position.Top} className="!bg-neutral-600 !w-2 !h-2" />
+    <div className="flex items-center gap-2 font-bold text-black dark:text-white">
       <GitBranch className="w-4 h-4" />
       <span>Condition Branch</span>
     </div>
-    <div className="mt-1 text-[11px] text-amber-700 dark:text-amber-400 font-mono truncate">
+    <div className="mt-1 text-[11px] text-neutral-600 dark:text-neutral-400 font-mono truncate">
       {`${(data as any).config?.variable || "var"} ${(data as any).config?.operator || "=="} ${(data as any).config?.expected_value || "true"}`}
     </div>
     <Handle
@@ -161,35 +161,35 @@ const ConditionNode = ({ data, selected }: NodeProps) => (
       type="source"
       position={Position.Bottom}
       style={{ left: "30%" }}
-      className="!bg-emerald-500 !w-2 !h-2"
+      className="!bg-black dark:!bg-white !w-2 !h-2"
     />
     <Handle
       id="false"
       type="source"
       position={Position.Bottom}
       style={{ left: "70%" }}
-      className="!bg-rose-500 !w-2 !h-2"
+      className="!bg-neutral-500 !w-2 !h-2"
     />
   </div>
 );
 
 const LoopNode = ({ data, selected }: NodeProps) => (
   <div
-    className={`px-3.5 py-2.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 border transition shadow-sm min-w-[190px] text-xs ${
+    className={`px-3.5 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border transition shadow-sm min-w-[190px] text-xs ${
       selected
-        ? "border-violet-600 ring-2 ring-violet-500/20 shadow-md"
-        : "border-violet-200 dark:border-violet-800"
+        ? "border-black dark:border-white ring-2 ring-neutral-400/20 shadow-md"
+        : "border-neutral-300 dark:border-neutral-700"
     }`}
   >
-    <Handle type="target" position={Position.Top} className="!bg-violet-600 !w-2 !h-2" />
-    <div className="flex items-center gap-2 font-bold text-violet-800 dark:text-violet-300">
+    <Handle type="target" position={Position.Top} className="!bg-neutral-600 !w-2 !h-2" />
+    <div className="flex items-center gap-2 font-bold text-black dark:text-white">
       <Repeat className="w-4 h-4" />
       <span>Loop (for/while)</span>
     </div>
-    <div className="mt-1 text-[11px] text-violet-700 dark:text-violet-400 font-mono truncate">
+    <div className="mt-1 text-[11px] text-neutral-600 dark:text-neutral-400 font-mono truncate">
       {`Iterations: ${(data as any).config?.iterations || (data as any).config?.max_iterations || 10}`}
     </div>
-    <div className="flex justify-between items-center text-[10px] text-violet-600 dark:text-violet-400 mt-1 px-1 font-semibold">
+    <div className="flex justify-between items-center text-[10px] text-neutral-600 dark:text-neutral-400 mt-1 px-1 font-semibold">
       <span>Body</span>
       <span>Exit</span>
     </div>
@@ -198,27 +198,27 @@ const LoopNode = ({ data, selected }: NodeProps) => (
       type="source"
       position={Position.Bottom}
       style={{ left: "25%" }}
-      className="!bg-violet-500 !w-2 !h-2"
+      className="!bg-black dark:!bg-white !w-2 !h-2"
     />
     <Handle
       id="loop_exit"
       type="source"
       position={Position.Bottom}
       style={{ left: "75%" }}
-      className="!bg-slate-400 !w-2 !h-2"
+      className="!bg-neutral-400 !w-2 !h-2"
     />
   </div>
 );
 
 const StopNode = ({ selected }: NodeProps) => (
   <div
-    className={`px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border transition min-w-[130px] text-center text-xs font-bold text-rose-700 dark:text-rose-400 ${
+    className={`px-3.5 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border transition min-w-[130px] text-center text-xs font-bold text-black dark:text-white ${
       selected
-        ? "border-rose-600 ring-2 ring-rose-500/20"
-        : "border-rose-200 dark:border-rose-800"
+        ? "border-black dark:border-white ring-2 ring-neutral-400/20"
+        : "border-neutral-300 dark:border-neutral-700"
     }`}
   >
-    <Handle type="target" position={Position.Top} className="!bg-rose-600 !w-2 !h-2" />
+    <Handle type="target" position={Position.Top} className="!bg-black dark:!bg-white !w-2 !h-2" />
     <div className="flex items-center justify-center gap-1.5">
       <XCircle className="w-4 h-4" />
       <span>Stop / Exit</span>
@@ -778,20 +778,20 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-slate-50 dark:bg-[#0B0F17]">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-neutral-50 dark:bg-black">
       {/* 1. TOP TOOLBAR */}
-      <div className="h-13 bg-white dark:bg-[#161F30] border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between shrink-0 shadow-2xs z-10">
+      <div className="h-13 bg-white dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 px-4 flex items-center justify-between shrink-0 shadow-2xs z-10">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-[#2563EB] flex items-center justify-center font-bold text-xs">
+          <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-800 flex items-center justify-center font-bold text-xs">
             <GitBranch className="w-4 h-4" />
           </div>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="font-bold text-xs text-slate-800 dark:text-slate-100 bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-blue-500 focus:outline-none px-1 py-0.5 max-w-sm"
+            className="font-bold text-xs text-neutral-900 dark:text-white bg-transparent border-b border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 focus:border-black dark:focus:border-white focus:outline-none px-1 py-0.5 max-w-sm"
           />
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 font-mono text-neutral-500 dark:text-neutral-400">
             {nodes.length} Steps
           </span>
         </div>
@@ -800,9 +800,9 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
           {/* Validate Button */}
           <button
             onClick={handleValidateDAG}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 transition"
           >
-            <Check className="w-3.5 h-3.5 text-blue-500" />
+            <Check className="w-3.5 h-3.5 text-black dark:text-white" />
             <span>Validate DAG</span>
           </button>
 
@@ -810,9 +810,9 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
           <button
             onClick={handleSaveDraft}
             disabled={saving}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
           >
-            <Save className="w-3.5 h-3.5 text-slate-500" />
+            <Save className="w-3.5 h-3.5 text-neutral-500" />
             <span>{saving ? "Saving..." : "Save Draft"}</span>
           </button>
 
@@ -820,7 +820,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
           <button
             onClick={handlePublish}
             disabled={saving}
-            className="px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-[#2563EB] dark:text-blue-300 text-xs font-semibold flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-black dark:text-white text-xs font-semibold flex items-center gap-1.5 transition"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             <span>Publish</span>
@@ -830,7 +830,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
           <button
             onClick={handleExecute}
             disabled={executing}
-            className="px-3.5 py-1.5 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition disabled:opacity-50"
+            className="px-3.5 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-semibold flex items-center gap-1.5 shadow-xs transition disabled:opacity-50"
           >
             <Play className={`w-3.5 h-3.5 ${executing ? "animate-spin" : ""}`} />
             <span>{executing ? "Running..." : "Execute Flow"}</span>
@@ -841,7 +841,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
       {/* 2. 3-PANEL WORKSPACE (Left Catalog, Center Canvas, Right Configuration) */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* LEFT PANEL: Action Catalog */}
-        <div className="w-64 bg-white dark:bg-[#161F30] border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+        <div className="w-64 bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 flex flex-col shrink-0">
           <div className="p-3 border-b border-slate-100 dark:border-slate-800 space-y-2">
             <div className="flex items-center justify-between font-bold text-xs text-slate-700 dark:text-slate-300">
               <span>Action Catalog</span>
@@ -883,18 +883,18 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                 <button
                   key={item.action}
                   onClick={() => addNodeFromCatalog(item.action)}
-                  className="w-full flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-left transition group"
+                  className="w-full flex items-center justify-between p-2 rounded-lg border border-neutral-100 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-left transition group"
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className="w-3.5 h-3.5 text-[#2563EB] dark:text-blue-400 group-hover:scale-110 transition shrink-0" />
+                    <Icon className="w-3.5 h-3.5 text-black dark:text-white group-hover:scale-110 transition shrink-0" />
                     <div>
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block leading-tight">
+                      <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block leading-tight">
                         {item.label}
                       </span>
-                      <span className="text-[9px] text-slate-400 block">{item.category}</span>
+                      <span className="text-[9px] text-neutral-400 block">{item.category}</span>
                     </div>
                   </div>
-                  <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition shrink-0" />
+                  <Plus className="w-3.5 h-3.5 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition shrink-0" />
                 </button>
               );
             })}
@@ -902,7 +902,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
         </div>
 
         {/* CENTER PANEL: React Flow Canvas */}
-        <div className="flex-1 h-full relative bg-slate-50 dark:bg-[#0B0F17]">
+        <div className="flex-1 h-full relative bg-neutral-50 dark:bg-black">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -912,22 +912,22 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
             nodeTypes={nodeTypes}
             onNodeClick={(_, node) => setSelectedNodeId(node.id)}
             fitView
-            className="bg-slate-50 dark:bg-[#0B0F17]"
+            className="bg-neutral-50 dark:bg-black"
           >
-            <Controls className="!bg-white dark:!bg-[#161F30] !border-slate-200 dark:!border-slate-800 !rounded-lg !shadow-sm" />
-            <MiniMap className="!bg-white dark:!bg-[#161F30] !border-slate-200 dark:!border-slate-800 !rounded-lg" />
-            <Background color="#94a3b8" gap={16} size={1} />
+            <Controls className="!bg-white dark:!bg-neutral-950 !border-neutral-200 dark:!border-neutral-800 !rounded-lg !shadow-sm" />
+            <MiniMap className="!bg-white dark:!bg-neutral-950 !border-neutral-200 dark:!border-neutral-800 !rounded-lg" />
+            <Background color="#737373" gap={16} size={1} />
           </ReactFlow>
         </div>
 
         {/* RIGHT PANEL: Step Configuration Inspector */}
-        <div className="w-80 bg-white dark:bg-[#161F30] border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
-          <div className="p-3 border-b border-slate-100 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between">
+        <div className="w-80 bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800 flex flex-col shrink-0">
+          <div className="p-3 border-b border-neutral-100 dark:border-neutral-800 font-bold text-xs text-neutral-700 dark:text-neutral-300 flex items-center justify-between">
             <span>Step Configuration</span>
             {selectedNode && (
               <button
                 onClick={deleteSelectedNode}
-                className="text-rose-500 hover:text-rose-700 p-1 rounded"
+                className="text-neutral-500 hover:text-black dark:hover:text-white p-1 rounded"
                 title="Delete Step"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -937,21 +937,21 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs scrollbar-thin">
             {!selectedNode ? (
-              <div className="p-4 text-center text-slate-400 text-xs">
+              <div className="p-4 text-center text-neutral-400 text-xs">
                 Select a step on the canvas to configure parameters.
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
                   <div>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 capitalize">
+                    <span className="font-bold text-neutral-900 dark:text-white capitalize">
                       {String(selectedNode.data?.action || "Step").replace(/_/g, " ")}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono block">
+                    <span className="text-[10px] text-neutral-400 font-mono block">
                       ID: {selectedNode.id}
                     </span>
                   </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] font-mono">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white font-mono">
                     {selectedNode.type}
                   </span>
                 </div>
@@ -998,7 +998,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                               warning("Empty Selector", "Enter a selector first.");
                             }
                           }}
-                          className="text-[10px] text-blue-600 hover:underline flex items-center gap-0.5"
+                          className="text-[10px] text-black dark:text-white hover:underline flex items-center gap-0.5"
                         >
                           <CheckCircle2 className="w-3 h-3" /> Check Syntax
                         </button>
@@ -1735,7 +1735,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                         type="checkbox"
                         checked={(selectedNode.data?.config as any)?.full_page || false}
                         onChange={(e) => updateConfig("full_page", e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500"
+                        className="rounded text-black dark:text-white focus:ring-blue-500"
                       />
                       <span className="font-semibold text-slate-700 dark:text-slate-300">Full Page Capture</span>
                     </label>
@@ -1813,13 +1813,13 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
       </div>
 
       {/* 3. BOTTOM EXECUTION CONSOLE */}
-      <div className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161F30] shrink-0">
+      <div className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shrink-0">
         <button
           onClick={() => setConsoleOpen(!consoleOpen)}
-          className="w-full h-8 px-4 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+          className="w-full h-8 px-4 flex items-center justify-between text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition"
         >
           <div className="flex items-center gap-2">
-            <Terminal className="w-3.5 h-3.5 text-[#2563EB]" />
+            <Terminal className="w-3.5 h-3.5 text-black dark:text-white" />
             <span>Execution Console</span>
             {consoleLogs.length > 0 && (
               <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono">
@@ -1850,22 +1850,22 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                   {consoleLogs.map((log, idx) => (
                     <tr key={idx}>
                       <td className="py-1 text-slate-300">{log.step}</td>
-                      <td className="py-1 text-blue-400">{log.action}</td>
+                      <td className="py-1 text-neutral-400 dark:text-neutral-200">{log.action}</td>
                       <td className="py-1">
                         <span
                           className={`px-1.5 py-0.2 rounded text-[10px] ${
                             log.status === "passed"
-                              ? "bg-emerald-950 text-emerald-400"
+                              ? "bg-emerald-950 text-neutral-400 dark:text-neutral-200"
                               : log.status === "running"
-                              ? "bg-blue-950 text-blue-400"
-                              : "bg-rose-950 text-rose-400"
+                              ? "bg-blue-950 text-neutral-400 dark:text-neutral-200"
+                              : "bg-rose-950 text-neutral-400 dark:text-neutral-200"
                           }`}
                         >
                           {log.status}
                         </span>
                       </td>
                       <td className="py-1 text-slate-400">{log.duration}</td>
-                      <td className="py-1 text-rose-400">{log.error || "-"}</td>
+                      <td className="py-1 text-neutral-400 dark:text-neutral-200">{log.error || "-"}</td>
                       <td className="py-1 text-slate-500">{log.time}</td>
                     </tr>
                   ))}

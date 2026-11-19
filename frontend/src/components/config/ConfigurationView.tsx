@@ -371,7 +371,7 @@ export function ConfigurationView({ initialSubTab = "projects" }: ConfigurationV
 
           {savedSuccess && (
             <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <CheckCircle2 className="w-4 h-4 text-black dark:text-white" />
               <span>Browser runtime configuration saved successfully.</span>
             </div>
           )}
@@ -437,7 +437,7 @@ export function ConfigurationView({ initialSubTab = "projects" }: ConfigurationV
                 onChange={(e) =>
                   setBrowserConfig({ ...browserConfig, strictDomainIsolation: e.target.checked })
                 }
-                className="w-4 h-4 rounded text-blue-600"
+                className="w-4 h-4 rounded text-black dark:text-white"
               />
               <div className="text-xs">
                 <span className="font-medium text-slate-800 block">Strict Domain Isolation & SSRF Prevention</span>
@@ -452,7 +452,7 @@ export function ConfigurationView({ initialSubTab = "projects" }: ConfigurationV
                 type="checkbox"
                 checked={browserConfig.blockExternalAiTraffic}
                 readOnly
-                className="w-4 h-4 rounded text-emerald-600"
+                className="w-4 h-4 rounded text-black dark:text-white"
               />
               <div className="text-xs">
                 <span className="font-semibold text-emerald-950 block">Mandatory Zero-AI Policy Enforcement</span>

@@ -214,7 +214,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#2563EB]" />
+            <Layers className="w-5 h-5 text-black dark:text-white" />
             <span>Projects & Tenant Workspaces</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -224,7 +224,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
 
         <button
           onClick={handleOpenCreateModal}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <Plus className="w-4 h-4" />
           <span>New Project</span>
@@ -233,7 +233,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
 
       {/* Projects Grid or Empty State */}
       {filtered.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#161F30] border border-dashed border-slate-200 dark:border-slate-800 space-y-3">
+        <div className="p-12 text-center rounded-2xl bg-white dark:bg-neutral-950 border border-dashed border-slate-200 dark:border-slate-800 space-y-3">
           <Layers className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto" />
           <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">No Projects Found</h4>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
@@ -241,7 +241,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
           </p>
           <button
             onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold shadow-xs transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Create First Project</span>
@@ -254,9 +254,9 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
             return (
               <div
                 key={proj.id}
-                className={`p-5 rounded-2xl bg-white dark:bg-[#161F30] border shadow-2xs space-y-4 transition ${
+                className={`p-5 rounded-2xl bg-white dark:bg-neutral-950 border shadow-2xs space-y-4 transition ${
                   isActive
-                    ? "border-[#2563EB] ring-2 ring-blue-500/10"
+                    ? "border-black dark:border-white ring-2 ring-blue-500/10"
                     : "border-slate-200 dark:border-slate-800"
                 }`}
               >
@@ -265,7 +265,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
                     <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
                       <span>{proj.name}</span>
                       {isActive && (
-                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-blue-100 dark:bg-blue-900/60 text-[#2563EB] dark:text-blue-300 font-semibold font-mono">
+                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-blue-100 dark:bg-blue-900/60 text-black dark:text-white dark:text-blue-300 font-semibold font-mono">
                           Active
                         </span>
                       )}
@@ -279,7 +279,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${
                         proj.status === "active"
-                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                       }`}
                     >
@@ -294,7 +294,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
                     </button>
                     <button
                       onClick={() => handleDeleteProject(proj)}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 transition"
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-neutral-700 dark:text-neutral-300 dark:text-neutral-400 dark:text-neutral-200 transition"
                       title="Delete Project"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -322,7 +322,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
                       Select Workspace
                     </button>
                   ) : (
-                    <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                    <span className="text-black dark:text-white font-semibold text-xs flex items-center gap-1">
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Selected</span>
                     </span>
@@ -344,10 +344,10 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
       {/* Create / Edit Project Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-[#2563EB]" />
+                <Layers className="w-4 h-4 text-black dark:text-white" />
                 <span>{editingProject ? "Edit Project Tenant" : "Create New Project Tenant"}</span>
               </h3>
               <button
@@ -416,7 +416,7 @@ export function ProjectsPage({ currentProject, onSelectProject, onNavigate }: Pr
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
                 >
                   {editingProject ? "Save Changes" : "Create Project"}
                 </button>

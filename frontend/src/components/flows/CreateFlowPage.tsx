@@ -77,7 +77,7 @@ export function CreateFlowPage({ projectId, onNavigate, onFlowCreated }: CreateF
           </button>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <GitBranch className="w-5 h-5 text-[#2563EB]" />
+              <GitBranch className="w-5 h-5 text-black dark:text-white" />
               <span>Create New Automation Flow</span>
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -88,13 +88,13 @@ export function CreateFlowPage({ projectId, onNavigate, onFlowCreated }: CreateF
       </div>
 
       {/* Main Creation Form Card */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-6">
+      <div className="p-6 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-6">
         <form onSubmit={handleCreate} className="space-y-5">
           {/* Flow Name */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <span>Flow Name</span>
-              <span className="text-rose-500">*</span>
+              <span className="text-neutral-600 dark:text-neutral-300">*</span>
             </label>
             <input
               type="text"
@@ -128,7 +128,7 @@ export function CreateFlowPage({ projectId, onNavigate, onFlowCreated }: CreateF
             {/* Project */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-[#2563EB]" />
+                <Layers className="w-3.5 h-3.5 text-black dark:text-white" />
                 <span>Assigned Project</span>
               </label>
               <select
@@ -142,7 +142,7 @@ export function CreateFlowPage({ projectId, onNavigate, onFlowCreated }: CreateF
             {/* Target Environment */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-emerald-500" />
+                <Globe className="w-3.5 h-3.5 text-black dark:text-white" />
                 <span>Target Environment</span>
               </label>
               <select
@@ -178,10 +178,10 @@ export function CreateFlowPage({ projectId, onNavigate, onFlowCreated }: CreateF
 
           {/* Zero-AI Compliance Note */}
           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <ShieldCheck className="w-4 h-4 text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <span className="font-bold">Deterministic Flow Guarantee:</span>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+              <p className="text-[11px] text-emerald-700 dark:text-neutral-400 dark:text-neutral-200">
                 This workflow will be compiled to a strictly deterministic Directed Acyclic Graph (DAG) executed by the local `agent-browser` engine without any AI generation or external API leaks.
               </p>
             </div>
@@ -199,7 +199,7 @@ export function CreateFlowPage({ projectId, onNavigate, onFlowCreated }: CreateF
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-2 shadow-xs transition disabled:opacity-50"
+              className="px-5 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-2 shadow-xs transition disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{loading ? "Creating..." : "Create Flow & Open Builder"}</span>

@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
 import { ElementProfileEntity } from './element-profile.entity';
 
@@ -30,5 +31,5 @@ export class LocatorHistoryEntity {
 
   @ManyToOne(() => ElementProfileEntity, (ep) => ep.locators, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'element_profile_id' })
-  elementProfile: ElementProfileEntity;
+  elementProfile: Relation<ElementProfileEntity>;
 }

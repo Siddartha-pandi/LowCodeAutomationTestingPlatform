@@ -30,13 +30,13 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B0F17] flex flex-col items-center justify-center text-white space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        <div className="text-sm font-medium text-slate-300">
+      <div className="min-h-screen bg-neutral-50 dark:bg-black flex flex-col items-center justify-center text-black dark:text-white space-y-4 transition-colors duration-200">
+        <Loader2 className="w-8 h-8 animate-spin text-black dark:text-white" />
+        <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
           Verifying security token and permissions...
         </div>
-        <div className="text-xs text-slate-500 flex items-center gap-1.5">
-          <Shield className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="text-xs text-neutral-500 flex items-center gap-1.5">
+          <Shield className="w-3.5 h-3.5 text-black dark:text-white" />
           <span>Zero-AI Policy Compliant &bull; Agent Browser Engine</span>
         </div>
       </div>
@@ -45,28 +45,28 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0B0F17] flex items-center justify-center p-6 text-white">
-        <div className="max-w-md w-full bg-[#161F30] border border-slate-800 rounded-2xl p-8 shadow-2xl text-center space-y-6">
-          <div className="w-14 h-14 bg-blue-600/20 border border-blue-500/30 rounded-2xl flex items-center justify-center mx-auto text-blue-400">
+      <div className="min-h-screen bg-neutral-50 dark:bg-black flex items-center justify-center p-6 text-black dark:text-white transition-colors duration-200">
+        <div className="max-w-md w-full bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-2xl text-center space-y-6">
+          <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex items-center justify-center mx-auto text-black dark:text-white">
             <Lock className="w-7 h-7" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold tracking-tight text-white">
+            <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">
               Authentication Required
             </h2>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               You must be signed in with an active enterprise session to access this workspace.
             </p>
           </div>
 
-          <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl text-xs text-slate-400 text-left space-y-1">
-            <div className="font-semibold text-slate-300">Security Requirement:</div>
+          <div className="p-3.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs text-neutral-600 dark:text-neutral-400 text-left space-y-1">
+            <div className="font-semibold text-neutral-800 dark:text-neutral-300">Security Requirement:</div>
             <div>Valid OAuth2 JWT Bearer Token or corporate session cookie required.</div>
           </div>
 
           <button
             onClick={() => router.push("/login")}
-            className="w-full py-3 bg-[#2563EB] hover:bg-blue-600 text-white font-medium rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2 text-sm"
+            className="w-full py-3 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm"
           >
             <span>Proceed to Enterprise Sign In</span>
             <ArrowRight className="w-4 h-4" />
@@ -82,4 +82,3 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     </AppContextProvider>
   );
 }
-

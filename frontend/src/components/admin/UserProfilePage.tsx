@@ -74,7 +74,7 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <User className="w-5 h-5 text-[#2563EB]" />
+            <User className="w-5 h-5 text-black dark:text-white" />
             <span>User Profile & Workspace Preferences</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -84,7 +84,7 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
 
         <button
           onClick={onLogout}
-          className="px-3.5 py-2 rounded-xl border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+          className="px-3.5 py-2 rounded-xl border border-rose-200 dark:border-rose-900 text-neutral-700 dark:text-neutral-300 dark:text-neutral-400 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>
@@ -92,9 +92,9 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
       </div>
 
       {/* Profile Overview Card */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+      <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center font-bold text-xl shadow-md">
+          <div className="w-14 h-14 rounded-2xl bg-black dark:bg-white text-white dark:text-black text-white flex items-center justify-center font-bold text-xl shadow-md">
             {fullName[0]?.toUpperCase() || "A"}
           </div>
           <div>
@@ -132,7 +132,7 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
           <div className="sm:col-span-2 flex justify-end">
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white font-semibold flex items-center gap-1.5 shadow-xs transition"
+              className="px-4 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold flex items-center gap-1.5 shadow-xs transition"
             >
               <Save className="w-3.5 h-3.5" />
               <span>Save Profile</span>
@@ -142,9 +142,9 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
       </div>
 
       {/* Theme & Display Preferences */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+      <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
         <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <Sun className="w-4 h-4 text-amber-500" />
+          <Sun className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           <span>Appearance & Color Theme</span>
         </h3>
 
@@ -158,7 +158,7 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
                 : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
             }`}
           >
-            <Sun className="w-5 h-5 text-amber-500" />
+            <Sun className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
             <span className="text-xs">Light Mode</span>
           </button>
 
@@ -171,7 +171,7 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
                 : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
             }`}
           >
-            <Moon className="w-5 h-5 text-blue-400" />
+            <Moon className="w-5 h-5 text-neutral-400 dark:text-neutral-200" />
             <span className="text-xs">Dark Mode</span>
           </button>
 
@@ -191,9 +191,9 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
       </div>
 
       {/* Notification Preferences */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs">
+      <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs">
         <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-[#2563EB]" />
+          <Bell className="w-4 h-4 text-black dark:text-white" />
           <span>Notification & Event Triggers</span>
         </h3>
 
@@ -207,7 +207,7 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
               type="checkbox"
               checked={notifyFailures}
               onChange={(e) => setNotifyFailures(e.target.checked)}
-              className="rounded text-blue-600"
+              className="rounded text-black dark:text-white"
             />
           </label>
 
@@ -220,16 +220,16 @@ export function UserProfilePage({ user, onLogout, onNavigate }: UserProfilePageP
               type="checkbox"
               checked={notifyApprovals}
               onChange={(e) => setNotifyApprovals(e.target.checked)}
-              className="rounded text-blue-600"
+              className="rounded text-black dark:text-white"
             />
           </label>
         </div>
       </div>
 
       {/* Change Password */}
-      <form onSubmit={handleChangePassword} className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs">
+      <form onSubmit={handleChangePassword} className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs">
         <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <Lock className="w-4 h-4 text-rose-500" />
+          <Lock className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           <span>Change Password</span>
         </h3>
 

@@ -130,7 +130,7 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <PlayCircle className="w-5 h-5 text-[#2563EB] animate-spin" />
+            <PlayCircle className="w-5 h-5 text-black dark:text-white animate-spin" />
             <span>Running Executions Monitor</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -139,7 +139,7 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] font-bold">
+          <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-black dark:text-white font-bold">
             {runs.length} Active Tasks
           </span>
         </div>
@@ -148,8 +148,8 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
       {/* Live Runs Cards / Table */}
       <div className="space-y-4">
         {runs.length === 0 ? (
-          <div className="p-12 text-center bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+          <div className="p-12 text-center bg-white dark:bg-neutral-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs space-y-2">
+            <CheckCircle2 className="w-8 h-8 text-black dark:text-white mx-auto" />
             <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">No Active Executions</h3>
             <p className="text-xs text-slate-400">All workflow queues are idle and awaiting trigger.</p>
           </div>
@@ -157,11 +157,11 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
           runs.map((run) => (
             <div
               key={run.id}
-              className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs"
+              className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 text-xs"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-black dark:text-white flex items-center justify-center shrink-0">
                     <Activity className="w-5 h-5 animate-pulse" />
                   </div>
                   <div>
@@ -186,13 +186,13 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
                       onClick={() => handlePause(run)}
                       className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1 transition"
                     >
-                      <PauseCircle className="w-3.5 h-3.5 text-amber-500" />
+                      <PauseCircle className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-300" />
                       <span>Pause</span>
                     </button>
                   ) : (
                     <button
                       onClick={() => handleResume(run)}
-                      className="px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1 transition"
+                      className="px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 font-semibold flex items-center gap-1 transition"
                     >
                       <PlayCircle className="w-3.5 h-3.5" />
                       <span>Resume</span>
@@ -202,7 +202,7 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
                   {/* Cancel */}
                   <button
                     onClick={() => handleCancel(run)}
-                    className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1 transition"
+                    className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-neutral-700 dark:text-neutral-300 dark:text-neutral-400 dark:text-neutral-200 font-semibold flex items-center gap-1 transition"
                   >
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Cancel</span>
@@ -214,7 +214,7 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
                       if (onSelectExecution) onSelectExecution(run.id);
                       onNavigate("executions_details");
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold flex items-center gap-1 shadow-xs transition"
+                    className="px-3 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold flex items-center gap-1 shadow-xs transition"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>View Result</span>
@@ -229,11 +229,11 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
                     <span>{run.current_step}</span>
                   </span>
-                  <span className="font-mono font-bold text-[#2563EB]">{run.progress}%</span>
+                  <span className="font-mono font-bold text-black dark:text-white">{run.progress}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                   <div
-                    className="h-full bg-[#2563EB] transition-all duration-500 rounded-full"
+                    className="h-full bg-black dark:bg-white text-white dark:text-black transition-all duration-500 rounded-full"
                     style={{ width: `${run.progress}%` }}
                   />
                 </div>
@@ -244,7 +244,7 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
                 <span>Session: <strong className="font-mono text-slate-700 dark:text-slate-300">{run.session_id}</strong></span>
                 <button
                   onClick={() => onNavigate("browser_live")}
-                  className="text-[#2563EB] dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold"
+                  className="text-black dark:text-white dark:text-white hover:underline flex items-center gap-1 font-semibold"
                 >
                   <Compass className="w-3 h-3" />
                   <span>Inspect Viewport Live</span>

@@ -82,7 +82,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 text-[#2563EB]" />
+            <ImageIcon className="w-5 h-5 text-black dark:text-white" />
             <span>Screenshots Gallery</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -92,12 +92,12 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
 
         {/* View Toggle */}
         <div className="flex items-center gap-2">
-          <div className="p-1 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+          <div className="p-1 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 flex items-center gap-1">
             <button
               onClick={() => setViewMode("grid")}
               className={`p-1.5 rounded-lg transition ${
                 viewMode === "grid"
-                  ? "bg-blue-50 dark:bg-blue-950/60 text-[#2563EB]"
+                  ? "bg-blue-50 dark:bg-blue-950/60 text-black dark:text-white"
                   : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               }`}
             >
@@ -107,7 +107,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
               onClick={() => setViewMode("list")}
               className={`p-1.5 rounded-lg transition ${
                 viewMode === "list"
-                  ? "bg-blue-50 dark:bg-blue-950/60 text-[#2563EB]"
+                  ? "bg-blue-50 dark:bg-blue-950/60 text-black dark:text-white"
                   : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               }`}
             >
@@ -118,7 +118,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
       </div>
 
       {/* Search Toolbar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
@@ -140,7 +140,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
           {filtered.map((sc) => (
             <div
               key={sc.id}
-              className="p-3.5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3 group hover:border-blue-500 transition"
+              className="p-3.5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3 group hover:border-blue-500 transition"
             >
               <div
                 onClick={() => setSelectedScreenshot(sc)}
@@ -178,7 +178,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
                     </button>
                     <button
                       onClick={() => handleDelete(sc)}
-                      className="p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition"
+                      className="p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 text-neutral-700 dark:text-neutral-300 transition"
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -191,7 +191,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
         </div>
       ) : (
         /* Gallery List View */
-        <div className="bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+        <div className="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-[10px] uppercase font-bold text-slate-400">
@@ -207,7 +207,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
               {filtered.map((sc) => (
                 <tr key={sc.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                   <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">{sc.name}</td>
-                  <td className="py-3 px-3 font-mono text-[#2563EB]">{sc.execution_id}</td>
+                  <td className="py-3 px-3 font-mono text-black dark:text-white">{sc.execution_id}</td>
                   <td className="py-3 px-3 text-slate-600 dark:text-slate-300">{sc.step_name}</td>
                   <td className="py-3 px-3">{sc.environment}</td>
                   <td className="py-3 px-3 text-slate-400">{sc.timestamp}</td>
@@ -228,7 +228,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
                       </button>
                       <button
                         onClick={() => handleDelete(sc)}
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition"
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-neutral-700 dark:text-neutral-300 transition"
                         title="Delete"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -271,7 +271,7 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
                     setSelectedScreenshot(null);
                     handleDelete(toDelete);
                   }}
-                  className="px-3 py-1 rounded-lg border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 font-semibold flex items-center gap-1.5 transition"
+                  className="px-3 py-1 rounded-lg border border-rose-500/30 hover:bg-rose-500/20 text-neutral-400 dark:text-neutral-200 font-semibold flex items-center gap-1.5 transition"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete</span>

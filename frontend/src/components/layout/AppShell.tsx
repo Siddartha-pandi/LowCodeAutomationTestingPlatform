@@ -291,23 +291,23 @@ export function AppShell({
     : allNavItems;
 
   return (
-    <div className="flex h-screen w-full bg-[#F8FAFC] dark:bg-[#0B0F17] text-[#0F172A] dark:text-[#F8FAFC] font-sans antialiased overflow-hidden">
-      {/* 1. SIDEBAR (Dark Navy #111827) */}
+    <div className="flex h-screen w-full bg-neutral-50 dark:bg-black text-black dark:text-white font-sans antialiased overflow-hidden transition-colors duration-200">
+      {/* 1. SIDEBAR */}
       <aside
-        className={`flex flex-col bg-[#111827] dark:bg-[#090D16] border-r border-[#1F2937] transition-all duration-200 z-30 ${
+        className={`flex flex-col bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 transition-all duration-200 z-30 ${
           collapsed ? "w-16" : "w-64"
         } shrink-0 select-none`}
       >
         {/* Brand / Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-[#1F2937]">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-neutral-200 dark:border-neutral-800">
           {!collapsed ? (
             <div className="flex items-center gap-2.5 overflow-hidden">
               <BrowserAutomationLogo size={32} className="shrink-0" />
               <div className="leading-tight truncate">
-                <div className="font-bold text-xs tracking-tight text-white truncate">
+                <div className="font-bold text-xs tracking-tight text-black dark:text-white truncate">
                   {process.env.NEXT_PUBLIC_APP_NAME || "AgentFlow"}
                 </div>
-                <div className="text-[10px] text-blue-400 font-medium tracking-wider uppercase truncate">
+                <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-medium tracking-wider uppercase truncate">
                   {process.env.NEXT_PUBLIC_COMPANY_NAME || "Enterprise Platform"}
                 </div>
               </div>
@@ -317,7 +317,7 @@ export function AppShell({
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition"
+            className="text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900 transition"
             title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -330,25 +330,25 @@ export function AppShell({
             type="button"
             onClick={() => onNavigate("config_projects")}
             title="Click to switch workspace"
-            className="w-full text-left px-4 py-2.5 bg-[#161F30] hover:bg-[#1E293B] border-b border-[#1F2937] flex items-center justify-between text-xs transition cursor-pointer group"
+            className="w-full text-left px-4 py-2.5 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs transition cursor-pointer group"
           >
-            <div className="flex items-center gap-2 text-slate-300 truncate">
-              <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0 group-hover:text-blue-300" />
+            <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300 truncate">
+              <Building2 className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400 shrink-0" />
               <div className="flex flex-col truncate">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                <span className="text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-semibold">
                   Workspace
                 </span>
-                <span className="font-bold text-slate-100 truncate text-xs">
+                <span className="font-bold text-black dark:text-white truncate text-xs">
                   {currentProject?.name || "No Project Selected"}
                 </span>
               </div>
             </div>
             {currentProject?.id ? (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800 font-mono">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 dark:bg-neutral-900 text-black dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 font-mono">
                 Active
               </span>
             ) : (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800 font-mono">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 font-mono">
                 None
               </span>
             )}
@@ -360,7 +360,7 @@ export function AppShell({
           {NAV_SECTIONS.map((sec) => (
             <div key={sec.title} className="space-y-1">
               {!collapsed && (
-                <div className="px-2 py-0.5 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                <div className="px-2 py-0.5 text-[10px] font-bold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase">
                   {sec.title}
                 </div>
               )}
@@ -374,20 +374,22 @@ export function AppShell({
                     title={collapsed ? item.label : undefined}
                     className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg font-medium transition text-left relative ${
                       isActive
-                        ? "bg-[#2563EB] text-white font-semibold shadow-xs"
-                        : "text-slate-300 hover:text-white hover:bg-slate-800/80"
+                        ? "bg-black text-white dark:bg-white dark:text-black font-bold shadow-xs"
+                        : "text-neutral-600 hover:text-black hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
                     }`}
                   >
                     <Icon
                       className={`w-4 h-4 shrink-0 ${
-                        isActive ? "text-white" : "text-slate-400 group-hover:text-white"
+                        isActive
+                          ? "text-white dark:text-black"
+                          : "text-neutral-500 group-hover:text-black dark:text-neutral-400 dark:group-hover:text-white"
                       }`}
                     />
                     {!collapsed && (
                       <span className="truncate flex-1">{item.label}</span>
                     )}
                     {!collapsed && item.badge && (
-                      <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-medium">
+                      <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-neutral-200 dark:bg-neutral-800 text-black dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 font-mono font-medium">
                         {item.badge}
                       </span>
                     )}
@@ -399,20 +401,20 @@ export function AppShell({
         </div>
 
         {/* User Info / Profile footer */}
-        <div className="p-3 border-t border-[#1F2937] bg-[#111827] flex items-center justify-between gap-2">
+        <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black flex items-center justify-between gap-2">
           {!collapsed ? (
             <button
               onClick={() => onNavigate("user_profile")}
               className="flex items-center gap-2 overflow-hidden text-left hover:opacity-90 transition flex-1"
             >
-              <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-black text-white dark:bg-white dark:text-black border border-neutral-700 dark:border-neutral-300 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                 {user?.full_name ? user.full_name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : "U"}
               </div>
               <div className="overflow-hidden leading-tight flex-1">
-                <div className="font-semibold text-slate-100 truncate text-xs">
+                <div className="font-semibold text-black dark:text-white truncate text-xs">
                   {user?.full_name || user?.email?.split("@")[0] || "Administrator"}
                 </div>
-                <div className="text-[10px] text-slate-400 truncate capitalize">
+                <div className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate capitalize">
                   {user?.role || "Owner"}
                 </div>
               </div>
@@ -420,7 +422,7 @@ export function AppShell({
           ) : (
             <button
               onClick={() => onNavigate("user_profile")}
-              className="w-7 h-7 mx-auto rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs"
+              className="w-7 h-7 mx-auto rounded-full bg-black text-white dark:bg-white dark:text-black border border-neutral-700 dark:border-neutral-300 flex items-center justify-center font-bold text-xs"
               title="Profile"
             >
               {user?.email ? user.email[0].toUpperCase() : "U"}
@@ -430,7 +432,7 @@ export function AppShell({
             <button
               onClick={onLogout}
               title="Sign out"
-              className="p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition"
+              className="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white transition"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -441,14 +443,14 @@ export function AppShell({
       {/* 2. MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* TOP HEADER */}
-        <header className="h-14 bg-white dark:bg-[#111827] border-b border-[#E2E8F0] dark:border-[#1F2937] px-6 flex items-center justify-between shrink-0 shadow-xs z-20">
+        <header className="h-14 bg-white dark:bg-black border-b border-neutral-200 dark:border-neutral-800 px-6 flex items-center justify-between shrink-0 shadow-xs z-20">
           {/* Breadcrumb Navigation */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider text-[11px]">
+            <span className="font-semibold text-neutral-400 uppercase tracking-wider text-[11px]">
               {activeSectionTitle}
             </span>
-            <span className="text-slate-300 dark:text-slate-600">/</span>
-            <span className="font-bold text-[#2563EB] dark:text-blue-400 text-xs">
+            <span className="text-neutral-300 dark:text-neutral-700">/</span>
+            <span className="font-bold text-black dark:text-white text-xs">
               {activeItemLabel}
             </span>
           </div>
@@ -458,13 +460,13 @@ export function AppShell({
             {/* Global Search Input Button */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-300 text-xs transition shadow-2xs w-60 justify-between"
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 text-xs transition shadow-2xs w-60 justify-between"
             >
               <div className="flex items-center gap-1.5">
-                <Search className="w-3.5 h-3.5 text-slate-400" />
+                <Search className="w-3.5 h-3.5 text-neutral-400" />
                 <span className="text-[11px]">Global search...</span>
               </div>
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-400">
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-[10px] font-mono text-neutral-400">
                 Ctrl K
               </kbd>
             </button>
@@ -472,7 +474,7 @@ export function AppShell({
             {/* Quick action buttons */}
             <button
               onClick={() => onNavigate("automation_create_flow")}
-              className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition"
+              className="px-3 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs flex items-center gap-1.5 shadow-xs transition"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Create Flow</span>
@@ -482,9 +484,9 @@ export function AppShell({
             <button
               onClick={toggleTheme}
               title={resolvedTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
+              className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-300 transition"
             >
-              {resolvedTheme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+              {resolvedTheme === "dark" ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-black" />}
             </button>
 
             {/* Notification Drawer Toggle */}
@@ -494,12 +496,12 @@ export function AppShell({
                   setNotificationsOpen(!notificationsOpen);
                   setProfileMenuOpen(false);
                 }}
-                className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition relative"
+                className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-300 transition relative"
                 title="Notifications"
               >
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#EF4444] text-white text-[9px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-black dark:bg-white text-white dark:text-black text-[9px] font-bold flex items-center justify-center">
                     {unreadCount}
                   </span>
                 )}
@@ -507,12 +509,12 @@ export function AppShell({
 
               {/* Notification Popover Dropdown */}
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-neutral-950 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-slate-800 dark:text-slate-100">Notifications</span>
+                      <span className="font-bold text-xs text-black dark:text-white">Notifications</span>
                       {unreadCount > 0 && (
-                        <span className="px-1.5 py-0.2 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-[10px] rounded font-semibold">
+                        <span className="px-1.5 py-0.2 bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white text-[10px] rounded font-semibold">
                           {unreadCount} new
                         </span>
                       )}
@@ -520,28 +522,28 @@ export function AppShell({
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
-                        className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                        className="text-[10px] text-neutral-600 dark:text-neutral-400 hover:underline font-medium"
                       >
                         Mark all read
                       </button>
                     )}
                   </div>
 
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-72 overflow-y-auto mt-1 scrollbar-thin">
+                  <div className="divide-y divide-neutral-100 dark:divide-neutral-800 max-h-72 overflow-y-auto mt-1 scrollbar-thin">
                     {notifications.map((n) => (
                       <div
                         key={n.id}
                         className={`py-2 px-1 text-xs transition ${
-                          !n.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
+                          !n.read ? "bg-neutral-100 dark:bg-neutral-900" : ""
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
+                          <span className="font-semibold text-black dark:text-white text-xs">
                             {n.title}
                           </span>
-                          <span className="text-[10px] text-slate-400">{n.time}</span>
+                          <span className="text-[10px] text-neutral-400">{n.time}</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                        <p className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-0.5 leading-snug">
                           {n.description}
                         </p>
                       </div>
@@ -558,33 +560,33 @@ export function AppShell({
                   setProfileMenuOpen(!profileMenuOpen);
                   setNotificationsOpen(false);
                 }}
-                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition"
               >
-                <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 rounded-full bg-neutral-800 dark:bg-neutral-200 text-white dark:text-black flex items-center justify-center font-bold text-xs">
                   {user?.full_name ? user.full_name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : "A"}
                 </div>
                 <div className="hidden sm:block text-left text-xs leading-tight">
-                  <div className="font-bold text-slate-800 dark:text-slate-100 truncate max-w-[100px]">
+                  <div className="font-bold text-neutral-900 dark:text-neutral-100 truncate max-w-[100px]">
                     {user?.full_name?.split(" ")[0] || "Admin"}
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 capitalize">
+                  <div className="text-[10px] text-neutral-500 dark:text-neutral-400 capitalize">
                     {user?.role || "Owner"}
                   </div>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
               </button>
 
               {/* Profile Menu Popover */}
               {profileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-2 py-1.5 border-b border-slate-100 dark:border-slate-800">
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-neutral-950 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-2 py-1.5 border-b border-neutral-100 dark:border-neutral-800">
+                    <p className="text-xs font-bold text-black dark:text-white">
                       {user?.full_name || "Administrator"}
                     </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                       {user?.email || "admin@company.internal"}
                     </p>
-                    <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">
+                    <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-[10px] font-semibold">
                       Role: {user?.role || "Owner"}
                     </span>
                   </div>
@@ -595,9 +597,9 @@ export function AppShell({
                         setProfileMenuOpen(false);
                         onNavigate("user_profile");
                       }}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition"
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-left transition"
                     >
-                      <User className="w-3.5 h-3.5 text-slate-500" />
+                      <User className="w-3.5 h-3.5 text-neutral-500" />
                       <span>Profile & Preferences</span>
                     </button>
                     <button
@@ -605,20 +607,20 @@ export function AppShell({
                         setProfileMenuOpen(false);
                         onNavigate("config_browser");
                       }}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition"
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-left transition"
                     >
-                      <Sliders className="w-3.5 h-3.5 text-slate-500" />
+                      <Sliders className="w-3.5 h-3.5 text-neutral-500" />
                       <span>Browser Settings</span>
                     </button>
                   </div>
 
-                  <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">
                     <button
                       onClick={() => {
                         setProfileMenuOpen(false);
                         onLogout();
                       }}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-left transition"
+                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-left transition"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       <span>Sign Out</span>
@@ -631,28 +633,28 @@ export function AppShell({
         </header>
 
         {/* VIEWPORT BODY */}
-        <main className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#0B0F17]">
+        <main className="flex-1 overflow-y-auto bg-neutral-50 dark:bg-black">
           {children}
         </main>
       </div>
 
       {/* 3. GLOBAL SEARCH MODAL (Ctrl + K) */}
       {searchOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-            <div className="flex items-center px-4 py-3 border-b border-slate-200 dark:border-slate-800 gap-2">
-              <Search className="w-4 h-4 text-slate-400" />
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-xl w-full border border-neutral-200 dark:border-neutral-800 shadow-2xl overflow-hidden">
+            <div className="flex items-center px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 gap-2">
+              <Search className="w-4 h-4 text-neutral-400" />
               <input
                 ref={searchInputRef}
                 type="text"
                 placeholder="Search all 27 pages, flows, tests, DOM elements, or settings..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent border-none text-xs text-slate-900 dark:text-slate-100 focus:outline-none placeholder:text-slate-400"
+                className="flex-1 bg-transparent border-none text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none placeholder:text-neutral-400"
               />
               <button
                 onClick={() => setSearchOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded"
+                className="text-neutral-400 hover:text-black dark:hover:text-white p-1 rounded"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -660,7 +662,7 @@ export function AppShell({
 
             <div className="max-h-80 overflow-y-auto p-2 scrollbar-thin">
               {filteredSearchItems.length === 0 ? (
-                <div className="p-4 text-center text-xs text-slate-400">
+                <div className="p-4 text-center text-xs text-neutral-400">
                   No matching platform pages or assets found.
                 </div>
               ) : (
@@ -675,15 +677,15 @@ export function AppShell({
                           setSearchOpen(false);
                           setSearchQuery("");
                         }}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 text-left transition"
                       >
                         <div className="flex items-center gap-2.5">
-                          <Icon className="w-4 h-4 text-[#2563EB] dark:text-blue-400" />
-                          <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                          <Icon className="w-4 h-4 text-black dark:text-white" />
+                          <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                             {item.label}
                           </span>
                         </div>
-                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                        <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">
                           {item.section}
                         </span>
                       </button>
@@ -693,9 +695,9 @@ export function AppShell({
               )}
             </div>
 
-            <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-between text-[11px] text-slate-400">
+            <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/40 flex items-center justify-between text-[11px] text-neutral-400">
               <span>Select item to jump directly to page</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[10px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-[10px]">
                 ESC to close
               </kbd>
             </div>

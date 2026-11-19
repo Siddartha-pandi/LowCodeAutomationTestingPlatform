@@ -1,7 +1,7 @@
 /**
  * Enterprise API client for AutomationTestingWithAgentBrowser.
  *
- * Communicates with FastAPI backend (/api/v1/...) using JWT tokens, HTTP-only cookie support,
+ * Communicates with NestJS backend (/api/v1/...) using JWT tokens, HTTP-only cookie support,
  * and standard REST schemas.
  * Strictly Zero-AI / No-LLM data handling.
  */
@@ -21,6 +21,9 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
   const url = `${API_BASE_URL}${path}`;
 
   let response: Response;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 7000);
+
   try {
     response = await fetch(url, {
       method: options.method ?? "GET",
@@ -30,11 +33,17 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
         ...options.headers,
       },
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
     });
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
+      throw new Error(`Connection to backend at ${url} timed out after 7s. Please verify backend is running.`);
+    }
     throw new Error(
-      `Cannot connect to backend server at ${API_BASE_URL}. Please ensure the FastAPI backend is running.`
+      `Cannot connect to backend server at ${API_BASE_URL}. Please ensure the NestJS backend is running (e.g. 'make backend' or 'make dev').`
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!response.ok) {

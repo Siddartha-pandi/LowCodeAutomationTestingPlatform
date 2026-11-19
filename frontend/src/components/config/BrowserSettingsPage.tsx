@@ -57,7 +57,7 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-[#2563EB]" />
+            <Sliders className="w-5 h-5 text-black dark:text-white" />
             <span>Agent Browser Configuration</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -70,16 +70,16 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
           disabled={testingConnection}
           className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
         >
-          <Play className={`w-3.5 h-3.5 text-emerald-500 ${testingConnection ? "animate-spin" : ""}`} />
+          <Play className={`w-3.5 h-3.5 text-black dark:text-white ${testingConnection ? "animate-spin" : ""}`} />
           <span>{testingConnection ? "Testing..." : "Test Browser Connection"}</span>
         </button>
       </div>
 
       {/* CLI Engine Status Banner */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
+      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-black dark:text-white flex items-center justify-center font-bold">
               AB
             </div>
             <div>
@@ -92,7 +92,7 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
             </div>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold font-mono">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800 text-xs font-bold font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Verified (v{cliVersion})</span>
           </span>
@@ -101,11 +101,11 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase block">Session Engine</span>
-            <span className="font-mono text-emerald-600 font-bold">Local Subprocess</span>
+            <span className="font-mono text-black dark:text-white font-bold">Local Subprocess</span>
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase block">AI SDK State</span>
-            <span className="font-mono text-emerald-600 font-bold">0% (Strictly Disallowed)</span>
+            <span className="font-mono text-black dark:text-white font-bold">0% (Strictly Disallowed)</span>
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase block">DOM Extraction</span>
@@ -113,17 +113,17 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase block">Session Isolation</span>
-            <span className="font-mono text-blue-600 font-bold">Enabled</span>
+            <span className="font-mono text-black dark:text-white font-bold">Enabled</span>
           </div>
         </div>
       </div>
 
       {/* Main Settings Form */}
-      <form onSubmit={handleSaveSettings} className="p-6 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-6 text-xs">
+      <form onSubmit={handleSaveSettings} className="p-6 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-6 text-xs">
         {/* Timeouts */}
         <div className="space-y-4">
           <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[#2563EB]" />
+            <Clock className="w-4 h-4 text-black dark:text-white" />
             <span>Execution Timeouts</span>
           </h3>
 
@@ -206,7 +206,7 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
         {/* Approved Domain Whitelist */}
         <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
           <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <ShieldCheck className="w-4 h-4 text-black dark:text-white" />
             <span>Approved Domain Security Whitelist</span>
           </h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -225,7 +225,7 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
           <button
             type="submit"
-            className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white font-semibold flex items-center gap-2 shadow-xs transition"
+            className="px-4 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold flex items-center gap-2 shadow-xs transition"
           >
             <Save className="w-3.5 h-3.5" />
             <span>Save Browser Settings</span>

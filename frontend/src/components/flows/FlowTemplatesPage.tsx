@@ -343,7 +343,7 @@ export function FlowTemplatesPage({ projectId, onNavigate, onSelectFlow }: FlowT
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <LayoutTemplate className="w-6 h-6 text-blue-600" />
+            <LayoutTemplate className="w-6 h-6 text-black dark:text-white" />
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Flow Templates Library
             </h1>
@@ -352,7 +352,7 @@ export function FlowTemplatesPage({ projectId, onNavigate, onSelectFlow }: FlowT
             Pre-engineered enterprise browser workflows ready to clone and run with deterministic reliability.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 w-fit">
+        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800 w-fit">
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>Zero-AI Policy Compliant • Pure Deterministic DAG</span>
         </div>
@@ -396,7 +396,7 @@ export function FlowTemplatesPage({ projectId, onNavigate, onSelectFlow }: FlowT
           >
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
-                <span className="text-[11px] font-bold tracking-wide uppercase px-2.5 py-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900">
+                <span className="text-[11px] font-bold tracking-wide uppercase px-2.5 py-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-white border border-blue-200 dark:border-blue-900">
                   {tpl.category}
                 </span>
                 <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
@@ -406,7 +406,7 @@ export function FlowTemplatesPage({ projectId, onNavigate, onSelectFlow }: FlowT
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-black dark:text-white dark:group-hover:text-neutral-400 dark:text-neutral-200 transition-colors">
                   {tpl.title}
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-3 leading-relaxed">

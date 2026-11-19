@@ -223,7 +223,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
 
         <button
           onClick={handleOpenCreateModal}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <Plus className="w-4 h-4" />
           <span>Create Test Suite</span>
@@ -234,7 +234,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Suites List */}
         <div className="space-y-3">
-          <div className="p-2.5 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center gap-2">
+          <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center gap-2">
             <Search className="w-4 h-4 text-slate-400 ml-1" />
             <input
               type="text"
@@ -259,8 +259,8 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
                   onClick={() => setSelectedSuiteId(s.id)}
                   className={`p-4 rounded-xl border cursor-pointer transition group ${
                     selectedSuiteId === s.id
-                      ? "bg-white dark:bg-[#161F30] border-blue-600 dark:border-blue-500 ring-2 ring-blue-500/10 shadow-sm"
-                      : "bg-white dark:bg-[#161F30] border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                      ? "bg-white dark:bg-neutral-950 border-blue-600 dark:border-blue-500 ring-2 ring-blue-500/10 shadow-sm"
+                      : "bg-white dark:bg-neutral-950 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-1.5">
@@ -286,7 +286,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
                           e.stopPropagation();
                           handleDeleteSuite(s);
                         }}
-                        className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                        className="p-1 rounded text-slate-400 hover:text-neutral-700 dark:text-neutral-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                         title="Delete Suite"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -302,7 +302,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
                       <span className="text-slate-500 dark:text-slate-400">
                         <strong>{s.total_tests}</strong> tests
                       </span>
-                      <span className="text-emerald-600 font-semibold">{s.success_rate}% pass</span>
+                      <span className="text-black dark:text-white font-semibold">{s.success_rate}% pass</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
@@ -314,7 +314,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
 
         {/* Right Column: Selected Suite Inspector, Reorderable Tests & Actions */}
         {!activeSuite ? (
-          <div className="lg:col-span-2 p-12 text-center rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col items-center justify-center space-y-3">
+          <div className="lg:col-span-2 p-12 text-center rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col items-center justify-center space-y-3">
             <FolderKanban className="w-12 h-12 text-slate-400/40" />
             <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">No Test Suite in Workspace</h3>
             <p className="text-xs text-slate-500 max-w-sm">Create a new test suite to configure sequence execution, manage priority order, and view test pass rates.</p>
@@ -325,7 +325,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
                 setNewSequenceMode("Sequential");
                 setModalOpen(true);
               }}
-              className="px-4 py-2 bg-[#2563EB] hover:bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition"
+              className="px-4 py-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Create First Suite</span>
@@ -334,7 +334,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
         ) : (
           <div className="lg:col-span-2 space-y-5">
             {/* Suite Header Info & Controls */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
@@ -374,7 +374,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
 
                   <button
                     onClick={() => handleDeleteSuite(activeSuite)}
-                    className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                    className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                     title="Delete Suite"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -391,14 +391,14 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
                   </p>
                 </div>
                 <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 uppercase font-semibold">Passed</span>
-                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">
+                  <span className="text-[10px] text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 uppercase font-semibold">Passed</span>
+                  <p className="text-lg font-bold text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 mt-0.5">
                     {activeSuite.passed}
                   </p>
                 </div>
                 <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800">
-                  <span className="text-[10px] text-rose-700 dark:text-rose-400 uppercase font-semibold">Failed</span>
-                  <p className="text-lg font-bold text-rose-700 dark:text-rose-400 mt-0.5">
+                  <span className="text-[10px] text-rose-700 dark:text-neutral-400 dark:text-neutral-200 uppercase font-semibold">Failed</span>
+                  <p className="text-lg font-bold text-rose-700 dark:text-neutral-400 dark:text-neutral-200 mt-0.5">
                     {activeSuite.failed}
                   </p>
                 </div>
@@ -412,11 +412,11 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
             </div>
 
             {/* Test Cases Included in Suite (Reordering & Priorities) */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                    <ListOrdered className="w-4 h-4 text-[#2563EB]" />
+                    <ListOrdered className="w-4 h-4 text-black dark:text-white" />
                     <span>Configured Execution Sequence</span>
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -426,7 +426,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
 
                 <button
                   onClick={() => onNavigate("testing_builder")}
-                  className="text-xs font-semibold text-[#2563EB] dark:text-blue-400 hover:underline flex items-center gap-1"
+                  className="text-xs font-semibold text-black dark:text-white dark:text-white hover:underline flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Test Case</span>
@@ -440,7 +440,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
                     className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-950/60 text-[#2563EB] font-mono font-bold text-[11px] flex items-center justify-center">
+                      <span className="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-950/60 text-black dark:text-white font-mono font-bold text-[11px] flex items-center justify-center">
                         {index + 1}
                       </span>
                       <div>
@@ -464,7 +464,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
 
                       <button
                         onClick={() => handleRemoveTestFromSuite(activeSuite, test.id)}
-                        className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                        className="p-1 rounded text-slate-400 hover:text-neutral-700 dark:text-neutral-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                         title="Remove Test from Suite"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -481,7 +481,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
       {/* Create / Edit Suite Modal Dialog */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <FolderKanban className="w-4 h-4 text-purple-600" />
@@ -547,7 +547,7 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
                 >
                   {editingSuite ? "Save Changes" : "Create Suite"}
                 </button>

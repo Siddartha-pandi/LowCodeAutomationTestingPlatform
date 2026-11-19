@@ -109,7 +109,7 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
   const { success } = useToast();
 
   const handleSaveMatrix = () => {
-    success("Permissions Persisted", "RBAC policy synchronized with FastAPI backend enforcement.");
+    success("Permissions Persisted", "RBAC policy synchronized with NestJS backend enforcement.");
   };
 
   return (
@@ -118,17 +118,17 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-[#2563EB]" />
+            <ShieldAlert className="w-5 h-5 text-black dark:text-white" />
             <span>Roles & Permissions Matrix</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Role-Based Access Control (RBAC) enforced at FastAPI middleware and database layers.
+            Role-Based Access Control (RBAC) enforced at NestJS middleware and database layers.
           </p>
         </div>
 
         <button
           onClick={handleSaveMatrix}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <Save className="w-4 h-4" />
           <span>Save Permissions Policy</span>
@@ -145,19 +145,19 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
         </div>
         <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs space-y-1">
           <span className="font-bold text-blue-900 dark:text-blue-300">Admin</span>
-          <p className="text-[11px] text-blue-700 dark:text-blue-400">
+          <p className="text-[11px] text-blue-700 dark:text-white">
             User management, credentials vault, and system configuration.
           </p>
         </div>
         <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs space-y-1">
           <span className="font-bold text-emerald-900 dark:text-emerald-300">Developer</span>
-          <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+          <p className="text-[11px] text-emerald-700 dark:text-neutral-400 dark:text-neutral-200">
             Author, edit, publish and execute visual flows and test cases.
           </p>
         </div>
         <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs space-y-1">
           <span className="font-bold text-amber-900 dark:text-amber-300">Tester</span>
-          <p className="text-[11px] text-amber-700 dark:text-amber-400">
+          <p className="text-[11px] text-amber-700 dark:text-neutral-400 dark:text-neutral-200">
             Create tests, dispatch executions, and analyze test report trends.
           </p>
         </div>
@@ -170,7 +170,7 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
       </div>
 
       {/* Permission Matrix Table */}
-      <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-neutral-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -197,7 +197,7 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
 
                   {/* Owner */}
                   <td className="py-3.5 px-3 text-center">
-                    <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 inline-flex items-center justify-center">
+                    <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-black dark:text-white inline-flex items-center justify-center">
                       <Check className="w-3.5 h-3.5" />
                     </span>
                   </td>
@@ -205,7 +205,7 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
                   {/* Admin */}
                   <td className="py-3.5 px-3 text-center">
                     {row.admin ? (
-                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 inline-flex items-center justify-center">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-black dark:text-white inline-flex items-center justify-center">
                         <Check className="w-3.5 h-3.5" />
                       </span>
                     ) : (
@@ -218,7 +218,7 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
                   {/* Developer */}
                   <td className="py-3.5 px-3 text-center">
                     {row.developer ? (
-                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 inline-flex items-center justify-center">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-black dark:text-white inline-flex items-center justify-center">
                         <Check className="w-3.5 h-3.5" />
                       </span>
                     ) : (
@@ -231,7 +231,7 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
                   {/* Tester */}
                   <td className="py-3.5 px-3 text-center">
                     {row.tester ? (
-                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 inline-flex items-center justify-center">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-black dark:text-white inline-flex items-center justify-center">
                         <Check className="w-3.5 h-3.5" />
                       </span>
                     ) : (
@@ -244,7 +244,7 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
                   {/* Viewer */}
                   <td className="py-3.5 px-3 text-center">
                     {row.viewer ? (
-                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 inline-flex items-center justify-center">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-black dark:text-white inline-flex items-center justify-center">
                         <Check className="w-3.5 h-3.5" />
                       </span>
                     ) : (

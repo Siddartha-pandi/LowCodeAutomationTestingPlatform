@@ -6,6 +6,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
 import { ProjectEntity } from './project.entity';
 import { AutomationDefinitionEntity } from './automation-definition.entity';
@@ -80,8 +81,8 @@ export class ExecutionEntity {
   user?: UserEntity;
 
   @OneToMany(() => ExecutionStepEntity, (step) => step.execution)
-  steps: ExecutionStepEntity[];
+  steps: Relation<ExecutionStepEntity[]>;
 
   @OneToMany(() => ExecutionLogEntity, (log) => log.execution)
-  logs: ExecutionLogEntity[];
+  logs: Relation<ExecutionLogEntity[]>;
 }

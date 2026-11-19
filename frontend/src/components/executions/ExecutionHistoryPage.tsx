@@ -170,7 +170,7 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-[#2563EB]" />
+            <Clock className="w-5 h-5 text-black dark:text-white" />
             <span>Execution History</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -180,7 +180,7 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full sm:w-72">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
@@ -228,7 +228,7 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
       </div>
 
       {/* Execution History Table */}
-      <div className="bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -259,7 +259,7 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
                       <button
                         type="button"
                         onClick={() => onNavigate("automation_all_flows")}
-                        className="mt-2 px-3.5 py-1.5 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-medium transition"
+                        className="mt-2 px-3.5 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-medium transition"
                       >
                         Run Your First Flow
                       </button>
@@ -270,7 +270,7 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
                 paginated.map((exec) => (
                 <tr key={exec.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
                   <td className="py-3 px-4 max-w-xs">
-                    <div className="font-mono text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                    <div className="font-mono text-[10px] text-black dark:text-white dark:text-white font-bold">
                       {exec.id}
                     </div>
                     <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">
@@ -300,8 +300,8 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${
                         exec.status === "completed"
-                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                          : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
+                          : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-neutral-400 dark:text-neutral-200 border border-rose-200 dark:border-rose-800"
                       }`}
                     >
                       {exec.status === "completed" ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
@@ -329,7 +329,7 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
                       <button
                         onClick={() => handleRerun(exec)}
                         title="Rerun Safe"
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-[#2563EB] dark:text-blue-400 transition"
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-black dark:text-white dark:text-white transition"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                       </button>
@@ -337,7 +337,7 @@ export function ExecutionHistoryPage({ projectId, onNavigate, onSelectExecution 
                       <button
                         onClick={() => handleDeleteExecution(exec)}
                         title="Delete Execution Record"
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition"
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-neutral-700 dark:text-neutral-300 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

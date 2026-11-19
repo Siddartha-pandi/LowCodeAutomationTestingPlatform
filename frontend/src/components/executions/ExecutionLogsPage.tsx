@@ -132,7 +132,7 @@ export function ExecutionLogsPage({ projectId, onNavigate }: ExecutionLogsPagePr
 
           <button
             onClick={handleDownloadLogs}
-            className="px-3.5 py-1.5 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+            className="px-3.5 py-1.5 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download Logs</span>
@@ -141,7 +141,7 @@ export function ExecutionLogsPage({ projectId, onNavigate }: ExecutionLogsPagePr
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
@@ -170,7 +170,7 @@ export function ExecutionLogsPage({ projectId, onNavigate }: ExecutionLogsPagePr
             </select>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-[10px]">
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800 text-[10px]">
             <ShieldCheck className="w-3 h-3" />
             <span>Secret Masking Active</span>
           </div>
@@ -186,12 +186,12 @@ export function ExecutionLogsPage({ projectId, onNavigate }: ExecutionLogsPagePr
               <span
                 className={`font-bold shrink-0 text-[10px] px-1.5 py-0.2 rounded ${
                   log.level === "INFO"
-                    ? "bg-blue-950 text-blue-400"
+                    ? "bg-blue-950 text-neutral-400 dark:text-neutral-200"
                     : log.level === "DEBUG"
                     ? "bg-purple-950 text-purple-400"
                     : log.level === "WARNING"
-                    ? "bg-amber-950 text-amber-400"
-                    : "bg-rose-950 text-rose-400"
+                    ? "bg-amber-950 text-neutral-400 dark:text-neutral-200"
+                    : "bg-rose-950 text-neutral-400 dark:text-neutral-200"
                 }`}
               >
                 {log.level}

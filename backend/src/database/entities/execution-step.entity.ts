@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
 import { ExecutionEntity } from './execution.entity';
 
@@ -51,5 +52,5 @@ export class ExecutionStepEntity {
 
   @ManyToOne(() => ExecutionEntity, (exec) => exec.steps, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'execution_id' })
-  execution: ExecutionEntity;
+  execution: Relation<ExecutionEntity>;
 }

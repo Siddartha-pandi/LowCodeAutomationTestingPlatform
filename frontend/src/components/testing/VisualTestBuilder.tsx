@@ -215,11 +215,11 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
   const actionCount = steps.filter((s) => s.step_type === "action").length;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-slate-50 dark:bg-[#0B0F17]">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-slate-50 dark:bg-black">
       {/* Top Toolbar */}
-      <div className="h-13 bg-white dark:bg-[#161F30] border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between shrink-0 shadow-2xs z-10">
+      <div className="h-13 bg-white dark:bg-neutral-950 border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between shrink-0 shadow-2xs z-10">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-xs">
+          <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-black dark:text-white flex items-center justify-center font-bold text-xs">
             <CheckSquare className="w-4 h-4" />
           </div>
           <input
@@ -238,7 +238,7 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
             onClick={handleValidate}
             className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition"
           >
-            <Check className="w-3.5 h-3.5 text-blue-500" />
+            <Check className="w-3.5 h-3.5 text-black dark:text-white" />
             <span>Validate</span>
           </button>
 
@@ -273,7 +273,7 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
       {/* 3-Panel Test Case Editor */}
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT PANEL: Available Actions & 12 Assertions */}
-        <div className="w-64 bg-white dark:bg-[#161F30] border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+        <div className="w-64 bg-white dark:bg-neutral-950 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
           <div className="p-3 border-b border-slate-100 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-300">
             Available Operations
           </div>
@@ -294,12 +294,12 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
                       className="w-full flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-left transition group"
                     >
                       <div className="flex items-center gap-2">
-                        <Icon className="w-3.5 h-3.5 text-[#2563EB]" />
+                        <Icon className="w-3.5 h-3.5 text-black dark:text-white" />
                         <span className="text-xs font-medium text-slate-800 dark:text-slate-200">
                           {act.label}
                         </span>
                       </div>
-                      <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600" />
+                      <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-black dark:text-white" />
                     </button>
                   );
                 })}
@@ -308,7 +308,7 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
 
             {/* 12 Assertions */}
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block mb-1.5 px-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-black dark:text-white block mb-1.5 px-1">
                 12 Assertions ({ASSERTION_TYPES.length})
               </span>
               <div className="space-y-1">
@@ -321,12 +321,12 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
                       className="w-full flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 text-left transition group"
                     >
                       <div className="flex items-center gap-2">
-                        <Icon className="w-3.5 h-3.5 text-emerald-600" />
+                        <Icon className="w-3.5 h-3.5 text-black dark:text-white" />
                         <span className="text-xs font-medium text-slate-800 dark:text-slate-200">
                           {ass.label}
                         </span>
                       </div>
-                      <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" />
+                      <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-black dark:text-white" />
                     </button>
                   );
                 })}
@@ -358,9 +358,9 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
                   className={`p-4 rounded-xl border cursor-pointer transition ${
                     isSelected
                       ? isAssertion
-                        ? "bg-white dark:bg-[#161F30] border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm"
-                        : "bg-white dark:bg-[#161F30] border-blue-500 ring-2 ring-blue-500/20 shadow-sm"
-                      : "bg-white dark:bg-[#161F30] border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                        ? "bg-white dark:bg-neutral-950 border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm"
+                        : "bg-white dark:bg-neutral-950 border-blue-500 ring-2 ring-blue-500/20 shadow-sm"
+                      : "bg-white dark:bg-neutral-950 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -387,7 +387,7 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
                         <span
                           className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${
                             step.status === "passed"
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-400"
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-neutral-400 dark:text-neutral-200"
                               : "bg-rose-50 text-rose-700"
                           }`}
                         >
@@ -399,7 +399,7 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
                           e.stopPropagation();
                           removeStep(step.id);
                         }}
-                        className="text-slate-400 hover:text-rose-600 p-1"
+                        className="text-slate-400 hover:text-neutral-700 dark:text-neutral-300 p-1"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -421,7 +421,7 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
                         <span className="font-semibold text-slate-500 dark:text-slate-400 block">
                           Actual Observed Value:
                         </span>
-                        <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <span className="font-mono text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 font-semibold">
                           {step.actual || "Pending execution"}
                         </span>
                       </div>
@@ -438,7 +438,7 @@ export const VisualTestBuilder: React.FC<VisualTestBuilderProps> = ({
         </div>
 
         {/* RIGHT PANEL: Selected Step Config & Test Metadata */}
-        <div className="w-80 bg-white dark:bg-[#161F30] border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+        <div className="w-80 bg-white dark:bg-neutral-950 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
           <div className="p-3 border-b border-slate-100 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-300">
             Step Properties & Test Context
           </div>

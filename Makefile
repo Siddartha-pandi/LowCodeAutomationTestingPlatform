@@ -1,4 +1,4 @@
-.PHONY: help install install-backend install-frontend dev start backend backend-api backend-worker worker frontend build build-backend build-frontend test test-backend test-frontend clean up down
+.PHONY: help install install-backend install-frontend dev start backend backend-api backend-worker worker frontend build build-backend build-frontend test test-backend test-frontend clean
 
 help:
 	@echo "Available commands:"
@@ -22,11 +22,7 @@ help:
 	@echo ""
 	@echo "  --- Production & Standalone ---"
 	@echo "  make start             Start production builds of backend and frontend concurrently"
-	@echo "  make worker            Start standalone worker process (for multi-container scaling)"
-	@echo ""
-	@echo "  --- Infrastructure ---"
-	@echo "  make up                Launch PostgreSQL and Redis containers with Docker Compose"
-	@echo "  make down              Stop all running containers"
+	@echo "  make worker            Start standalone worker process"
 	@echo "  make clean             Remove compilation artifacts and caches"
 
 # ==============================================================================
@@ -93,12 +89,6 @@ test-backend:
 
 test-frontend:
 	cd frontend && npx tsc --noEmit
-
-up:
-	docker compose -f .devcontainer/docker-compose.yml up -d
-
-down:
-	docker compose -f .devcontainer/docker-compose.yml down
 
 clean:
 	cd backend && rm -rf dist coverage .turbo

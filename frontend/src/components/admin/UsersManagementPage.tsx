@@ -193,7 +193,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#2563EB]" />
+            <Users className="w-5 h-5 text-black dark:text-white" />
             <span>User Management</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -203,7 +203,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
 
         <button
           onClick={handleOpenInviteModal}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <UserPlus className="w-4 h-4" />
           <span>Invite New User</span>
@@ -211,7 +211,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
       </div>
 
       {/* Search Toolbar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
@@ -226,7 +226,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -244,7 +244,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
                 <tr key={user.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black text-white flex items-center justify-center font-bold text-xs shrink-0">
                         {user.name[0].toUpperCase()}
                       </div>
                       <div>
@@ -275,7 +275,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
                       onClick={() => handleToggleStatus(user)}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${
                         user.status === "active"
-                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
                       }`}
                     >
@@ -301,7 +301,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
                       <button
                         onClick={() => handleDeleteUser(user)}
                         disabled={user.role === "Owner"}
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition disabled:opacity-30"
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-neutral-700 dark:text-neutral-300 transition disabled:opacity-30"
                         title="Delete User"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -318,10 +318,10 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
       {/* Invite / Edit User Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-[#2563EB]" />
+                <UserPlus className="w-4 h-4 text-black dark:text-white" />
                 <span>{editingUser ? "Edit User Permissions" : "Invite New Platform Member"}</span>
               </h3>
               <button
@@ -387,7 +387,7 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
                 >
                   {editingUser ? "Save User" : "Send Invitation"}
                 </button>

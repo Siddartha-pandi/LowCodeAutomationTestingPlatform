@@ -184,19 +184,19 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
 
         {/* Safety Gate Indicator */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <ShieldCheck className="w-4 h-4 text-black dark:text-white" />
           <span>Action Safety Gate: Active (≥98% for mutations)</span>
         </div>
       </div>
 
       {/* Target Element Profile Summary Card */}
       {originalProfile ? (
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-[#2563EB]" />
+              <Crosshair className="w-4 h-4 text-black dark:text-white" />
               <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                Active Element Profile: <strong className="font-mono text-[#2563EB]">{originalProfile.logical_id}</strong>
+                Active Element Profile: <strong className="font-mono text-black dark:text-white">{originalProfile.logical_id}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -216,7 +216,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
                   })}
                 </select>
               )}
-              <span className="text-[10px] px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] font-mono">
+              <span className="text-[10px] px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-black dark:text-white font-mono">
                 {originalProfile.page_context}
               </span>
             </div>
@@ -242,7 +242,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
           </div>
         </div>
       ) : (
-        <div className="p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-dashed border-slate-300 dark:border-slate-700 text-center py-6">
+        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-dashed border-slate-300 dark:border-slate-700 text-center py-6">
           <p className="text-xs text-slate-500 dark:text-slate-400">
             No element profile found in this project. Use the DOM Explorer or Element Profiles to register elements.
           </p>
@@ -252,7 +252,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
       {/* Candidate Ranking & Scoring Evidence Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Candidate Ranking List (5 cols) */}
-        <div className="lg:col-span-5 p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+        <div className="lg:col-span-5 p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">
               Ranked DOM Candidates ({candidates.length})
@@ -274,7 +274,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
                     onClick={() => setSelectedRank(cand.rank)}
                     className={`p-3.5 rounded-xl border cursor-pointer transition ${
                       isSelected
-                        ? "ring-2 ring-[#2563EB] border-transparent"
+                        ? "ring-2 ring-black dark:ring-white border-transparent"
                         : "hover:border-slate-300 dark:hover:border-slate-700"
                     } ${
                       cand.decision === "Accepted"
@@ -293,7 +293,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold font-mono text-emerald-600">
+                        <span className="text-sm font-bold font-mono text-black dark:text-white">
                           {cand.confidence_score}%
                         </span>
                         <span
@@ -330,7 +330,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
 
         {/* Selected Candidate Evidence Breakdown (7 cols) */}
         {selectedCandidate ? (
-          <div className="lg:col-span-7 p-5 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
+          <div className="lg:col-span-7 p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">
@@ -349,14 +349,14 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
               {/* Attribute Matching Evidence */}
               <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 space-y-2">
                 <span className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-black dark:text-white" />
                   <span>Attribute Matching Evidence (Weight: 35%)</span>
                 </span>
                 <div className="space-y-1 text-[11px]">
                   {selectedCandidate.evidence?.matching_attributes?.map((attr, idx) => (
                     <div key={idx} className="flex items-center justify-between font-mono">
                       <span className="text-slate-600 dark:text-slate-300">{attr.attr}</span>
-                      <span className="text-emerald-600 font-bold">{attr.score}% match</span>
+                      <span className="text-black dark:text-white font-bold">{attr.score}% match</span>
                     </div>
                   )) || (
                     <span className="text-slate-400">No attribute match data</span>
@@ -367,14 +367,14 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
               {/* Semantic Evidence */}
               <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 space-y-2">
                 <span className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-black dark:text-white" />
                   <span>Semantic & Accessibility Evidence (Weight: 25%)</span>
                 </span>
                 <div className="space-y-1 text-[11px]">
                   {selectedCandidate.evidence?.semantic_evidence?.map((sem, idx) => (
                     <div key={idx} className="flex items-center justify-between">
                       <span className="text-slate-600 dark:text-slate-300">{sem.criterion}: <em>{sem.match}</em></span>
-                      <span className="font-mono text-emerald-600 font-bold">{sem.score}%</span>
+                      <span className="font-mono text-black dark:text-white font-bold">{sem.score}%</span>
                     </div>
                   )) || (
                     <span className="text-slate-400">No semantic evidence data</span>
@@ -392,7 +392,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
                   {selectedCandidate.evidence?.structural_evidence?.map((struct, idx) => (
                     <div key={idx} className="flex items-center justify-between">
                       <span className="text-slate-600 dark:text-slate-300">{struct.criterion}</span>
-                      <span className="font-mono text-emerald-600 font-bold">{struct.score}%</span>
+                      <span className="font-mono text-black dark:text-white font-bold">{struct.score}%</span>
                     </div>
                   )) || (
                     <span className="text-slate-400">No structural evidence data</span>
@@ -403,14 +403,14 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
               {/* Context Evidence */}
               <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 space-y-2">
                 <span className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-500" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-300" />
                   <span>Context & Surrounding Environment Evidence (Weight: 15%)</span>
                 </span>
                 <div className="space-y-1 text-[11px]">
                   {selectedCandidate.evidence?.context_evidence?.map((ctx, idx) => (
                     <div key={idx} className="flex items-center justify-between">
                       <span className="text-slate-600 dark:text-slate-300">{ctx.criterion}</span>
-                      <span className="font-mono text-emerald-600 font-bold">{ctx.score}%</span>
+                      <span className="font-mono text-black dark:text-white font-bold">{ctx.score}%</span>
                     </div>
                   )) || (
                     <span className="text-slate-400">No context evidence data</span>
@@ -420,7 +420,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
             </div>
           </div>
         ) : (
-          <div className="lg:col-span-7 p-8 rounded-2xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col items-center justify-center text-center space-y-3 min-h-[300px]">
+          <div className="lg:col-span-7 p-8 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col items-center justify-center text-center space-y-3 min-h-[300px]">
             <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
               <Sparkles className="w-6 h-6" />
             </div>

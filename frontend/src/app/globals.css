@@ -9,54 +9,64 @@
   --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  /* Enterprise Light Surfaces */
-  --bg-primary: #f8fafc;
+  /* Pure Black & White Light Surfaces */
+  --bg-primary: #ffffff;
   --bg-surface: #ffffff;
-  --bg-muted: #f1f5f9;
-  --border-color: #e2e8f0;
-  --border-subtle: #cbd5e1;
+  --bg-muted: #f5f5f5;
+  --border-color: #e5e5e5;
+  --border-subtle: #d4d4d4;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #000000;
+  --text-secondary: #404040;
+  --text-muted: #737373;
 
-  /* Blue Primary Brand */
-  --brand-blue: #2563eb;
-  --brand-blue-hover: #1d4ed8;
-  --brand-blue-subtle: #eff6ff;
+  /* Pure Black & White Primary Brand */
+  --brand-blue: #000000;
+  --brand-blue-hover: #262626;
+  --brand-blue-subtle: #f5f5f5;
 
-  --sidebar-bg: #111827;
-  --sidebar-border: #1f2937;
-  --sidebar-text: #f3f4f6;
-  --sidebar-muted: #9ca3af;
-  --sidebar-active: #1f2937;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e5e5e5;
+  --sidebar-text: #000000;
+  --sidebar-muted: #737373;
+  --sidebar-active: #000000;
 
-  --success: #10b981;
-  --success-bg: #ecfdf5;
-  --warning: #f59e0b;
-  --warning-bg: #fffbeb;
-  --danger: #ef4444;
-  --danger-bg: #fef2f2;
+  --success: #000000;
+  --success-bg: #f5f5f5;
+  --warning: #404040;
+  --warning-bg: #f5f5f5;
+  --danger: #000000;
+  --danger-bg: #f5f5f5;
 }
 
 .dark {
-  --bg-primary: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-muted: #334155;
-  --border-color: #334155;
-  --border-subtle: #475569;
+  /* Pure Black & White Dark Surfaces */
+  --bg-primary: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-muted: #171717;
+  --border-color: #262626;
+  --border-subtle: #333333;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4d4;
+  --text-muted: #a3a3a3;
 
-  --brand-blue-subtle: #1e3a8a;
+  --brand-blue: #ffffff;
+  --brand-blue-hover: #e5e5e5;
+  --brand-blue-subtle: #171717;
 
-  --sidebar-bg: #0b0f17;
-  --sidebar-border: #1e293b;
-  --sidebar-text: #f8fafc;
-  --sidebar-muted: #94a3b8;
-  --sidebar-active: #1e293b;
+  --sidebar-bg: #000000;
+  --sidebar-border: #262626;
+  --sidebar-text: #ffffff;
+  --sidebar-muted: #a3a3a3;
+  --sidebar-active: #171717;
+
+  --success: #ffffff;
+  --success-bg: #171717;
+  --warning: #d4d4d4;
+  --warning-bg: #171717;
+  --danger: #ffffff;
+  --danger-bg: #171717;
 }
 
 * {
@@ -77,7 +87,7 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
-/* React Flow custom node styles */
+/* React Flow custom node styles in pure monochrome */
 .react-flow__node {
   font-family: var(--font-sans);
 }
@@ -85,11 +95,16 @@ button, input, select, textarea {
 .react-flow__handle {
   width: 9px;
   height: 9px;
-  background: var(--brand-blue);
-  border: 2px solid #ffffff;
+  background: #000000 !important;
+  border: 2px solid #ffffff !important;
 }
 
-/* Custom scrollbars */
+.dark .react-flow__handle {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+/* Monochrome scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -98,9 +113,228 @@ button, input, select, textarea {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #a3a3a3;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #737373;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #333333;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}
+
+/* Desaturate images, canvas and videos to ensure pure monochrome */
+img, video, canvas {
+  filter: grayscale(100%);
+}
+
+/* ==========================================================================
+   PURE BLACK & WHITE MONOCHROME ENFORCEMENT - ZERO EXTRA COLOURS
+   ========================================================================== */
+
+/* 1. Neutralize all colored box shadows */
+[class*="shadow-blue-"],
+[class*="shadow-emerald-"],
+[class*="shadow-rose-"],
+[class*="shadow-amber-"],
+[class*="shadow-purple-"],
+[class*="shadow-red-"] {
+  --tw-shadow-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 2. Primary buttons and active controls: Pure Black in Light, Pure White in Dark */
+.bg-blue-600,
+.bg-blue-500,
+[class*="bg-[#2563EB]"],
+[class*="bg-[#2563eb]"],
+[class*="bg-[#1D4ED8]"],
+[class*="bg-[#1d4ed8]"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.hover\:bg-blue-600:hover,
+.hover\:bg-blue-700:hover,
+[class*="hover\:bg-[#1D4ED8]"]:hover,
+[class*="hover\:bg-[#1d4ed8]"]:hover,
+[class*="hover\:bg-blue-600"]:hover,
+[class*="hover\:bg-blue-700"]:hover {
+  background-color: #262626 !important;
+  color: #ffffff !important;
+}
+
+.dark .bg-blue-600,
+.dark .bg-blue-500,
+.dark [class*="bg-[#2563EB]"],
+.dark [class*="bg-[#2563eb]"],
+.dark [class*="bg-[#1D4ED8]"],
+.dark [class*="bg-[#1d4ed8]"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.dark .hover\:bg-blue-600:hover,
+.dark .hover\:bg-blue-700:hover,
+.dark [class*="hover\:bg-[#1D4ED8]"]:hover,
+.dark [class*="hover\:bg-[#1d4ed8]"]:hover,
+.dark [class*="hover\:bg-blue-600"]:hover,
+.dark [class*="hover\:bg-blue-700"]:hover {
+  background-color: #e5e5e5 !important;
+  color: #000000 !important;
+}
+
+/* 3. Text and icon primary highlights */
+.text-blue-600,
+.text-blue-500,
+[class*="text-[#2563EB]"],
+[class*="text-[#2563eb]"],
+[class*="text-[#1D4ED8]"],
+[class*="text-[#1d4ed8]"] {
+  color: #000000 !important;
+}
+
+.dark .text-blue-600,
+.dark .text-blue-500,
+.dark .text-blue-400,
+.dark [class*="text-[#2563EB]"],
+.dark [class*="text-[#2563eb]"],
+.dark [class*="text-[#1D4ED8]"],
+.dark [class*="text-[#1d4ed8]"] {
+  color: #ffffff !important;
+}
+
+/* 4. Borders */
+[class*="border-[#2563EB]"],
+[class*="border-[#2563eb]"] {
+  border-color: #000000 !important;
+}
+
+.dark [class*="border-[#2563EB]"],
+.dark [class*="border-[#2563eb]"] {
+  border-color: #ffffff !important;
+}
+
+/* 5. Legacy hardcoded surfaces adapt cleanly between Light and Dark mode */
+[class*="bg-[#0B0F17]"],
+[class*="bg-[#0b0f17]"],
+[class*="bg-[#080B11]"],
+[class*="bg-[#090D16]"],
+[class*="bg-[#0E1524]"],
+[class*="bg-[#111827]"],
+[class*="bg-[#161F30]"],
+[class*="bg-[#1E293B]"],
+[class*="bg-[#1e293b]"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.dark [class*="bg-[#0B0F17]"],
+.dark [class*="bg-[#0b0f17]"],
+.dark [class*="bg-[#080B11]"],
+.dark [class*="bg-[#090D16]"],
+.dark [class*="bg-[#0E1524]"],
+.dark [class*="bg-[#111827]"],
+.dark [class*="bg-[#161F30]"],
+.dark [class*="bg-[#1E293B]"],
+.dark [class*="bg-[#1e293b]"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+[class*="border-[#1F2937]"],
+[class*="border-[#1f2937]"],
+[class*="border-[#374151]"] {
+  border-color: #e5e5e5 !important;
+}
+
+.dark [class*="border-[#1F2937]"],
+.dark [class*="border-[#1f2937]"],
+.dark [class*="border-[#374151]"] {
+  border-color: #262626 !important;
+}
+
+[class*="bg-[#F8FAFC]"],
+[class*="bg-[#f8fafc]"] {
+  background-color: #ffffff !important;
+}
+
+.dark [class*="bg-[#F8FAFC]"],
+.dark [class*="bg-[#f8fafc]"] {
+  background-color: #000000 !important;
+}
+
+[class*="text-[#0F172A]"],
+[class*="text-[#0f172a]"] {
+  color: #000000 !important;
+}
+
+.dark [class*="text-[#0F172A]"],
+.dark [class*="text-[#0f172a]"] {
+  color: #ffffff !important;
+}
+
+[class*="text-[#F8FAFC]"],
+[class*="text-[#f8fafc]"] {
+  color: #000000 !important;
+}
+
+.dark [class*="text-[#F8FAFC]"],
+.dark [class*="text-[#f8fafc]"] {
+  color: #ffffff !important;
+}
+
+/* Smooth theme transitions */
+body, header, aside, footer, nav, button, input, [role="dialog"] {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 6. Subtle colored tinted backgrounds to clean neutral */
+[class*="bg-blue-50"],
+[class*="bg-emerald-50"],
+[class*="bg-green-50"],
+[class*="bg-rose-50"],
+[class*="bg-red-50"],
+[class*="bg-amber-50"],
+[class*="bg-yellow-50"],
+[class*="bg-purple-50"],
+[class*="bg-violet-50"],
+[class*="bg-indigo-50"],
+[class*="bg-cyan-50"],
+[class*="bg-teal-50"] {
+  background-color: #f5f5f5 !important;
+}
+
+.dark [class*="bg-blue-950"],
+.dark [class*="bg-emerald-950"],
+.dark [class*="bg-green-950"],
+.dark [class*="bg-rose-950"],
+.dark [class*="bg-red-950"],
+.dark [class*="bg-amber-950"],
+.dark [class*="bg-yellow-950"],
+.dark [class*="bg-purple-950"],
+.dark [class*="bg-violet-950"],
+.dark [class*="bg-indigo-950"],
+.dark [class*="bg-cyan-950"],
+.dark [class*="bg-teal-950"] {
+  background-color: #171717 !important;
+}
+
+/* 7. Focus rings to high-contrast monochrome */
+[class*="focus:ring-blue-"],
+[class*="focus:ring-emerald-"],
+[class*="focus:ring-rose-"],
+[class*="focus:ring-amber-"] {
+  --tw-ring-color: #000000 !important;
+}
+
+.dark [class*="focus:ring-blue-"],
+.dark [class*="focus:ring-emerald-"],
+.dark [class*="focus:ring-rose-"],
+.dark [class*="focus:ring-amber-"] {
+  --tw-ring-color: #ffffff !important;
 }

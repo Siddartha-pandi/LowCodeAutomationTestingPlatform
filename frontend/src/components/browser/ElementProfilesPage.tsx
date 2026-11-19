@@ -209,7 +209,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Crosshair className="w-5 h-5 text-[#2563EB]" />
+            <Crosshair className="w-5 h-5 text-black dark:text-white" />
             <span>Element Profiles</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -219,7 +219,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
 
         <button
           onClick={handleOpenCreateModal}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <Plus className="w-4 h-4" />
           <span>New Element Profile</span>
@@ -227,7 +227,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full sm:w-80 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3" />
           <input
@@ -239,12 +239,12 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
           />
         </div>
         <div className="text-[11px] font-mono text-slate-400 hidden sm:block">
-          Deterministic Engine: <span className="text-emerald-600 font-bold">Multi-Signal Scoring Active</span>
+          Deterministic Engine: <span className="text-black dark:text-white font-bold">Multi-Signal Scoring Active</span>
         </div>
       </div>
 
       {/* Element Profiles Table */}
-      <div className="bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -262,7 +262,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
               {filtered.map((profile) => (
                 <tr key={profile.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
                   <td className="py-3 px-4 max-w-sm">
-                    <div className="font-mono font-bold text-[#2563EB] dark:text-blue-400 text-xs">
+                    <div className="font-mono font-bold text-black dark:text-white dark:text-white text-xs">
                       {profile.logical_id}
                     </div>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
@@ -296,9 +296,9 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${
                         profile.status === "verified"
-                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
                           : profile.status === "mutated"
-                          ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                          ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-neutral-400 dark:text-neutral-200 border border-amber-200 dark:border-amber-800"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                       }`}
                     >
@@ -313,7 +313,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
                       <button
                         onClick={() => handleTestRecognition(profile)}
                         title="Test Deterministic Match"
-                        className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-[#2563EB] dark:text-blue-300 transition"
+                        className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-black dark:text-white dark:text-blue-300 transition"
                       >
                         <Play className="w-3.5 h-3.5" />
                       </button>
@@ -343,7 +343,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
                       <button
                         onClick={() => handleDeleteProfile(profile)}
                         title="Delete Profile"
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 transition"
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-neutral-700 dark:text-neutral-300 dark:text-neutral-400 dark:text-neutral-200 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -359,10 +359,10 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
       {/* Create / Edit Modal Dialog */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Crosshair className="w-4 h-4 text-[#2563EB]" />
+                <Crosshair className="w-4 h-4 text-black dark:text-white" />
                 <span>{editingProfile ? "Edit Element Profile" : "Create Element Profile"}</span>
               </h3>
               <button
@@ -461,7 +461,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
                 >
                   {editingProfile ? "Save Changes" : "Save Profile"}
                 </button>

@@ -222,7 +222,7 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <KeyRound className="w-5 h-5 text-[#2563EB]" />
+            <KeyRound className="w-5 h-5 text-black dark:text-white" />
             <span>Encrypted Credentials Vault</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -232,7 +232,7 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
 
         <button
           onClick={handleOpenCreateModal}
-          className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+          className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
         >
           <Plus className="w-4 h-4" />
           <span>New Credential</span>
@@ -240,7 +240,7 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
       </div>
 
       {/* Filter and Security Banner */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
@@ -253,13 +253,13 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
         </div>
 
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 font-semibold text-[11px]">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
           <span>Write-Only Secret Storage (Zero Exposure in Client UI)</span>
         </div>
       </div>
 
       {/* Credentials Table */}
-      <div className="bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -300,13 +300,13 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
                   </td>
 
                   <td className="py-3 px-3">
-                    <span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] font-medium text-[11px]">
+                    <span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-black dark:text-white font-medium text-[11px]">
                       {cred.environment_assignment}
                     </span>
                   </td>
 
                   <td className="py-3 px-3">
-                    <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 font-semibold">
                       <Lock className="w-3 h-3" />
                       <span>Encrypted (AES-256)</span>
                     </span>
@@ -333,7 +333,7 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
                       <button
                         onClick={() => handleDeleteCredential(cred)}
                         title="Delete Credential"
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 transition"
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-neutral-700 dark:text-neutral-300 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -349,10 +349,10 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
       {/* Create / Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#161F30] rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-neutral-950 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-[#2563EB]" />
+                <KeyRound className="w-4 h-4 text-black dark:text-white" />
                 <span>{editingCred ? "Edit Vault Credential" : "Store Encrypted Credential"}</span>
               </h3>
               <button
@@ -471,7 +471,7 @@ export function CredentialsPage({ projectId, onNavigate }: CredentialsPageProps)
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
                 >
                   {editingCred ? "Save Changes" : "Encrypt & Store Secret"}
                 </button>

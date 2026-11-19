@@ -138,7 +138,7 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <GitBranch className="w-5 h-5 text-[#2563EB]" />
+            <GitBranch className="w-5 h-5 text-black dark:text-white" />
             <span>All Flows</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -149,7 +149,7 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => onNavigate("automation_create_flow")}
-            className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+            className="px-3.5 py-2 rounded-xl bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
           >
             <Plus className="w-4 h-4" />
             <span>Create New Flow</span>
@@ -158,7 +158,7 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#161F30] border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full md:w-80 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3" />
           <input
@@ -207,7 +207,7 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
       </div>
 
       {/* Flows Data Table */}
-      <div className="bg-white dark:bg-[#161F30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
+      <div className="bg-white dark:bg-neutral-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
@@ -236,7 +236,7 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
                       <button
                         type="button"
                         onClick={() => onNavigate("automation_create_flow")}
-                        className="mt-2 px-3.5 py-1.5 rounded-lg bg-[#2563EB] hover:bg-blue-600 text-white text-xs font-medium transition"
+                        className="mt-2 px-3.5 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs font-medium transition"
                       >
                         + Create First Flow
                       </button>
@@ -274,13 +274,13 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${
                           flow.status === "published"
-                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800"
                             : flow.status === "running"
                             ? "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 animate-pulse"
                             : flow.status === "draft"
-                            ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                            ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-neutral-400 dark:text-neutral-200 border border-amber-200 dark:border-amber-800"
                             : flow.status === "failed"
-                            ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                            ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-neutral-400 dark:text-neutral-200 border border-rose-200 dark:border-rose-800"
                             : "bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700"
                         }`}
                       >
@@ -324,7 +324,7 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
                           <button
                             onClick={() => handlePublishFlow(flow)}
                             title="Publish Immutable Version"
-                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950/60 text-blue-600 dark:text-blue-400 transition"
+                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950/60 text-black dark:text-white dark:text-white transition"
                           >
                             <UploadCloud className="w-3.5 h-3.5" />
                           </button>
@@ -343,7 +343,7 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
                         <button
                           onClick={() => handleDeleteFlow(flow)}
                           title="Delete Flow"
-                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 transition"
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-neutral-700 dark:text-neutral-300 dark:text-neutral-400 dark:text-neutral-200 transition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
