@@ -28,7 +28,14 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
-  const [currentView, setCurrentView] = useState<NavView>("dashboard_overview");
+  const [currentView, setCurrentView] = useState<NavView>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const v = params.get("view") as NavView;
+      if (v) return v;
+    }
+    return "dashboard_overview";
+  });
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   const [currentProject, setCurrentProjectState] = useState<ProjectInfo>(() => {
     if (typeof window !== "undefined") {
@@ -45,9 +52,41 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     };
   });
 
-  const [selectedExecutionId, setSelectedExecutionId] = useState<string>("");
-  const [selectedFlowId, setSelectedFlowId] = useState<string | undefined>(undefined);
+  const [selectedExecutionId, setSelectedExecutionId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const eid = params.get("executionId") || params.get("id");
+      if (eid) return eid;
+    }
+    return "";
+  });
+  const [selectedFlowId, setSelectedFlowId] = useState<string | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const fid = params.get("flowId");
+      if (fid) return fid;
+    }
+    return undefined;
+  });
   const [selectedTestId, setSelectedTestId] = useState<string | undefined>(undefined);
+
+  // Sync state if URL query params change (e.g. opened in new tab or browser navigation)
+  useEffect(() => {
+    const handleSync = () => {
+      if (typeof window === "undefined") return;
+      const params = new URLSearchParams(window.location.search);
+      const v = params.get("view") as NavView;
+      const eid = params.get("executionId") || params.get("id");
+      const fid = params.get("flowId");
+      if (v) setCurrentView(v);
+      if (eid) setSelectedExecutionId(eid);
+      if (fid) setSelectedFlowId(fid);
+    };
+
+    handleSync();
+    window.addEventListener("popstate", handleSync);
+    return () => window.removeEventListener("popstate", handleSync);
+  }, []);
 
   const setCurrentProject = useCallback((p: ProjectInfo) => {
     setCurrentProjectState(p);

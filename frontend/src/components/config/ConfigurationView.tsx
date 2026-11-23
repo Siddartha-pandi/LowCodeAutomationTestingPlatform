@@ -447,7 +447,7 @@ export function ConfigurationView({ initialSubTab = "projects" }: ConfigurationV
               </div>
             </label>
 
-            <label className="flex items-center gap-3 p-3 rounded-lg border border-emerald-200 bg-emerald-50/40 cursor-pointer">
+            <label className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 cursor-pointer">
               <input
                 type="checkbox"
                 checked={browserConfig.blockExternalAiTraffic}
@@ -455,9 +455,9 @@ export function ConfigurationView({ initialSubTab = "projects" }: ConfigurationV
                 className="w-4 h-4 rounded text-black dark:text-white"
               />
               <div className="text-xs">
-                <span className="font-semibold text-emerald-950 block">Mandatory Zero-AI Policy Enforcement</span>
-                <span className="text-emerald-800 text-[11px]">
-                  Permanently disallows all outbound connections to AI inference endpoints (OpenAI, Anthropic, Gemini, Ollama). Hardcoded active.
+                <span className="font-semibold text-neutral-900 dark:text-neutral-100 block">Strict Data Isolation & Perimeter Boundary</span>
+                <span className="text-neutral-500 dark:text-neutral-400 text-[11px]">
+                  All session data and DOM snapshots remain within your private tenant perimeter without external network egress.
                 </span>
               </div>
             </label>

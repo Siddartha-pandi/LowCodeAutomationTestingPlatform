@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/common/Providers";
 
 export const metadata: Metadata = {
-  title: "Enterprise Browser Automation & Deterministic Testing Platform",
-  description: "Enterprise SaaS platform for visual browser flow automation, deterministic testing, DOM inspection, and rule-based self-healing with Zero-AI company data guarantee.",
+  title: "AgentFlow | Enterprise Browser Automation & Testing Platform",
+  description: "Enterprise platform for visual browser flow automation, end-to-end regression testing, live DOM inspection, and self-healing test execution.",
 };
 
 export default function RootLayout({
@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
+    <html lang="en" suppressHydrationWarning className="h-full">
+      <body className="antialiased h-full overflow-hidden">
         <Providers>{children}</Providers>
       </body>
     </html>

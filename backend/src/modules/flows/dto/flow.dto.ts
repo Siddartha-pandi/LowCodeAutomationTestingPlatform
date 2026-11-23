@@ -69,4 +69,8 @@ export class ExecuteFlowDto {
   @ApiProperty({ required: false, default: true })
   @IsOptional()
   async_exec?: boolean;
+
+  @ApiProperty({ required: false, default: true })
+  @IsOptional()
+  headless?: boolean;
 }

@@ -56,6 +56,11 @@ export function ExecutionDetailsPage({
     }
     loadExecution();
 
+    // Polling fallback to guarantee continuous updates during active run
+    const pollInterval = setInterval(() => {
+      loadExecution();
+    }, 1500);
+
     // Live WebSocket connection for running executions
     const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
     const wsProto = typeof window !== "undefined" && window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -74,6 +79,7 @@ export function ExecutionDetailsPage({
             );
             if (["passed", "failed", "completed", "cancelled"].includes(payload.data?.status)) {
               loadExecution();
+              clearInterval(pollInterval);
             }
           } else if (payload.type === "step:complete" || payload.type === "step:failed") {
             loadExecution();
@@ -100,6 +106,7 @@ export function ExecutionDetailsPage({
     } catch {}
 
     return () => {
+      clearInterval(pollInterval);
       if (ws) ws.close();
     };
   }, [executionId]);
@@ -231,6 +238,52 @@ export function ExecutionDetailsPage({
           </button>
         </div>
       </div>
+
+      {/* Real-time Automation Live Viewport Banner */}
+      {(execution.liveViewport || execution.status === "running" || execution.status === "queued") && (
+        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                Live Automation Viewport
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 font-mono">
+                {execution.status === "running" ? "Active Automation" : execution.status.toUpperCase()}
+              </span>
+            </div>
+            <span className="text-[11px] text-neutral-500 font-mono">
+              1280x800 Chromium Playwright Engine
+            </span>
+          </div>
+
+          <div className="aspect-[16/10] max-h-[540px] bg-neutral-950 rounded-xl overflow-hidden flex items-center justify-center border border-neutral-800 relative shadow-inner">
+            {execution.liveViewport ? (
+              <img
+                src={execution.liveViewport}
+                alt="Live Automation Viewport"
+                className="w-full h-full object-contain"
+                style={{ filter: "none", WebkitFilter: "none" }}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
+                <div className="w-8 h-8 border-2 border-neutral-400 border-t-white rounded-full animate-spin" />
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-neutral-200">
+                    Executing Playwright Automation Steps...
+                  </p>
+                  <p className="text-[11px] text-neutral-400">
+                    Live browser stream will render here as actions navigate and interact.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 6 Tabs Navigation Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 text-xs">

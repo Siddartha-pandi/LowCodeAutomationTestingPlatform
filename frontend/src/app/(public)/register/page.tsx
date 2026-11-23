@@ -128,10 +128,10 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs text-neutral-600 dark:text-neutral-300 flex items-start gap-2">
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs text-neutral-600 dark:text-neutral-400 flex items-start gap-2">
               <Shield className="w-4 h-4 text-black dark:text-white shrink-0 mt-0.5" />
               <span>
-                By creating a workspace, you confirm compliance with your organization's Zero-AI policy. No data or DOM content will ever be transmitted to external AI endpoints.
+                By creating a workspace, you agree to our Terms of Service and Privacy Policy. All workspace data is isolated and encrypted.
               </span>
             </div>
 

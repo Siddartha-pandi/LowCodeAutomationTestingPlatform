@@ -329,8 +329,18 @@ export class FlowExecutorService {
           error: stepError,
         });
 
-        // Capture failure screenshot artifact
+        // Capture failure screenshot artifact & emit viewport frame
         await this.artifactManager.captureScreenshot(page, state.executionId, node.id, state.storageDir, true);
+        try {
+          const failFrame = await this.pageManager.captureViewportFrame(page);
+          if (failFrame) {
+            await this.eventPublisher.publish(state.executionId, ExecutionEventType.VIEWPORT_FRAME, {
+              frame_base64: failFrame,
+              timestamp: Date.now(),
+              url: page.url(),
+            });
+          }
+        } catch {}
 
         await this.eventPublisher.publish(state.executionId, ExecutionEventType.STEP_FAILED, {
           node_id: node.id,

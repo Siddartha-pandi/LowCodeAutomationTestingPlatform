@@ -176,13 +176,13 @@ export function CreateFlowPage({ projectId, onNavigate, onFlowCreated }: CreateF
             </p>
           </div>
 
-          {/* Zero-AI Compliance Note */}
-          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 shrink-0 mt-0.5" />
+          {/* Execution Mode Note */}
+          <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-400 flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-neutral-700 dark:text-neutral-300 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <span className="font-bold">Deterministic Flow Guarantee:</span>
-              <p className="text-[11px] text-emerald-700 dark:text-neutral-400 dark:text-neutral-200">
-                This workflow will be compiled to a strictly deterministic Directed Acyclic Graph (DAG) executed by the local `agent-browser` engine without any AI generation or external API leaks.
+              <span className="font-semibold text-neutral-900 dark:text-neutral-100">Workflow Execution Mode:</span>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                Workflows compile into an execution graph and run in isolated sandbox browser sessions with full audit logging and step verification.
               </p>
             </div>
           </div>

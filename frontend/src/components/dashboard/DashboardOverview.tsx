@@ -121,9 +121,9 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
   const recentExecutionsList = executions.slice(0, 5);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
       {/* TOP KPI CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
         {/* KPI 1: Total Flows */}
         <div className="p-4 rounded-xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
@@ -188,7 +188,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
       </div>
 
       {/* 3. CHARTS GRID (3 Required Charts: Trend, Success vs Failure, Status Distribution) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Chart 1: Execution Trend */}
         <div className="p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
@@ -339,7 +339,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
       </div>
 
       {/* 4. RECENT EXECUTIONS & SYSTEM HEALTH */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Recent Executions Table */}
         <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
@@ -356,15 +356,15 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto -mx-1">
+            <table className="w-full text-left text-xs min-w-[480px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400">
                   <th className="py-2 px-1">Execution / Workflow</th>
-                  <th className="py-2 px-1">Type</th>
-                  <th className="py-2 px-1">Environment</th>
+                  <th className="py-2 px-1 hidden sm:table-cell">Type</th>
+                  <th className="py-2 px-1 hidden md:table-cell">Environment</th>
                   <th className="py-2 px-1">Status</th>
-                  <th className="py-2 px-1">Duration</th>
+                  <th className="py-2 px-1 hidden sm:table-cell">Duration</th>
                   <th className="py-2 px-1">Time</th>
                 </tr>
               </thead>
@@ -400,15 +400,15 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                       }}
                       className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition"
                     >
-                      <td className="py-2.5 px-1 font-semibold text-slate-800 dark:text-slate-200">
+                      <td className="py-2.5 px-1 font-semibold text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
                         {item.name}
                       </td>
-                      <td className="py-2.5 px-1">
+                      <td className="py-2.5 px-1 hidden sm:table-cell">
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                           {item.type}
                         </span>
                       </td>
-                      <td className="py-2.5 px-1 text-slate-500 dark:text-slate-400">{item.environment}</td>
+                      <td className="py-2.5 px-1 text-slate-500 dark:text-slate-400 hidden md:table-cell">{item.environment}</td>
                       <td className="py-2.5 px-1">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
@@ -429,7 +429,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
                           <span className="capitalize">{item.status}</span>
                         </span>
                       </td>
-                      <td className="py-2.5 px-1 font-mono text-slate-500 dark:text-slate-400">{item.duration}</td>
+                      <td className="py-2.5 px-1 font-mono text-slate-500 dark:text-slate-400 hidden sm:table-cell">{item.duration}</td>
                       <td className="py-2.5 px-1 text-slate-400 text-[11px]">{item.time}</td>
                     </tr>
                   ))
@@ -446,27 +446,27 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Terminal className="w-4 h-4 text-black dark:text-white" />
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Agent Browser Status</h3>
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs">Browser Engine Status</h3>
               </div>
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
 
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                <span>CLI Version</span>
-                <span className="font-mono text-slate-800 dark:text-slate-100 font-bold">0.41.2</span>
+                <span>Engine Active</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">Online</span>
               </div>
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Session Adapter</span>
-                <span className="font-mono text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 font-bold">Subprocess Active</span>
+                <span className="font-mono text-black dark:text-white font-bold">Subprocess Active</span>
               </div>
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Domain Whitelist</span>
                 <span className="font-mono text-slate-800 dark:text-slate-100 font-bold">Enforced</span>
               </div>
               <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                <span>Deterministic DOM</span>
-                <span className="font-mono text-black dark:text-white dark:text-white font-bold">100% Rule-Based</span>
+                <span>DOM Inspection</span>
+                <span className="font-mono text-black dark:text-white font-bold">Accessibility Tree</span>
               </div>
             </div>
 

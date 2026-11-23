@@ -69,7 +69,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
       return sessionIdRef.current;
     }
     setIsLoading(true);
-    addLog("SESSION", "Spawning new isolated Agent Browser CLI process...");
+    addLog("SESSION", "Spawning new isolated browser process...");
     try {
       const res = await browserApi.launch({
         project_id: projectId || undefined,
@@ -80,7 +80,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
       sessionIdRef.current = newId;
       setSessionActive(true);
       setBrowserStatus("Connected");
-      addLog("SESSION", `Isolated Agent Browser session initialized (${newId}).`);
+      addLog("SESSION", `Isolated browser session initialized (${newId}).`);
       success("Browser Started", `Session ${newId} ready.`);
       return newId;
     } catch (err: any) {
@@ -111,7 +111,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
       sessionIdRef.current = "";
       setBrowserStatus("Terminated");
       setViewportScreenshot(null);
-      addLog("SESSION", "Agent Browser CLI subprocess exited cleanly.");
+      addLog("SESSION", "Browser subprocess exited cleanly.");
       warning("Session Terminated", "Browser process closed.");
     } catch (err: any) {
       addLog("ERROR", `Error closing session: ${err.message}`);
@@ -194,7 +194,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 max-w-auto mx-auto space-y-6">
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -203,7 +203,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
             <span>Live Browser Monitor</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Direct subprocess controller and live screenshot observer powered by Agent Browser CLI.
+            Direct subprocess controller and live screenshot observer.
           </p>
         </div>
 
@@ -344,6 +344,7 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
                 src={viewportScreenshot}
                 alt="Live Viewport Capture"
                 className="w-full h-full object-contain"
+                style={{ filter: "none", WebkitFilter: "none" }}
               />
             ) : (
               <div className="text-center p-8 space-y-2">
@@ -389,10 +390,10 @@ export function LiveBrowserPage({ projectId, onNavigate }: LiveBrowserPageProps)
             <div ref={logsEndRef} />
           </div>
 
-          {/* Zero-AI Note */}
-          <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white shrink-0" />
-            <span>Pure subprocess isolation. No external telemetry or cloud renderers.</span>
+          {/* Session Status Note */}
+          <div className="p-2.5 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-[10px] text-neutral-600 dark:text-neutral-400 flex items-center gap-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400 shrink-0" />
+            <span>Isolated browser session active. Direct real-time viewport observation.</span>
           </div>
         </div>
       </div>

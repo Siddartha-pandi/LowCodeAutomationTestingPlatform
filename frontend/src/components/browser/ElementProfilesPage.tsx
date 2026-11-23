@@ -239,7 +239,7 @@ export function ElementProfilesPage({ projectId, onNavigate }: ElementProfilesPa
           />
         </div>
         <div className="text-[11px] font-mono text-slate-400 hidden sm:block">
-          Deterministic Engine: <span className="text-black dark:text-white font-bold">Multi-Signal Scoring Active</span>
+          Engine: <span className="text-black dark:text-white font-bold">Multi-Signal Scoring Active</span>
         </div>
       </div>
 

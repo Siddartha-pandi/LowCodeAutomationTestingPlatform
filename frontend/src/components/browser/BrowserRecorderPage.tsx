@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Video,
   Play,
@@ -8,28 +8,31 @@ import {
   Globe,
   MousePointer,
   Type,
-  ListFilter,
-  CheckSquare,
-  Radio,
-  ArrowDown,
   Trash2,
   Edit2,
   Save,
   Clock,
-  Sparkles,
-  ExternalLink,
-  ShieldCheck,
-  AlertCircle,
-  FileCode,
-  GitBranch,
   RefreshCw,
-  Camera,
-  ChevronRight,
   Loader2,
   Crosshair,
-  Layers,
-  Search,
   X,
+  ArrowLeft,
+  RotateCcw,
+  Maximize2,
+  Minimize2,
+  ZoomIn,
+  ZoomOut,
+  Navigation,
+  Monitor,
+  ArrowDown,
+  ArrowUp,
+  ShieldCheck,
+  FileCode,
+  GitBranch,
+  Keyboard,
+  CornerDownLeft,
+  Sparkles,
+  Check,
 } from "lucide-react";
 import { recorderApi, browserApi, flowsApi, testsApi } from "@/api";
 import { useToast } from "../common/ToastProvider";
@@ -61,6 +64,7 @@ export function BrowserRecorderPage({
   const [isRecording, setIsRecording] = useState(false);
   const [targetUrl, setTargetUrl] = useState("https://mahila-action-vsk.vercel.app/");
   const [currentUrl, setCurrentUrl] = useState("");
+  const [navbarUrl, setNavbarUrl] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [recordedActions, setRecordedActions] = useState<RecordedAction[]>([]);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
@@ -68,6 +72,30 @@ export function BrowserRecorderPage({
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
   const [saveType, setSaveType] = useState<"flow" | "test">("test");
+  const [viewportExpanded, setViewportExpanded] = useState(false);
+  const [zoom, setZoom] = useState(100);
+
+  // Auto-refresh polling
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Viewport image ref & click ripple
+  const viewportImgRef = useRef<HTMLImageElement | null>(null);
+  const [clickIndicator, setClickIndicator] = useState<{ x: number; y: number } | null>(null);
+
+  // Input Mode & Quick Input State
+  const [interactionMode, setInteractionMode] = useState<"click" | "input">("click");
+  const [quickInputText, setQuickInputText] = useState("");
+  const [activeInputTarget, setActiveInputTarget] = useState("");
+  const [activeInputCoords, setActiveInputCoords] = useState<{ x: number; y: number } | null>(null);
+  
+  // Interactive Input Popover Modal
+  const [inputModalOpen, setInputModalOpen] = useState(false);
+  const [modalInputSelector, setModalInputSelector] = useState("");
+  const [modalInputValue, setModalInputValue] = useState("");
+  const [modalInputPlaceholder, setModalInputPlaceholder] = useState("");
+  const [pressEnterAfterSubmit, setPressEnterAfterSubmit] = useState(true);
+  const modalInputRef = useRef<HTMLInputElement | null>(null);
 
   // Manual interactive input state
   const [interactiveAction, setInteractiveAction] = useState<RecordedAction["action"]>("click");
@@ -80,23 +108,66 @@ export function BrowserRecorderPage({
   const [elementFilter, setElementFilter] = useState("");
 
   const sessionIdRef = useRef<string | null>(null);
-  const { success, error, warning, info } = useToast();
+  const { success, error, info } = useToast();
   const { confirm } = useConfirm();
 
   useEffect(() => {
     sessionIdRef.current = sessionId;
   }, [sessionId]);
 
-  // Cleanup on unmount
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
+  const startPolling = useCallback((sessId: string) => {
+    stopPolling();
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const shot = await browserApi.screenshot(sessId, { full_page: false });
+        const b64 = shot?.image_base64 || shot?.screenshot;
+        if (b64 && b64.startsWith("data:image")) {
+          setScreenshotUrl(b64);
+        }
+      } catch {}
+    }, 2000);
+  }, [stopPolling]);
+
+  // Clean up on unmount
   useEffect(() => {
     return () => {
+      stopPolling();
       if (sessionIdRef.current) {
         recorderApi.stop(sessionIdRef.current).catch(() => {});
       }
     };
-  }, []);
+  }, [stopPolling]);
 
-  // Refresh screenshot from API
+  // Toggle auto polling
+  useEffect(() => {
+    if (isRecording && sessionId) {
+      if (autoRefresh) {
+        startPolling(sessionId);
+      } else {
+        stopPolling();
+      }
+    } else {
+      stopPolling();
+    }
+  }, [autoRefresh, isRecording, sessionId, startPolling, stopPolling]);
+
+  // Auto focus input modal when opened
+  useEffect(() => {
+    if (inputModalOpen) {
+      setTimeout(() => {
+        modalInputRef.current?.focus();
+      }, 50);
+    }
+  }, [inputModalOpen]);
+
+  // Refresh screenshot manually
   const refreshScreenshot = async (sessId: string) => {
     try {
       const shot = await browserApi.screenshot(sessId, { full_page: false });
@@ -110,7 +181,196 @@ export function BrowserRecorderPage({
     }
   };
 
-  // Start recording session
+  // Click directly on viewport image
+  const handleViewportClick = async (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!sessionId || !isRecording || isLoading) return;
+    const img = viewportImgRef.current;
+    if (!img) return;
+
+    const rect = img.getBoundingClientRect();
+    const naturalW = img.naturalWidth || 1280;
+    const naturalH = img.naturalHeight || 800;
+    const clickX = Math.round((e.clientX - rect.left) * (naturalW / rect.width));
+    const clickY = Math.round((e.clientY - rect.top) * (naturalH / rect.height));
+    const bx = Math.max(0, Math.min(naturalW - 1, clickX));
+    const by = Math.max(0, Math.min(naturalH - 1, clickY));
+
+    // Save exact click coordinates for precise input filling
+    setActiveInputCoords({ x: bx, y: by });
+
+    // Ripple visual indicator
+    setClickIndicator({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    setTimeout(() => setClickIndicator(null), 700);
+
+    setIsLoading(true);
+    try {
+      const actRes = await recorderApi.recordAction(sessionId, "click", "", undefined, bx, by);
+
+      const resolvedSel = actRes?.element_info?.selector || actRes?.recorded_action?.selector || `(${bx}, ${by})`;
+      const targetLabel = resolvedSel.startsWith("(") ? `(${bx}, ${by})` : resolvedSel;
+
+      const newAction: RecordedAction = {
+        id: `rec_${Date.now()}`,
+        action: "click",
+        target: targetLabel,
+        timestamp: new Date().toLocaleTimeString(),
+        status: "verified",
+      };
+      setRecordedActions((prev) => [...prev, newAction]);
+
+      // Update active input target
+      if (!resolvedSel.startsWith("(")) {
+        setActiveInputTarget(resolvedSel);
+      } else {
+        setActiveInputTarget("");
+      }
+
+      const b64 = actRes?.image_base64 || actRes?.screenshot;
+      if (b64 && b64.startsWith("data:image")) {
+        setScreenshotUrl(b64);
+      } else {
+        await refreshScreenshot(sessionId);
+      }
+
+      // Check if user clicked an input element or is in input mode
+      if (actRes?.element_info?.isInput || interactionMode === "input") {
+        const inputSel = !resolvedSel.startsWith("(") ? resolvedSel : "";
+        setModalInputSelector(inputSel);
+        setModalInputPlaceholder(actRes?.element_info?.placeholder || "Enter value...");
+        setModalInputValue(actRes?.element_info?.value || "");
+        setInputModalOpen(true);
+      }
+
+      // Re-inspect elements in background
+      recorderApi.inspect(sessionId).then((insRes) => {
+        if (insRes && insRes.elements) setDetectedElements(insRes.elements);
+      }).catch(() => {});
+    } catch (err: any) {
+      error("Click Failed", err.message || "Failed to execute click at coordinates.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fill text into browser element
+  const handleSendInputText = async (targetSelector: string, textToType: string, pressEnter: boolean = false) => {
+    if (!sessionId) return;
+    if (!textToType && !pressEnter) return;
+
+    setIsLoading(true);
+    try {
+      const cleanSelector = targetSelector && !targetSelector.startsWith("(") ? targetSelector : "";
+      const actRes = await recorderApi.recordAction(
+        sessionId,
+        "fill",
+        cleanSelector,
+        textToType,
+        activeInputCoords?.x,
+        activeInputCoords?.y
+      );
+
+      const targetLabel = cleanSelector || (activeInputCoords ? `(${activeInputCoords.x}, ${activeInputCoords.y})` : "focused_element");
+      const newAction: RecordedAction = {
+        id: `rec_${Date.now()}`,
+        action: "fill",
+        target: targetLabel,
+        value: textToType,
+        timestamp: new Date().toLocaleTimeString(),
+        status: "verified",
+      };
+      setRecordedActions((prev) => [...prev, newAction]);
+      success("Input Recorded", `Entered "${textToType}" into ${targetLabel}`);
+
+      if (pressEnter) {
+        await browserApi.action(sessionId, { action: "press", value: "Enter" });
+        setRecordedActions((prev) => [
+          ...prev,
+          {
+            id: `rec_${Date.now() + 1}`,
+            action: "fill" as any,
+            target: "keyboard",
+            value: "Enter (⏎)",
+            timestamp: new Date().toLocaleTimeString(),
+            status: "verified",
+          },
+        ]);
+      }
+
+      const b64 = actRes?.image_base64 || actRes?.screenshot;
+      if (b64 && b64.startsWith("data:image")) {
+        setScreenshotUrl(b64);
+      } else {
+        await refreshScreenshot(sessionId);
+      }
+
+      setInputModalOpen(false);
+      setModalInputValue("");
+      setQuickInputText("");
+    } catch (err: any) {
+      error("Input Failed", err.message || "Failed to enter text into browser.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Dispatch key press (e.g. Enter, Tab, Escape)
+  const handleSendKey = async (key: string) => {
+    if (!sessionId || isLoading) return;
+    setIsLoading(true);
+    try {
+      const actRes = await browserApi.action(sessionId, { action: "press", value: key });
+      const newAction: RecordedAction = {
+        id: `rec_${Date.now()}`,
+        action: "fill" as any,
+        target: `key_${key}`,
+        value: key,
+        timestamp: new Date().toLocaleTimeString(),
+        status: "verified",
+      };
+      setRecordedActions((prev) => [...prev, newAction]);
+      const b64 = actRes?.image_base64 || actRes?.screenshot;
+      if (b64 && b64.startsWith("data:image")) setScreenshotUrl(b64);
+      else await refreshScreenshot(sessionId);
+      success("Key Sent", `Dispatched ${key} key to browser`);
+    } catch (err: any) {
+      error("Key Failed", err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Navigate using the address bar
+  const handleViewportNavigate = async (urlToNav: string = navbarUrl) => {
+    if (!sessionId || !urlToNav.trim()) return;
+    let nav = urlToNav.trim();
+    if (!nav.startsWith("http://") && !nav.startsWith("https://")) nav = `https://${nav}`;
+    setNavbarUrl(nav);
+    setIsLoading(true);
+    try {
+      const res = await browserApi.navigate(sessionId, nav);
+      const newAction: RecordedAction = {
+        id: `rec_${Date.now()}`,
+        action: "navigate",
+        target: nav,
+        timestamp: new Date().toLocaleTimeString(),
+        status: "verified",
+      };
+      setRecordedActions((prev) => [...prev, newAction]);
+      setCurrentUrl(nav);
+      const b64 = res?.image_base64 || res?.screenshot;
+      if (b64 && b64.startsWith("data:image")) {
+        setScreenshotUrl(b64);
+      } else {
+        await refreshScreenshot(sessionId);
+      }
+    } catch (err: any) {
+      error("Navigate Failed", err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Start recording
   const handleStartRecording = async () => {
     let url = targetUrl.trim();
     if (!url) {
@@ -131,6 +391,7 @@ export function BrowserRecorderPage({
       setSessionId(newSessionId);
       sessionIdRef.current = newSessionId;
       setCurrentUrl(url);
+      setNavbarUrl(url);
       setIsRecording(true);
 
       const initAction: RecordedAction = {
@@ -142,7 +403,6 @@ export function BrowserRecorderPage({
       };
       setRecordedActions([initAction]);
 
-      // Set initial base64 screenshot
       const b64 = res.image_base64 || res.initial_screenshot || res.screenshot;
       if (b64 && b64.startsWith("data:image")) {
         setScreenshotUrl(b64);
@@ -150,12 +410,11 @@ export function BrowserRecorderPage({
         await refreshScreenshot(newSessionId);
       }
 
-      success("Session Active", "Agent Browser ready. Actions are recorded in real time.");
-      // Auto-inspect elements on load
+      success("Session Active", "Browser active! Click directly in viewport to click or enter input.");
+      if (autoRefresh) startPolling(newSessionId);
+
       recorderApi.inspect(newSessionId).then((insRes) => {
-        if (insRes && insRes.elements) {
-          setDetectedElements(insRes.elements);
-        }
+        if (insRes && insRes.elements) setDetectedElements(insRes.elements);
       }).catch(() => {});
     } catch (err: any) {
       error("Session Failed", err.message || "Failed to start Agent Browser recording session.");
@@ -164,20 +423,19 @@ export function BrowserRecorderPage({
     }
   };
 
-  // Stop recording session
+  // Stop recording
   const handleStopRecording = async () => {
+    stopPolling();
     if (sessionId) {
       try {
         await recorderApi.stop(sessionId);
-      } catch (e) {
-        // ignore close error
-      }
+      } catch {}
     }
     setIsRecording(false);
     success("Recording Paused", `Captured ${recordedActions.length} verified actions.`);
   };
 
-  // Fetch interactive elements on current page
+  // Inspect elements
   const handleInspectElements = async () => {
     if (!sessionId) return;
     setInspecting(true);
@@ -194,11 +452,15 @@ export function BrowserRecorderPage({
     }
   };
 
-  // Select detected element
   const handleSelectElement = (el: any) => {
     setInteractiveSelector(el.selector);
+    setActiveInputTarget(el.selector);
     if (el.tag === "input" || el.tag === "textarea") {
       setInteractiveAction("fill");
+      setModalInputSelector(el.selector);
+      setModalInputPlaceholder(el.text || el.selector);
+      setModalInputValue("");
+      setInputModalOpen(true);
     } else if (el.tag === "select") {
       setInteractiveAction("select");
     } else {
@@ -207,7 +469,7 @@ export function BrowserRecorderPage({
     success("Selector Set", `Selected ${el.tag} '${el.text || el.selector}'`);
   };
 
-  // Execute and record action
+  // Dispatch manual action
   const handleExecuteAction = async () => {
     if (!sessionId) return;
     const isNavigation = ["scroll", "reload", "back"].includes(interactiveAction);
@@ -218,25 +480,12 @@ export function BrowserRecorderPage({
 
     setIsLoading(true);
     try {
-      info("Executing Action", `Dispatching ${interactiveAction} on '${interactiveSelector || "page"}'...`);
-
-      let actRes: any = null;
-      try {
-        actRes = await recorderApi.recordAction(
-          sessionId,
-          interactiveAction,
-          interactiveSelector,
-          interactiveValue || undefined
-        );
-      } catch (recErr) {
-        // Fallback through browser action API
-        actRes = await browserApi.action(sessionId, {
-          action: interactiveAction,
-          selector: interactiveSelector,
-          text: interactiveValue,
-          value: interactiveValue,
-        });
-      }
+      const actRes = await recorderApi.recordAction(
+        sessionId,
+        interactiveAction,
+        interactiveSelector,
+        interactiveValue || undefined
+      );
 
       const newAction: RecordedAction = {
         id: `rec_${Date.now()}`,
@@ -246,11 +495,9 @@ export function BrowserRecorderPage({
         timestamp: new Date().toLocaleTimeString(),
         status: "verified",
       };
-
       setRecordedActions((prev) => [...prev, newAction]);
-      success("Action Recorded", `Verified: ${interactiveAction} -> ${interactiveSelector || "page"}`);
+      success("Action Recorded", `Verified: ${interactiveAction} → ${interactiveSelector || "page"}`);
 
-      // Update screenshot
       const b64 = actRes?.image_base64 || actRes?.screenshot;
       if (b64 && b64.startsWith("data:image")) {
         setScreenshotUrl(b64);
@@ -258,11 +505,9 @@ export function BrowserRecorderPage({
         await refreshScreenshot(sessionId);
       }
 
-      // Clear input fields
       setInteractiveSelector("");
       setInteractiveValue("");
 
-      // Re-inspect elements after action
       recorderApi.inspect(sessionId).then((ins) => {
         if (ins && ins.elements) setDetectedElements(ins.elements);
       }).catch(() => {});
@@ -273,12 +518,80 @@ export function BrowserRecorderPage({
     }
   };
 
-  // Delete recorded step
+  // Quick actions: scroll
+  const handleQuickScroll = async (direction: "down" | "up") => {
+    if (!sessionId || isLoading) return;
+    setIsLoading(true);
+    try {
+      const actRes = await browserApi.action(sessionId, {
+        action: "scroll",
+        value: direction === "down" ? "400" : "-400",
+      });
+      setRecordedActions((prev) => [
+        ...prev,
+        {
+          id: `rec_${Date.now()}`,
+          action: "scroll",
+          target: direction === "down" ? "scroll_down (400px)" : "scroll_up (-400px)",
+          timestamp: new Date().toLocaleTimeString(),
+          status: "verified",
+        },
+      ]);
+      const b64 = actRes?.image_base64 || actRes?.screenshot;
+      if (b64 && b64.startsWith("data:image")) setScreenshotUrl(b64);
+      else await refreshScreenshot(sessionId);
+    } catch {} finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mouse wheel scrolling for live interactive viewport
+  const scrollTimeoutRef = useRef<any>(null);
+  const scrollAccumulatorRef = useRef<number>(0);
+
+  const handleViewportWheel = (e: React.WheelEvent) => {
+    if (!sessionId || isLoading) return;
+    scrollAccumulatorRef.current += e.deltaY;
+
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(async () => {
+      const delta = scrollAccumulatorRef.current;
+      scrollAccumulatorRef.current = 0;
+      if (Math.abs(delta) < 20) return;
+
+      const scrollAmount = Math.sign(delta) * Math.min(Math.abs(Math.round(delta * 1.8)), 600);
+      try {
+        setIsLoading(true);
+        const actRes = await browserApi.action(sessionId, {
+          action: "scroll",
+          value: String(scrollAmount),
+        });
+
+        if (isRecording) {
+          setRecordedActions((prev) => [
+            ...prev,
+            {
+              id: `rec_${Date.now()}`,
+              action: "scroll",
+              target: `scroll (${scrollAmount > 0 ? "+" : ""}${scrollAmount}px)`,
+              timestamp: new Date().toLocaleTimeString(),
+              status: "verified",
+            },
+          ]);
+        }
+        const b64 = actRes?.image_base64 || actRes?.screenshot;
+        if (b64 && b64.startsWith("data:image")) setScreenshotUrl(b64);
+        else await refreshScreenshot(sessionId);
+      } catch {} finally {
+        setIsLoading(false);
+      }
+    }, 150);
+  };
+
   const handleDeleteAction = (id: string) => {
     setRecordedActions((prev) => prev.filter((a) => a.id !== id));
   };
 
-  // Edit recorded step state & handler
   const [editingAction, setEditingAction] = useState<RecordedAction | null>(null);
   const [editActionType, setEditActionType] = useState("click");
   const [editActionTarget, setEditActionTarget] = useState("");
@@ -296,12 +609,7 @@ export function BrowserRecorderPage({
     setRecordedActions((prev) =>
       prev.map((a) =>
         a.id === editingAction.id
-          ? {
-              ...a,
-              action: editActionType as any,
-              target: editActionTarget.trim(),
-              value: editActionValue.trim() || undefined,
-            }
+          ? { ...a, action: editActionType as any, target: editActionTarget.trim(), value: editActionValue.trim() || undefined }
           : a
       )
     );
@@ -309,7 +617,6 @@ export function BrowserRecorderPage({
     success("Step Updated", "Recorded action parameters modified.");
   };
 
-  // Clear all steps
   const handleClearAll = () => {
     confirm({
       title: "Clear Recorded Actions?",
@@ -323,16 +630,13 @@ export function BrowserRecorderPage({
     });
   };
 
-  // Save as Flow or Test Case
   const handleSaveRecording = async () => {
     if (!saveTitle.trim()) {
       error("Title Required", "Please provide a name for the saved item.");
       return;
     }
-
     setIsLoading(true);
     try {
-      // 1. Try backend recorderApi.save first
       if (sessionId) {
         try {
           const res = await recorderApi.save({
@@ -355,13 +659,12 @@ export function BrowserRecorderPage({
             return;
           }
         } catch (backendSaveErr) {
-          console.warn("Backend save endpoint encountered issue, falling back to direct creation:", backendSaveErr);
+          console.warn("Backend save fallback:", backendSaveErr);
         }
       }
 
-      // 2. Client-side fallback creation
       if (saveType === "flow") {
-        info("Generating Flow", "Transforming recorded actions into React Flow DAG...");
+        info("Generating Flow", "Transforming recorded actions into visual flow...");
         const nodes: any[] = recordedActions.map((act, idx) => ({
           id: `node_${idx + 1}`,
           type: "action",
@@ -380,27 +683,22 @@ export function BrowserRecorderPage({
           config: { reason: "Recording completed" },
           position: { x: 100 + nodes.length * 240, y: 150 },
         });
-
         const edges = [];
         for (let i = 0; i < nodes.length - 1; i++) {
           edges.push({ id: `e_${i}`, source: nodes[i].id, target: nodes[i + 1].id });
         }
-
-        const flowDef = {
-          name: saveTitle.trim(),
-          description: `Recorded session from ${currentUrl || targetUrl}`,
-          start_node_id: "node_1",
-          nodes,
-          edges,
-        };
-
         const created = await flowsApi.create({
           project_id: projectId || "p1-default",
           name: saveTitle.trim(),
           description: `Imported from Browser Recorder (${recordedActions.length} steps)`,
-          definition: flowDef,
+          definition: {
+            name: saveTitle.trim(),
+            description: `Recorded session from ${currentUrl || targetUrl}`,
+            start_node_id: "node_1",
+            nodes,
+            edges,
+          },
         });
-
         success("Flow Saved", `Created visual flow '${saveTitle}'.`);
         setSaveModalOpen(false);
         if (onSelectFlow && created.id) onSelectFlow(created.id);
@@ -415,22 +713,18 @@ export function BrowserRecorderPage({
           target: act.action !== "navigate" ? { selector: act.target } : undefined,
           config: act.action === "navigate" ? { url: act.target } : { value: act.value },
         }));
-
-        const testDef = {
-          name: saveTitle.trim(),
-          description: `Recorded regression test from ${currentUrl || targetUrl}`,
-          setup_steps: [],
-          steps,
-          teardown_steps: [],
-        };
-
         const created = await testsApi.create({
           project_id: projectId || "p1-default",
           name: saveTitle.trim(),
           description: `Imported from Browser Recorder (${recordedActions.length} steps)`,
-          test_case: testDef,
+          test_case: {
+            name: saveTitle.trim(),
+            description: `Recorded regression test from ${currentUrl || targetUrl}`,
+            setup_steps: [],
+            steps,
+            teardown_steps: [],
+          },
         });
-
         success("Test Case Saved", `Created test case '${saveTitle}'.`);
         setSaveModalOpen(false);
         if (onSelectTest && created.id) onSelectTest(created.id);
@@ -453,30 +747,502 @@ export function BrowserRecorderPage({
     );
   });
 
+  // Interactive Viewport Component
+  const ViewportPanel = (
+    <div
+      className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs flex flex-col transition-all duration-200 ${
+        viewportExpanded ? "fixed inset-3 z-50 shadow-2xl" : ""
+      }`}
+    >
+      {/* 1. Browser Chrome Header Bar */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-xs">
+        {/* Window control dots */}
+        <div className="flex items-center gap-1.5 shrink-0 mr-1">
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-400 dark:bg-rose-600" />
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 dark:bg-amber-600" />
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 dark:bg-emerald-600" />
+        </div>
+
+        {/* Back Button */}
+        <button
+          onClick={async () => {
+            if (!sessionId) return;
+            setIsLoading(true);
+            try {
+              await browserApi.action(sessionId, { action: "back" });
+              await refreshScreenshot(sessionId);
+              setRecordedActions((p) => [
+                ...p,
+                { id: `rec_${Date.now()}`, action: "back", target: "page", timestamp: new Date().toLocaleTimeString(), status: "verified" },
+              ]);
+            } catch {} finally {
+              setIsLoading(false);
+            }
+          }}
+          disabled={!isRecording || isLoading}
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-30 transition cursor-pointer"
+          title="Back"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Reload Button */}
+        <button
+          onClick={async () => {
+            if (!sessionId) return;
+            setIsLoading(true);
+            try {
+              await browserApi.action(sessionId, { action: "reload" });
+              await refreshScreenshot(sessionId);
+              setRecordedActions((p) => [
+                ...p,
+                { id: `rec_${Date.now()}`, action: "reload", target: "page", timestamp: new Date().toLocaleTimeString(), status: "verified" },
+              ]);
+            } catch {} finally {
+              setIsLoading(false);
+            }
+          }}
+          disabled={!isRecording || isLoading}
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-30 transition cursor-pointer"
+          title="Reload"
+        >
+          <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+        </button>
+
+        {/* Scroll Buttons */}
+        <button
+          onClick={() => handleQuickScroll("up")}
+          disabled={!isRecording || isLoading}
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-30 transition cursor-pointer"
+          title="Scroll Up"
+        >
+          <ArrowUp className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => handleQuickScroll("down")}
+          disabled={!isRecording || isLoading}
+          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 disabled:opacity-30 transition cursor-pointer"
+          title="Scroll Down"
+        >
+          <ArrowDown className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Interactive Address Bar */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleViewportNavigate();
+          }}
+          className="flex-1 flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1 gap-2 min-w-0"
+        >
+          <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <input
+            type="text"
+            value={navbarUrl}
+            onChange={(e) => setNavbarUrl(e.target.value)}
+            disabled={!isRecording}
+            placeholder="Type URL and press Enter..."
+            className="flex-1 bg-transparent text-xs font-mono text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none disabled:opacity-60 truncate"
+          />
+          <button
+            type="submit"
+            disabled={!isRecording}
+            className="p-1 rounded text-slate-400 hover:text-black dark:hover:text-white disabled:opacity-30 transition cursor-pointer"
+            title="Navigate"
+          >
+            <Navigation className="w-3.5 h-3.5" />
+          </button>
+        </form>
+
+        {/* Interaction Mode: Click vs Type/Fill */}
+        {isRecording && (
+          <div className="hidden md:flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-0.5 text-[11px] font-semibold">
+            <button
+              onClick={() => setInteractionMode("click")}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded transition cursor-pointer ${
+                interactionMode === "click"
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
+              }`}
+              title="Click mode: click elements in viewport"
+            >
+              <MousePointer className="w-3 h-3" />
+              <span>Click</span>
+            </button>
+            <button
+              onClick={() => {
+                setInteractionMode("input");
+                if (activeInputTarget) {
+                  setModalInputSelector(activeInputTarget);
+                  setInputModalOpen(true);
+                }
+              }}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded transition cursor-pointer ${
+                interactionMode === "input"
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
+              }`}
+              title="Input mode: click an element to enter text"
+            >
+              <Type className="w-3 h-3" />
+              <span>Enter Input</span>
+            </button>
+          </div>
+        )}
+
+        {/* Zoom Controls */}
+        <div className="hidden lg:flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+          <button
+            onClick={() => setZoom((z) => Math.max(50, z - 10))}
+            className="p-1 hover:text-black dark:hover:text-white transition cursor-pointer"
+            title="Zoom Out"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <span className="w-9 text-center">{zoom}%</span>
+          <button
+            onClick={() => setZoom((z) => Math.min(150, z + 10))}
+            className="p-1 hover:text-black dark:hover:text-white transition cursor-pointer"
+            title="Zoom In"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Live stream indicator & auto refresh */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isRecording && (
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border transition cursor-pointer ${
+                autoRefresh
+                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700"
+              }`}
+              title="Toggle live viewport polling"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${autoRefresh ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+              <span>{autoRefresh ? "LIVE" : "PAUSED"}</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => sessionId && refreshScreenshot(sessionId)}
+            disabled={!sessionId || isLoading}
+            className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white disabled:opacity-30 transition cursor-pointer"
+            title="Refresh Viewport"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+
+          <button
+            onClick={() => setViewportExpanded((v) => !v)}
+            className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition cursor-pointer"
+            title={viewportExpanded ? "Exit Fullscreen" : "Fullscreen Viewport"}
+          >
+            {viewportExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Direct Interactive Input & Keystroke Strip */}
+      {isRecording && (
+        <div className="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 text-xs">
+          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 shrink-0 font-medium">
+            <Keyboard className="w-3.5 h-3.5 text-black dark:text-white" />
+            <span className="hidden sm:inline">Active Input:</span>
+            <span className="font-mono text-[11px] text-slate-800 dark:text-slate-200 max-w-[140px] truncate">
+              {activeInputTarget || "Focused Element"}
+            </span>
+          </div>
+
+          {/* Direct typing input box */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendInputText(activeInputTarget, quickInputText, false);
+            }}
+            className="flex-1 flex items-center gap-1.5 min-w-[220px]"
+          >
+            <input
+              type="text"
+              value={quickInputText}
+              onChange={(e) => setQuickInputText(e.target.value)}
+              placeholder="Type text to enter into active element..."
+              className="flex-1 px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !quickInputText.trim()}
+              className="px-3 py-1 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-semibold rounded-lg text-xs shadow-xs transition disabled:opacity-40 cursor-pointer flex items-center gap-1"
+            >
+              <span>Fill</span>
+              <CornerDownLeft className="w-3 h-3" />
+            </button>
+          </form>
+
+          {/* Quick Key Buttons */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleSendKey("Enter")}
+              disabled={isLoading}
+              className="px-2 py-1 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[11px] font-mono text-slate-700 dark:text-slate-300 transition cursor-pointer"
+              title="Send Enter Key"
+            >
+              ⏎ Enter
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSendKey("Tab")}
+              disabled={isLoading}
+              className="px-2 py-1 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[11px] font-mono text-slate-700 dark:text-slate-300 transition cursor-pointer"
+              title="Send Tab Key"
+            >
+              ⇥ Tab
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setModalInputSelector(activeInputTarget || "input");
+                setModalInputPlaceholder("Enter text value...");
+                setModalInputValue("");
+                setInputModalOpen(true);
+              }}
+              className="px-2 py-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 rounded text-[11px] font-medium flex items-center gap-1 transition cursor-pointer"
+              title="Open full text input modal"
+            >
+              <Type className="w-3 h-3" />
+              <span>Custom Input</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Viewport Frame */}
+      <div
+        onWheel={handleViewportWheel}
+        className="relative flex-1 bg-slate-950 flex flex-col items-center justify-center p-2 overflow-auto scrollbar-thin"
+        style={{ minHeight: viewportExpanded ? "calc(100vh - 270px)" : "440px" }}
+      >
+        {/* Executing action indicator */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-2xs flex flex-col items-center justify-center gap-2 z-20 animate-in fade-in">
+            <Loader2 className="w-8 h-8 text-black dark:text-white animate-spin" />
+            <span className="text-xs font-mono text-slate-200">
+              Dispatching interaction and capturing live frame...
+            </span>
+          </div>
+        )}
+
+        {screenshotUrl ? (
+          <div
+            className="relative inline-block max-w-full"
+            style={{
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: "top center",
+              transition: "transform 0.12s ease-out",
+            }}
+          >
+            <img
+              ref={viewportImgRef}
+              src={screenshotUrl}
+              alt="Interactive Browser Viewport"
+              onClick={handleViewportClick}
+              className={`block max-w-full rounded-md shadow-2xl select-none ${
+                isRecording
+                  ? interactionMode === "input"
+                    ? "cursor-text ring-2 ring-blue-500/30"
+                    : "cursor-crosshair hover:ring-2 hover:ring-blue-500/50"
+                  : "cursor-default"
+              }`}
+              style={{ maxHeight: viewportExpanded ? "calc(100vh - 290px)" : "none", maxWidth: "100%", filter: "none", WebkitFilter: "none" }}
+              draggable={false}
+            />
+
+            {/* Visual ripple effect when user clicks */}
+            {clickIndicator && (
+              <span
+                className="absolute pointer-events-none w-7 h-7 rounded-full border-2 border-white bg-blue-500/30 animate-ping"
+                style={{
+                  left: clickIndicator.x - 14,
+                  top: clickIndicator.y - 14,
+                }}
+              />
+            )}
+
+            {/* Quick Floating Scroll Controls */}
+            <div className="absolute right-3 bottom-3 flex flex-col gap-1.5 z-30 bg-black/80 backdrop-blur-md p-1 rounded-lg border border-neutral-700 shadow-xl">
+              <button
+                type="button"
+                onClick={() => handleQuickScroll("up")}
+                disabled={isLoading}
+                className="p-1.5 rounded hover:bg-white/20 text-white transition disabled:opacity-50 cursor-pointer"
+                title="Scroll Up (Page Up)"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickScroll("down")}
+                disabled={isLoading}
+                className="p-1.5 rounded hover:bg-white/20 text-white transition disabled:opacity-50 cursor-pointer"
+                title="Scroll Down (Page Down)"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center text-slate-400 space-y-3 p-8">
+            <Monitor className="w-12 h-12 mx-auto opacity-30 text-black dark:text-white" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-slate-300">
+                {isRecording ? "Capturing live frame from Agent Browser..." : "Browser Session Idle"}
+              </p>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Enter target URL above and click <strong>Start Recording</strong> to launch the interactive browser.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Viewport Hint Badge */}
+        {isRecording && screenshotUrl && (
+          <div className="absolute bottom-3 left-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-neutral-700 text-[11px] text-neutral-300 flex items-center gap-2 pointer-events-none select-none z-10 shadow-lg">
+            <MousePointer className="w-3.5 h-3.5 text-black dark:text-white" />
+            <span>
+              {interactionMode === "input"
+                ? "Click any input field to type text into it"
+                : "Click elements to click or enter input directly"}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Bottom Manual Action Bar */}
+      {isRecording && (
+        <div className="p-3 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+            <span className="flex items-center gap-1.5">
+              <MousePointer className="w-3.5 h-3.5 text-black dark:text-white" />
+              <span>Targeted Action Dispatcher</span>
+            </span>
+
+            <button
+              onClick={handleInspectElements}
+              disabled={inspecting}
+              className="inline-flex items-center gap-1 text-[11px] text-black dark:text-white hover:underline capitalize font-semibold cursor-pointer"
+            >
+              {inspecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Crosshair className="w-3 h-3" />}
+              <span>{inspecting ? "Scanning DOM..." : "Inspect Page Elements"}</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <select
+              value={interactiveAction}
+              onChange={(e) => setInteractiveAction(e.target.value as any)}
+              className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200"
+            >
+              <option value="click">Click</option>
+              <option value="fill">Fill Input (Text)</option>
+              <option value="dblclick">Double Click</option>
+              <option value="select">Select Option</option>
+              <option value="hover">Hover</option>
+              <option value="check">Check Box / Radio</option>
+              <option value="scroll">Scroll Down</option>
+              <option value="reload">Reload</option>
+              <option value="back">Back</option>
+            </select>
+
+            <input
+              type="text"
+              value={interactiveSelector}
+              onChange={(e) => setInteractiveSelector(e.target.value)}
+              placeholder="Selector (#id, .btn, input[name='q'])"
+              className="sm:col-span-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white placeholder:text-slate-400"
+            />
+
+            <button
+              disabled={isLoading}
+              onClick={handleExecuteAction}
+              className="px-3 py-1.5 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              <span>{isLoading ? "Running..." : "Dispatch & Record"}</span>
+            </button>
+          </div>
+
+          {["fill", "select"].includes(interactiveAction) && (
+            <input
+              type="text"
+              value={interactiveValue}
+              onChange={(e) => setInteractiveValue(e.target.value)}
+              placeholder={interactiveAction === "fill" ? "Enter text value to type into the element..." : "Option value or visible label..."}
+              className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-white placeholder:text-slate-400"
+            />
+          )}
+
+          {/* Detected Elements Chips */}
+          {detectedElements.length > 0 && (
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] text-slate-500">
+                <span>Click element to auto-fill selector ({detectedElements.length} found):</span>
+                <input
+                  type="text"
+                  placeholder="Filter elements..."
+                  value={elementFilter}
+                  onChange={(e) => setElementFilter(e.target.value)}
+                  className="px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-[10px]"
+                />
+              </div>
+              <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto pr-1">
+                {filteredElements.slice(0, 24).map((el, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSelectElement(el)}
+                    className="px-2 py-0.5 rounded bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-[10px] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 cursor-pointer transition truncate max-w-[200px]"
+                    title={`${el.tag}: ${el.selector}`}
+                  >
+                    <span className={`font-bold uppercase text-[9px] ${el.tag === 'input' || el.tag === 'textarea' ? 'text-blue-600 dark:text-blue-400' : 'text-black dark:text-white'}`}>
+                      {el.tag}
+                    </span>
+                    <span className="truncate">{el.text || el.selector}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-4 max-w-auto mx-auto p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <Video className="w-6 h-6 text-black dark:text-white" />
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Browser Recorder
             </h1>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Record, inspect, and verify browser user interactions using the native Agent Browser subprocess engine.
+            Interactive live browser viewport: click anywhere, type input directly, and record workflows.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-white border border-blue-200 dark:border-blue-900">
+        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-white border border-blue-200 dark:border-blue-900 w-fit">
           <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
-          <span>Verified CLI Recording Mode • Subprocess Isolated</span>
+          <span>Interactive Playwright Session • Deterministic</span>
         </div>
       </div>
 
-      {/* Session Controls Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-2xs flex flex-col sm:flex-row items-center gap-3">
+      {/* Target URL & Session Controls Bar */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-2xs flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Globe className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
@@ -484,8 +1250,9 @@ export function BrowserRecorderPage({
             disabled={isRecording || isLoading}
             value={targetUrl}
             onChange={(e) => setTargetUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !isRecording && handleStartRecording()}
             placeholder="Enter target URL (e.g. https://example.com)..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white disabled:opacity-60"
           />
         </div>
 
@@ -496,11 +1263,7 @@ export function BrowserRecorderPage({
               disabled={isLoading}
               className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
             >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Play className="w-4 h-4" />
-              )}
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
               <span>{isLoading ? "Starting..." : "Start Recording"}</span>
             </button>
           ) : (
@@ -512,29 +1275,6 @@ export function BrowserRecorderPage({
               <Square className="w-4 h-4" />
               <span>Stop Session</span>
             </button>
-          )}
-
-          {isRecording && (
-            <button
-              onClick={() => sessionId && refreshScreenshot(sessionId)}
-              disabled={isLoading || !sessionId}
-              className="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
-              title="Refresh Viewport Frame"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-            </button>
-          )}
-
-          {currentUrl && (
-            <a
-              href={currentUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition"
-              title="Open Target in New Tab"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
           )}
 
           {recordedActions.length > 0 && (
@@ -552,181 +1292,42 @@ export function BrowserRecorderPage({
         </div>
       </div>
 
-      {/* Main Recording Workspace: Live Action Dispatcher (Left) + Recorded Timeline (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left 7 Cols: Live Viewport & Interactive Action Trigger */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs flex flex-col">
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-              <span className="flex items-center gap-1.5">
-                <Camera className="w-3.5 h-3.5 text-black dark:text-white" />
-                <span>Session Viewport {sessionId ? `(#${sessionId.slice(0, 10)})` : ""}</span>
-              </span>
-              <div className="flex items-center gap-2">
-                {isRecording && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-900 animate-pulse font-mono">
-                    &bull; REC LIVE
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Viewport Frame */}
-            <div className="relative min-h-[380px] bg-slate-950 flex items-center justify-center p-2 overflow-hidden shadow-inner">
-              {isLoading && (
-                <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-2xs flex flex-col items-center justify-center gap-2 z-10 animate-in fade-in">
-                  <Loader2 className="w-7 h-7 text-black dark:text-white animate-spin" />
-                  <span className="text-xs font-mono text-slate-300">
-                    Executing action and capturing frame...
-                  </span>
-                </div>
-              )}
-
-              {screenshotUrl ? (
-                <img
-                  src={screenshotUrl}
-                  alt="Live Session Preview"
-                  className="max-h-[460px] w-full object-contain rounded border border-slate-800 shadow"
-                />
-              ) : (
-                <div className="text-center text-slate-400 space-y-2 p-8">
-                  <Video className="w-10 h-10 mx-auto opacity-30 text-black dark:text-white" />
-                  <p className="text-xs font-medium">
-                    {isRecording ? "Capturing viewport from agent-browser..." : "Browser session idle"}
-                  </p>
-                  <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
-                    Enter target URL and click <strong>Start Recording</strong> to launch browser.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Action Dispatcher Control Strip */}
-            {isRecording && (
-              <div className="p-3 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                  <span className="flex items-center gap-1">
-                    <MousePointer className="w-3.5 h-3.5 text-black dark:text-white" />
-                    <span>Execute & Record Interaction</span>
-                  </span>
-
-                  <button
-                    onClick={handleInspectElements}
-                    disabled={inspecting}
-                    className="inline-flex items-center gap-1 text-[10px] text-black dark:text-white hover:text-blue-700 dark:text-white capitalize font-medium cursor-pointer"
-                  >
-                    {inspecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Crosshair className="w-3 h-3" />}
-                    <span>{inspecting ? "Scanning DOM..." : "Inspect Page Elements"}</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                  <select
-                    value={interactiveAction}
-                    onChange={(e) => setInteractiveAction(e.target.value as any)}
-                    className="px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200"
-                  >
-                    <option value="click">Click</option>
-                    <option value="dblclick">Double Click</option>
-                    <option value="fill">Fill Input</option>
-                    <option value="select">Select Option</option>
-                    <option value="hover">Hover</option>
-                    <option value="check">Check Box / Radio</option>
-                    <option value="scroll">Scroll Down</option>
-                    <option value="reload">Reload</option>
-                    <option value="back">Back</option>
-                  </select>
-
-                  <input
-                    type="text"
-                    value={interactiveSelector}
-                    onChange={(e) => setInteractiveSelector(e.target.value)}
-                    placeholder="Selector (e.g. #submit-btn, button)"
-                    className="sm:col-span-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-mono text-slate-900 dark:text-white placeholder:text-slate-400"
-                  />
-
-                  <button
-                    disabled={isLoading}
-                    onClick={handleExecuteAction}
-                    className="px-3 py-1.5 bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-lg text-xs font-semibold shadow-xs transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
-                  >
-                    {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                    <span>{isLoading ? "Running..." : "Dispatch & Record"}</span>
-                  </button>
-                </div>
-
-                {["fill", "select"].includes(interactiveAction) && (
-                  <input
-                    type="text"
-                    value={interactiveValue}
-                    onChange={(e) => setInteractiveValue(e.target.value)}
-                    placeholder={interactiveAction === "fill" ? "Input text value to type..." : "Option value or visible text..."}
-                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-white placeholder:text-slate-400"
-                  />
-                )}
-
-                {/* Detected Page Elements Chips */}
-                {detectedElements.length > 0 && (
-                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between text-[10px] text-slate-500">
-                      <span>Click an element below to auto-populate selector ({detectedElements.length} found):</span>
-                      <input
-                        type="text"
-                        placeholder="Filter elements..."
-                        value={elementFilter}
-                        onChange={(e) => setElementFilter(e.target.value)}
-                        className="px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-[10px]"
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-1">
-                      {filteredElements.slice(0, 20).map((el, i) => (
-                        <button
-                          key={i}
-                          onClick={() => handleSelectElement(el)}
-                          className="px-2 py-0.5 rounded bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-950/60 text-[10px] text-slate-700 dark:text-slate-300 hover:text-black dark:text-white border border-slate-200 dark:border-slate-700 flex items-center gap-1 cursor-pointer transition truncate max-w-[200px]"
-                          title={`${el.tag}: ${el.selector}`}
-                        >
-                          <span className="font-bold uppercase text-[9px] text-black dark:text-white">{el.tag}</span>
-                          <span className="truncate">{el.text || el.selector}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+      {/* Main Recording Workspace: Viewport (Left) + Recorded Timeline (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+        {/* Left: Viewport (9 cols) */}
+        <div className="lg:col-span-9 space-y-4">
+          {ViewportPanel}
         </div>
 
-        {/* Right 5 Cols: Recorded Steps Timeline */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-2xs space-y-4">
+        {/* Right: Recorded Timeline (3 cols) */}
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-2xs space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                 Recorded Actions ({recordedActions.length})
               </h3>
               <p className="text-[11px] text-slate-500">
-                Ordered trail of verified browser events
+                Verified event trail
               </p>
             </div>
             {recordedActions.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="text-[11px] text-neutral-700 dark:text-neutral-300 hover:underline cursor-pointer"
+                className="text-[11px] text-neutral-500 dark:text-neutral-400 hover:underline cursor-pointer"
               >
                 Clear All
               </button>
             )}
           </div>
 
-          <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1 scrollbar-thin">
+          <div className="space-y-1.5 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
             {recordedActions.map((act, idx) => (
               <div
                 key={act.id}
-                className="p-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between gap-2 group hover:border-blue-500/50 transition-colors"
+                className="p-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between gap-2 group hover:border-slate-400 dark:hover:border-slate-600 transition-colors"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-white flex items-center justify-center text-[10px] font-bold">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-5 h-5 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-[10px] font-bold shrink-0">
                     {idx + 1}
                   </span>
                   <div className="min-w-0">
@@ -734,32 +1335,32 @@ export function BrowserRecorderPage({
                       <span className="text-[11px] font-bold uppercase text-slate-800 dark:text-slate-200">
                         {act.action}
                       </span>
-                      <span className="text-[10px] text-black dark:text-white dark:text-neutral-400 dark:text-neutral-200 font-medium">
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
                         ✓ Verified
                       </span>
                     </div>
-                    <div className="text-xs font-mono text-slate-600 dark:text-slate-400 truncate max-w-[220px]">
+                    <div className="text-xs font-mono text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
                       {act.target}
                     </div>
                     {act.value && (
-                      <div className="text-[10px] text-slate-500 italic truncate">
+                      <div className="text-[10px] text-slate-600 dark:text-slate-300 font-mono font-medium truncate bg-slate-100 dark:bg-slate-800 px-1 py-0.2 rounded mt-0.5">
                         value: "{act.value}"
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleOpenEditAction(act)}
-                    className="p-1 text-slate-400 hover:text-black dark:text-white rounded transition cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-black dark:hover:text-white rounded transition cursor-pointer"
                     title="Edit step"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteAction(act.id)}
-                    className="p-1 text-slate-400 hover:text-neutral-700 dark:text-neutral-300 rounded transition cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-rose-500 rounded transition cursor-pointer"
                     title="Remove step"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -772,14 +1373,101 @@ export function BrowserRecorderPage({
               <div className="text-center py-12 text-slate-400 space-y-1">
                 <Clock className="w-8 h-8 mx-auto opacity-30" />
                 <p className="text-xs font-medium">No actions recorded yet</p>
-                <p className="text-[11px] text-slate-400">
-                  Interactions will appear here in chronological order.
+                <p className="text-[11px] text-slate-500">
+                  Click viewport or type in the input bar to build your timeline.
                 </p>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* 5. Enter Input Modal (shown when clicking an input element or clicking Enter Input) */}
+      {inputModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Type className="w-4 h-4 text-black dark:text-white" />
+                <span>Enter Input Value</span>
+              </h3>
+              <button
+                onClick={() => setInputModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendInputText(modalInputSelector, modalInputValue, pressEnterAfterSubmit);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Target Field / Selector
+                </label>
+                <input
+                  type="text"
+                  value={modalInputSelector}
+                  onChange={(e) => setModalInputSelector(e.target.value)}
+                  placeholder="e.g. #username or input[name='email']"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-mono text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Text to Enter *
+                </label>
+                <input
+                  ref={modalInputRef}
+                  type="text"
+                  required
+                  value={modalInputValue}
+                  onChange={(e) => setModalInputValue(e.target.value)}
+                  placeholder={modalInputPlaceholder || "Type text to enter into the input..."}
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                <input
+                  type="checkbox"
+                  id="pressEnterAfter"
+                  checked={pressEnterAfterSubmit}
+                  onChange={(e) => setPressEnterAfterSubmit(e.target.checked)}
+                  className="rounded border-slate-300 text-black focus:ring-black dark:focus:ring-white"
+                />
+                <label htmlFor="pressEnterAfter" className="cursor-pointer select-none">
+                  Press <strong>Enter (⏎)</strong> key after typing
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setInputModalOpen(false)}
+                  className="px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading || !modalInputValue.trim()}
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold shadow-xs disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                >
+                  {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CornerDownLeft className="w-3.5 h-3.5" />}
+                  <span>Enter & Record</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Save Modal */}
       {saveModalOpen && (
@@ -799,7 +1487,7 @@ export function BrowserRecorderPage({
                   required
                   value={saveTitle}
                   onChange={(e) => setSaveTitle(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full mt-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
                 />
               </div>
 
@@ -813,7 +1501,7 @@ export function BrowserRecorderPage({
                     onClick={() => setSaveType("test")}
                     className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
                       saveType === "test"
-                        ? "bg-blue-50/80 dark:bg-blue-950/50 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/10"
+                        ? "border-black dark:border-white bg-black/5 dark:bg-white/10 ring-1 ring-black dark:ring-white"
                         : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
@@ -827,7 +1515,7 @@ export function BrowserRecorderPage({
                     onClick={() => setSaveType("flow")}
                     className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
                       saveType === "flow"
-                        ? "bg-blue-50/80 dark:bg-blue-950/50 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/10"
+                        ? "border-black dark:border-white bg-black/5 dark:bg-white/10 ring-1 ring-black dark:ring-white"
                         : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
@@ -893,8 +1581,9 @@ export function BrowserRecorderPage({
                   <option value="hover">hover</option>
                   <option value="select">select</option>
                   <option value="check">check</option>
-                  <option value="press_enter">press_enter</option>
-                  <option value="wait">wait</option>
+                  <option value="scroll">scroll</option>
+                  <option value="reload">reload</option>
+                  <option value="back">back</option>
                 </select>
               </div>
 
@@ -930,14 +1619,14 @@ export function BrowserRecorderPage({
                 <button
                   type="button"
                   onClick={() => setEditingAction(null)}
-                  className="px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold"
+                  className="px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveEditAction}
-                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold font-semibold shadow-xs"
+                  className="px-4 py-2 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold shadow-xs cursor-pointer"
                 >
                   Save Step
                 </button>

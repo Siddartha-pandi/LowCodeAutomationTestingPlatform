@@ -18,6 +18,9 @@ import {
   TokenResponseDto,
   LegacyAuthDto,
   LegacyAuthResponseDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  MessageResponseDto,
 } from './dto/auth.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -82,6 +85,24 @@ export class AuthController {
   async logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('access_token');
     return { status: 'logged_out', message: 'Session closed successfully' };
+  }
+
+  @Public()
+  @Post('api/v1/auth/forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset instructions for an enterprise account' })
+  @ApiResponse({ status: 200, type: MessageResponseDto })
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<MessageResponseDto> {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Public()
+  @Post('api/v1/auth/reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset account password using a valid reset token' })
+  @ApiResponse({ status: 200, type: MessageResponseDto })
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<MessageResponseDto> {
+    return this.authService.resetPassword(dto);
   }
 
   // ---------------------------------------------------------------------------

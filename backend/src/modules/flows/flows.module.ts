@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AutomationDefinitionEntity } from '../../database/entities/automation-definition.entity';
 import { DefinitionVersionEntity } from '../../database/entities/definition-version.entity';
 import { ExecutionEntity } from '../../database/entities/execution.entity';
+import { ExecutionStepEntity } from '../../database/entities/execution-step.entity';
+import { ExecutionLogEntity } from '../../database/entities/execution-log.entity';
 import { EnvironmentEntity } from '../../database/entities/environment.entity';
 import { FlowsService } from './flows.service';
 import { FlowsController } from './flows.controller';
@@ -21,6 +23,8 @@ import { BrowserModule } from '../browser/browser.module';
       AutomationDefinitionEntity,
       DefinitionVersionEntity,
       ExecutionEntity,
+      ExecutionStepEntity,
+      ExecutionLogEntity,
       EnvironmentEntity,
     ]),
     ProjectsModule,

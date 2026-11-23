@@ -75,6 +75,13 @@
   padding: 0;
 }
 
+html,
+body,
+#__next {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-primary);
@@ -126,9 +133,21 @@ button, input, select, textarea {
   background: #525252;
 }
 
-/* Desaturate images, canvas and videos to ensure pure monochrome */
+/* Ensure all browser viewports, screenshots, canvas and images display in full, vibrant original colors */
 img, video, canvas {
-  filter: grayscale(100%);
+  filter: none !important;
+}
+
+[data-viewport],
+.browser-viewport,
+.viewport-frame,
+img[alt*="Viewport"],
+img[alt*="Browser"],
+img[alt*="Screenshot"],
+img[alt*="Website"],
+img[alt*="Preview"] {
+  filter: none !important;
+  -webkit-filter: none !important;
 }
 
 /* ==========================================================================

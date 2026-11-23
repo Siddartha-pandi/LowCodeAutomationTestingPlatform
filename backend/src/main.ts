@@ -1,3 +1,10 @@
+import dns from 'node:dns';
+
+// Force Node.js to prefer IPv4 over IPv6 across all database and network sockets
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';

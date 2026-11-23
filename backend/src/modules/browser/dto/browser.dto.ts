@@ -74,6 +74,16 @@ export class ActionDto {
   @IsNumber()
   @IsOptional()
   timeout?: number = 15;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  x?: number;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  y?: number;
 }
 
 export class ScreenshotDto {
@@ -166,6 +176,16 @@ export class RecordActionDto {
   @ApiPropertyOptional()
   @IsOptional()
   value?: string;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  x?: number;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  y?: number;
 }
 
 export class SaveRecordingDto {

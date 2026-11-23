@@ -93,3 +93,9 @@ test-frontend:
 clean:
 	cd backend && rm -rf dist coverage .turbo
 	cd frontend && rm -rf .next out
+
+up:
+	docker compose up -d
+
+down:
+	docker compose down

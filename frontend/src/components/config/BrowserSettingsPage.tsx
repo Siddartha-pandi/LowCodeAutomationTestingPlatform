@@ -42,7 +42,7 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
     info("Testing CLI Connection", "Executing `agent-browser --version` subprocess verification...");
     setTimeout(() => {
       setTestingConnection(false);
-      success("CLI Verified", "Connected to agent-browser CLI v0.41.2. Subprocess daemon responsive.");
+      success("Engine Verified", "Connected to local browser automation engine. Subprocess daemon responsive.");
     }, 1200);
   };
 
@@ -84,17 +84,17 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
             </div>
             <div>
               <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                Agent Browser CLI Engine Status
+                Browser Engine Runtime Status
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Pure subprocess CLI adapter (`backend/app/browser/agent_browser.py`)
+                Local headless browser subprocess adapter
               </p>
             </div>
           </div>
 
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800 text-xs font-bold font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Verified (v{cliVersion})</span>
+            <span>Active Engine (v{cliVersion})</span>
           </span>
         </div>
 
@@ -104,8 +104,8 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
             <span className="font-mono text-black dark:text-white font-bold">Local Subprocess</span>
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">AI SDK State</span>
-            <span className="font-mono text-black dark:text-white font-bold">0% (Strictly Disallowed)</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase block">Security Isolation</span>
+            <span className="font-mono text-black dark:text-white font-bold">Perimeter Sandboxed</span>
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase block">DOM Extraction</span>

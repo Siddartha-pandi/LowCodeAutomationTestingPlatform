@@ -4,6 +4,7 @@
   "private": true,
   "description": "Unified Enterprise Low-Code Automation & Deterministic Testing Platform",
   "scripts": {
+    "predev": "bash scripts/prepare-dev.sh",
     "backend": "npm --prefix backend run start:api",
     "frontend": "npm --prefix frontend run dev",
     "worker": "npm --prefix backend run start:worker",

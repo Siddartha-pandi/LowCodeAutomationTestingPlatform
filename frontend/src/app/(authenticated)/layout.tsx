@@ -37,7 +37,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         </div>
         <div className="text-xs text-neutral-500 flex items-center gap-1.5">
           <Shield className="w-3.5 h-3.5 text-black dark:text-white" />
-          <span>Zero-AI Policy Compliant &bull; Agent Browser Engine</span>
+          <span>Secure Session &bull; Enterprise Workspace</span>
         </div>
       </div>
     );

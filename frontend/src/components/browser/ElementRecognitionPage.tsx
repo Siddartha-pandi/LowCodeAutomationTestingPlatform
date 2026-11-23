@@ -175,10 +175,10 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-purple-600" />
-            <span>Deterministic Element Recognition</span>
+            <span>Element Recognition & Locator Scoring</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Transparent algorithmic scoring breakdown: Levenshtein distance, Jaccard ancestor sets, and ARIA semantics.
+            Algorithmic scoring breakdown: Multi-signal distance, ancestor hierarchies, and ARIA tree semantics.
           </p>
         </div>
 
@@ -257,7 +257,7 @@ export function ElementRecognitionPage({ projectId, onNavigate }: ElementRecogni
             <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100">
               Ranked DOM Candidates ({candidates.length})
             </h3>
-            <span className="text-[10px] text-slate-400 font-mono">Deterministic Sort</span>
+            <span className="text-[10px] text-slate-400 font-mono">Multi-Signal Rank</span>
           </div>
 
           {candidates.length === 0 ? (

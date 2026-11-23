@@ -70,7 +70,7 @@ export class PageManagerService {
   async captureViewportFrame(page: Page): Promise<string | null> {
     try {
       if (page.isClosed()) return null;
-      const buffer = await page.screenshot({ type: 'jpeg', quality: 60 });
+      const buffer = await page.screenshot({ type: 'jpeg', quality: 85 });
       return buffer.toString('base64');
     } catch {
       return null;

@@ -109,7 +109,7 @@ export function RunningExecutionsPage({ projectId, onNavigate, onSelectExecution
   const handleCancel = (run: ActiveRun) => {
     confirm({
       title: "Cancel Active Execution",
-      message: `Terminate execution '${run.id}' and terminate its Agent Browser CLI subprocess?`,
+      message: `Terminate execution '${run.id}' and terminate its browser subprocess?`,
       confirmText: "Cancel Execution",
       variant: "danger",
       onConfirm: async () => {

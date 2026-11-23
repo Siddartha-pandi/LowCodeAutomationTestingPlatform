@@ -8,8 +8,25 @@ export class EventPublisherService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(EventPublisherService.name);
   private redisClient: Redis;
   private readonly sequences = new Map<string, number>();
+  private readonly inMemorySubscribers = new Map<string, Set<(event: any) => void>>();
 
   constructor(private readonly configService: ConfigService) {}
+
+  subscribe(executionId: string, cb: (event: any) => void): () => void {
+    if (!this.inMemorySubscribers.has(executionId)) {
+      this.inMemorySubscribers.set(executionId, new Set());
+    }
+    this.inMemorySubscribers.get(executionId)!.add(cb);
+    return () => {
+      const set = this.inMemorySubscribers.get(executionId);
+      if (set) {
+        set.delete(cb);
+        if (set.size === 0) {
+          this.inMemorySubscribers.delete(executionId);
+        }
+      }
+    };
+  }
 
   onModuleInit() {
     const redisConfig = this.configService.get('app.redis');
@@ -45,6 +62,18 @@ export class EventPublisherService implements OnModuleInit, OnModuleDestroy {
       payload,
       data: payload,
     };
+
+    // 1. In-memory local subscribers (instant, 0ms latency, zero-Redis dependency)
+    const localSubs = this.inMemorySubscribers.get(executionId);
+    if (localSubs && localSubs.size > 0) {
+      for (const cb of localSubs) {
+        try {
+          cb(event);
+        } catch (e: any) {
+          this.logger.debug(`In-memory subscriber error: ${e.message}`);
+        }
+      }
+    }
 
     const payloadJson = JSON.stringify(event);
     const channel1 = `execution:events:${executionId}`;

@@ -55,12 +55,52 @@ import {
   CheckSquare,
   ArrowDown,
   Search,
+  Monitor,
+  ExternalLink,
 } from "lucide-react";
-import { flowsApi, browserApi } from "../../api";
+import { flowsApi, browserApi, executionsApi } from "../../api";
 import { useToast } from "../common/ToastProvider";
 import { useConfirm } from "../common/ConfirmModal";
 
 // 1. Custom Node Components
+const StartNode = ({ selected }: NodeProps) => (
+  <div
+    className={`px-3.5 py-2.5 rounded-xl bg-white dark:bg-neutral-950 border transition shadow-sm min-w-[190px] text-xs ${
+      selected
+        ? "border-black dark:border-white ring-2 ring-neutral-400/20 shadow-md"
+        : "border-neutral-200 dark:border-neutral-800"
+    }`}
+  >
+    <div className="flex items-center gap-2 font-bold text-black dark:text-white">
+      <div className="w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+        <Play className="w-3 h-3 fill-black dark:fill-white text-black dark:text-white" />
+      </div>
+      <span>Start Flow</span>
+    </div>
+    <div className="mt-1 text-[11px] text-neutral-500 font-mono">Entry Point</div>
+    <Handle type="source" position={Position.Bottom} className="!bg-black dark:!bg-white !w-2 !h-2" />
+  </div>
+);
+
+const StopNode = ({ selected }: NodeProps) => (
+  <div
+    className={`px-3.5 py-2.5 rounded-xl bg-white dark:bg-neutral-950 border transition shadow-sm min-w-[190px] text-xs ${
+      selected
+        ? "border-black dark:border-white ring-2 ring-neutral-400/20 shadow-md"
+        : "border-neutral-200 dark:border-neutral-800"
+    }`}
+  >
+    <Handle type="target" position={Position.Top} className="!bg-neutral-400 !w-2 !h-2" />
+    <div className="flex items-center gap-2 font-bold text-black dark:text-white">
+      <div className="w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+        <XCircle className="w-3 h-3 text-black dark:text-white" />
+      </div>
+      <span>End Flow</span>
+    </div>
+    <div className="mt-1 text-[11px] text-neutral-500 font-mono">Exit Point</div>
+  </div>
+);
+
 const ActionNode = ({ data, selected }: NodeProps) => {
   const getIcon = () => {
     switch (data.action) {
@@ -71,15 +111,26 @@ const ActionNode = ({ data, selected }: NodeProps) => {
       case "hover": return <Eye className="w-4 h-4 text-black dark:text-white" />;
       case "fill": return <Edit3 className="w-4 h-4 text-black dark:text-white" />;
       case "type": return <Edit3 className="w-4 h-4 text-black dark:text-white" />;
+      case "press_key": return <Edit3 className="w-4 h-4 text-black dark:text-white" />;
+      case "keyboard_type": return <Edit3 className="w-4 h-4 text-black dark:text-white" />;
       case "select": return <ListOrdered className="w-4 h-4 text-black dark:text-white" />;
       case "check": return <CheckSquare className="w-4 h-4 text-black dark:text-white" />;
       case "uncheck": return <CheckSquare className="w-4 h-4 text-neutral-400" />;
+      case "focus": return <Crosshair className="w-4 h-4 text-black dark:text-white" />;
+      case "clear": return <Trash2 className="w-4 h-4 text-black dark:text-white" />;
       case "scroll": return <ArrowDown className="w-4 h-4 text-black dark:text-white" />;
+      case "scroll_into_view": return <ArrowDown className="w-4 h-4 text-black dark:text-white" />;
+      case "drag_and_drop": return <MousePointer className="w-4 h-4 text-black dark:text-white" />;
+      case "upload_file": return <UploadCloud className="w-4 h-4 text-black dark:text-white" />;
       case "extract_text": return <FileText className="w-4 h-4 text-black dark:text-white" />;
       case "extract_attribute": return <FileText className="w-4 h-4 text-black dark:text-white" />;
       case "extract_table": return <Table className="w-4 h-4 text-black dark:text-white" />;
       case "wait": return <Clock className="w-4 h-4 text-neutral-500" />;
       case "wait_until": return <Clock className="w-4 h-4 text-neutral-400" />;
+      case "wait_for_element": return <Clock className="w-4 h-4 text-neutral-400" />;
+      case "wait_for_url": return <Clock className="w-4 h-4 text-neutral-400" />;
+      case "wait_for_text": return <Clock className="w-4 h-4 text-neutral-400" />;
+      case "wait_for_network_idle": return <Clock className="w-4 h-4 text-neutral-400" />;
       case "browser_back": return <ArrowLeft className="w-4 h-4 text-black dark:text-white" />;
       case "browser_forward": return <ArrowRight className="w-4 h-4 text-black dark:text-white" />;
       case "refresh": return <RotateCw className="w-4 h-4 text-black dark:text-white" />;
@@ -92,7 +143,18 @@ const ActionNode = ({ data, selected }: NodeProps) => {
       case "date_operation": return <Calendar className="w-4 h-4 text-black dark:text-white" />;
       case "array_operation": return <ListOrdered className="w-4 h-4 text-black dark:text-white" />;
       case "screenshot": return <Camera className="w-4 h-4 text-black dark:text-white" />;
-      case "approval": return <ShieldCheck className="w-4 h-4 text-black dark:text-white" />;
+      case "approval":
+      case "approval_gate": return <ShieldCheck className="w-4 h-4 text-black dark:text-white" />;
+      case "element_visible":
+      case "element_hidden":
+      case "element_enabled":
+      case "element_disabled": return <Eye className="w-4 h-4 text-black dark:text-white" />;
+      case "text_equals":
+      case "text_contains":
+      case "url_equals":
+      case "url_contains":
+      case "title_equals": return <CheckCircle2 className="w-4 h-4 text-black dark:text-white" />;
+      case "element_count": return <Table className="w-4 h-4 text-black dark:text-white" />;
       default: return <Play className="w-4 h-4 text-black dark:text-white" />;
     }
   };
@@ -129,9 +191,13 @@ const ActionNode = ({ data, selected }: NodeProps) => {
         {String(
           (data as any).summary ||
           (data as any).config?.url ||
-          (data as any).config?.logical_id ||
+          (data as any).config?.target?.url ||
+          (data as any).config?.selector ||
           (data as any).config?.target?.selector ||
+          (data as any).config?.logical_id ||
+          ((data as any).config?.value !== undefined && (data as any).config?.value !== "" ? `"${(data as any).config.value}"` : "") ||
           (data as any).config?.value_template ||
+          (data as any).config?.key ||
           ""
         )}
       </div>
@@ -210,22 +276,6 @@ const LoopNode = ({ data, selected }: NodeProps) => (
   </div>
 );
 
-const StopNode = ({ selected }: NodeProps) => (
-  <div
-    className={`px-3.5 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border transition min-w-[130px] text-center text-xs font-bold text-black dark:text-white ${
-      selected
-        ? "border-black dark:border-white ring-2 ring-neutral-400/20"
-        : "border-neutral-300 dark:border-neutral-700"
-    }`}
-  >
-    <Handle type="target" position={Position.Top} className="!bg-black dark:!bg-white !w-2 !h-2" />
-    <div className="flex items-center justify-center gap-1.5">
-      <XCircle className="w-4 h-4" />
-      <span>Stop / Exit</span>
-    </div>
-  </div>
-);
-
 // Categorized Catalog of Browser, Logic, Data, and Control Actions
 const ACTION_CATALOG = [
   // Browser Actions
@@ -295,6 +345,60 @@ const ACTION_CATALOG = [
   { action: "stop", label: "Stop Flow", icon: XCircle, category: "Control" },
 ];
 
+const normalizeNode = (n: any, idx: number): Node => {
+  const rawType = String(n.type || n.action || "action").toLowerCase();
+  let resolvedType = rawType;
+  if (rawType === "start") {
+    resolvedType = "start";
+  } else if (rawType === "stop" || rawType === "end") {
+    resolvedType = "stop";
+  } else if (rawType === "condition" || rawType === "if_else") {
+    resolvedType = "condition";
+  } else if (rawType === "loop" || rawType === "while_loop") {
+    resolvedType = "loop";
+  } else {
+    resolvedType = "action";
+  }
+
+  const action =
+    n.action ||
+    (rawType !== "action" && rawType !== "condition" && rawType !== "loop" && rawType !== "stop" && rawType !== "end" && rawType !== "start" ? rawType : undefined) ||
+    (resolvedType === "start" ? "start" : resolvedType === "stop" ? "stop" : "action");
+
+  const cfg = { ...(n.config || {}), ...(n.data?.config || {}) };
+  const selector = cfg.selector || cfg.target?.selector || (typeof cfg.target === "string" ? cfg.target : "");
+  const url = cfg.url || cfg.target?.url || (action === "navigate" && typeof cfg.target === "string" ? cfg.target : "");
+  const val = cfg.value !== undefined ? cfg.value : (cfg.value_template !== undefined ? cfg.value_template : cfg.text);
+
+  let summary = n.data?.summary || url || selector || cfg.logical_id || "";
+  if (!summary && val !== undefined && val !== "") {
+    summary = `Value: ${val}`;
+  }
+  if (!summary && action) {
+    summary = action.replace(/_/g, " ");
+  }
+
+  return {
+    id: n.id || `node_${idx + 1}`,
+    type: resolvedType,
+    position: n.position && typeof n.position.x === "number" && typeof n.position.y === "number"
+      ? n.position
+      : { x: 280, y: 50 + idx * 110 },
+    data: {
+      action,
+      config: {
+        ...cfg,
+        ...(selector ? { selector, target: { selector } } : {}),
+        ...(url ? { url, target: { url } } : {}),
+        ...(val !== undefined ? { value: val, value_template: val } : {}),
+      },
+      summary: String(summary || ""),
+      label: action,
+      ...(n.data || {}),
+    },
+  };
+};
+
 interface VisualFlowBuilderProps {
   flowId?: string;
   projectId: string;
@@ -314,16 +418,89 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
 }) => {
   const nodeTypes = useMemo(
     () => ({
+      start: StartNode,
+      end: StopNode,
+      stop: StopNode,
       action: ActionNode,
       condition: ConditionNode,
       loop: LoopNode,
-      stop: StopNode,
+      // Map all action types to ActionNode as fallbacks
+      navigate: ActionNode,
+      click: ActionNode,
+      double_click: ActionNode,
+      right_click: ActionNode,
+      hover: ActionNode,
+      fill: ActionNode,
+      type: ActionNode,
+      press_key: ActionNode,
+      keyboard_type: ActionNode,
+      focus: ActionNode,
+      clear: ActionNode,
+      select: ActionNode,
+      check: ActionNode,
+      uncheck: ActionNode,
+      scroll: ActionNode,
+      scroll_into_view: ActionNode,
+      drag_and_drop: ActionNode,
+      upload_file: ActionNode,
+      wait: ActionNode,
+      wait_until: ActionNode,
+      wait_for_element: ActionNode,
+      wait_for_url: ActionNode,
+      wait_for_text: ActionNode,
+      wait_for_network_idle: ActionNode,
+      screenshot: ActionNode,
+      browser_back: ActionNode,
+      browser_forward: ActionNode,
+      refresh: ActionNode,
+      evaluate_js: ActionNode,
+      extract_text: ActionNode,
+      extract_attribute: ActionNode,
+      extract_table: ActionNode,
+      approval_gate: ActionNode,
+      set_variable: ActionNode,
+      string_operation: ActionNode,
+      number_operation: ActionNode,
+      json_operation: ActionNode,
+      date_operation: ActionNode,
+      array_operation: ActionNode,
+      element_visible: ActionNode,
+      element_hidden: ActionNode,
+      element_enabled: ActionNode,
+      element_disabled: ActionNode,
+      text_equals: ActionNode,
+      text_contains: ActionNode,
+      url_equals: ActionNode,
+      url_contains: ActionNode,
+      title_equals: ActionNode,
+      element_count: ActionNode,
     }),
     []
   );
 
-  const defaultNodes: Node[] = initialDefinition?.nodes || [];
-  const defaultEdges: Edge[] = initialDefinition?.edges || [];
+  // Helper to ensure all edge keys are globally unique to eliminate React Flow key warnings
+  const sanitizeEdges = (rawEdges: any[]): Edge[] => {
+    if (!Array.isArray(rawEdges)) return [];
+    const seen = new Set<string>();
+    return rawEdges.map((e: any, idx: number) => {
+      let baseId = e.id || `e_${e.source || "src"}_${e.target || "tgt"}`;
+      let finalId = baseId;
+      if (seen.has(finalId)) {
+        finalId = `${baseId}_${idx}`;
+      }
+      seen.add(finalId);
+      return {
+        id: finalId,
+        source: String(e.source || ""),
+        target: String(e.target || ""),
+        sourceHandle: e.source_handle || e.sourceHandle || null,
+        animated: e.animated ?? false,
+      };
+    });
+  };
+
+  const defaultNodes: Node[] = (initialDefinition?.nodes || []).map(normalizeNode);
+  const defaultEdges: Edge[] = sanitizeEdges(initialDefinition?.edges || []);
 
   const [activeFlowId, setActiveFlowId] = useState<string | null>(flowId || null);
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
@@ -332,6 +509,8 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
   const [name, setName] = useState(flowName);
   const [saving, setSaving] = useState(false);
   const [executing, setExecuting] = useState(false);
+  const [isHeadless, setIsHeadless] = useState<boolean>(true);
+  const [blockedPopupUrl, setBlockedPopupUrl] = useState<string | null>(null);
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState<any[]>([]);
   const [catalogSearch, setCatalogSearch] = useState("");
@@ -357,28 +536,8 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
           if (flow.name) setName(flow.name);
           const def = flow.definition || flow.current_version?.definition_json;
           if (def && Array.isArray(def.nodes) && def.nodes.length > 0) {
-            const loadedNodes: Node[] = def.nodes.map((n: any, idx: number) => ({
-              id: n.id,
-              type: n.type || "action",
-              position: n.position || { x: 250, y: (idx + 1) * 90 },
-              data: {
-                action: n.action,
-                config: n.config || {},
-                summary:
-                  n.config?.url ||
-                  n.config?.logical_id ||
-                  n.config?.target?.selector ||
-                  n.config?.selector ||
-                  n.action ||
-                  "",
-              },
-            }));
-            const loadedEdges: Edge[] = (def.edges || []).map((e: any) => ({
-              id: e.id,
-              source: e.source,
-              target: e.target,
-              sourceHandle: e.source_handle || e.sourceHandle || null,
-            }));
+            const loadedNodes: Node[] = def.nodes.map(normalizeNode);
+            const loadedEdges: Edge[] = sanitizeEdges(def.edges || []);
             setNodes(loadedNodes);
             setEdges(loadedEdges);
             if (loadedNodes.length > 0) {
@@ -391,28 +550,8 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
         });
     } else if (initialDefinition && Array.isArray(initialDefinition.nodes) && initialDefinition.nodes.length > 0) {
       if (initialDefinition.name) setName(initialDefinition.name);
-      const loadedNodes: Node[] = initialDefinition.nodes.map((n: any, idx: number) => ({
-        id: n.id,
-        type: n.type || "action",
-        position: n.position || { x: 250, y: (idx + 1) * 90 },
-        data: {
-          action: n.action,
-          config: n.config || {},
-          summary:
-            n.config?.url ||
-            n.config?.logical_id ||
-            n.config?.target?.selector ||
-            n.config?.selector ||
-            n.action ||
-            "",
-        },
-      }));
-      const loadedEdges: Edge[] = (initialDefinition.edges || []).map((e: any) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        sourceHandle: e.source_handle || e.sourceHandle || null,
-      }));
+      const loadedNodes: Node[] = initialDefinition.nodes.map(normalizeNode);
+      const loadedEdges: Edge[] = sanitizeEdges(initialDefinition.edges || []);
       setNodes(loadedNodes);
       setEdges(loadedEdges);
       if (loadedNodes.length > 0) {
@@ -451,7 +590,19 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
     }
   }, [activeFlowId]);
 
-  const onConnect = useCallback((params: any) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  const onConnect = useCallback(
+    (params: any) =>
+      setEdges((eds) =>
+        addEdge(
+          {
+            ...params,
+            id: params.id || `e_${params.source}_${params.target}_${Date.now()}`,
+          },
+          eds
+        )
+      ),
+    [setEdges]
+  );
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
@@ -537,15 +688,27 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
     const newNode: Node = {
       id: newId,
       type,
-      position: { x: 250, y: (nodes.length + 1) * 90 },
+      position: { x: 280, y: 50 + (nodes.length + 1) * 110 },
       data: {
         action,
         config: defaultConfigs[action] || {},
-        summary: defaultConfigs[action]?.url || defaultConfigs[action]?.logical_id || action,
+        summary: defaultConfigs[action]?.url || defaultConfigs[action]?.logical_id || defaultConfigs[action]?.selector || action,
+        label: action,
       },
     };
 
     setNodes((nds) => [...nds, newNode]);
+    if (nodes.length > 0) {
+      const prevNode = nodes[nodes.length - 1];
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: `e_${prevNode.id}_${newId}`,
+          source: prevNode.id,
+          target: newId,
+        },
+      ]);
+    }
     setSelectedNodeId(newId);
     success("Node Added", `Added '${action.replace(/_/g, " ")}' to canvas.`);
   };
@@ -558,12 +721,32 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
         if (n.id !== selectedNodeId) return n;
         const currentConfig = (n.data?.config as Record<string, any>) || {};
         const newConfig = { ...currentConfig, [key]: value };
+        if (key === "selector") {
+          newConfig.target = { ...(newConfig.target || {}), selector: value };
+        }
+        if (key === "url") {
+          newConfig.target = { ...(newConfig.target || {}), url: value };
+        }
+        if (key === "value" || key === "value_template") {
+          newConfig.value = value;
+          newConfig.value_template = value;
+        }
+        const summary =
+          newConfig.url ||
+          newConfig.target?.url ||
+          newConfig.selector ||
+          newConfig.target?.selector ||
+          newConfig.logical_id ||
+          (newConfig.value !== undefined && newConfig.value !== "" ? `Value: ${newConfig.value}` : "") ||
+          newConfig.value_template ||
+          String(n.data?.action || "");
+
         return {
           ...n,
           data: {
             ...n.data,
             config: newConfig,
-            summary: newConfig.url || newConfig.logical_id || newConfig.value_template || String(n.data.action || ""),
+            summary: String(summary || ""),
           },
         };
       })
@@ -591,14 +774,14 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
   const compileFlowDefinition = () => {
     return {
       name,
-      start_node_id: nodes[0]?.id || "node_1",
+      start_node_id: nodes.find((n) => n.type === "start")?.id || nodes[0]?.id || "node-start",
       nodes: nodes.map((n) => {
         const cfg = (n.data?.config as Record<string, any>) || {};
         const sel = cfg.selector || cfg.target?.selector;
         return {
           id: n.id,
           type: n.type || "action",
-          action: n.data?.action,
+          action: n.data?.action || n.type,
           config: {
             ...cfg,
             target: sel ? { selector: sel, logical_id: cfg.logical_id, fallbacks: cfg.fallbacks || [] } : cfg.target,
@@ -693,85 +876,58 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
       error("Cannot Execute", "Canvas has no nodes to execute.");
       return;
     }
+
+    const fid = activeFlowId || flowId;
+    const runnerUrl = fid
+      ? `/dashboard?view=automation_live_runner&flowId=${fid}&headless=${isHeadless}&autostart=true`
+      : `/dashboard?view=automation_live_runner&headless=${isHeadless}&autostart=true`;
+
+    // 1. Immediately open new tab synchronously on user click gesture (guarantees browser allows it)
+    let newTab: Window | null = null;
+    try {
+      if (typeof window !== "undefined") {
+        newTab = window.open(runnerUrl, "_blank");
+      }
+    } catch {}
+
+    if (!newTab || newTab.closed) {
+      setBlockedPopupUrl(runnerUrl);
+      info("Popup Blocked", "Your browser prevented opening the new tab automatically. Click 'Open in Tab' in the toolbar.");
+    } else {
+      setBlockedPopupUrl(null);
+      success("Opening Live Runner", "Automation launched in a new tab.");
+    }
+
     setExecuting(true);
     setConsoleOpen(true);
     setConsoleLogs([
-      { step: "Init", action: "Preparing Session", status: "running", duration: "0.1s", error: null, time: new Date().toLocaleTimeString() },
+      {
+        step: "Init",
+        action: `Launching Live Runner (${isHeadless ? "Headless Viewport" : "Headed Browser"})`,
+        status: "running",
+        duration: "0.1s",
+        error: null,
+        time: new Date().toLocaleTimeString(),
+      },
     ]);
-    info("Execution Dispatched", `Agent Browser worker started for flow '${name}'.`);
 
     try {
-      let fid = activeFlowId;
-      // Always persist current draft before execution
+      // Persist draft in background
       const flowDef = compileFlowDefinition();
       if (fid) {
         await flowsApi.update(fid, { name, definition: flowDef });
       } else {
         const created = await flowsApi.create({ project_id: projectId, name, definition: flowDef });
-        fid = created.id;
-        setActiveFlowId(created.id);
+        if (created && created.id) {
+          setActiveFlowId(created.id);
+          const newUrl = `/dashboard?view=automation_live_runner&flowId=${created.id}&headless=${isHeadless}&autostart=true`;
+          if (newTab && !newTab.closed) {
+            newTab.location.href = newUrl;
+          }
+        }
       }
-
-      // Execute flow synchronously for real-time console feedback
-      const exec = await flowsApi.execute(fid!, { async_exec: false });
-
-      // Parse real execution steps from backend response
-      const steps = exec?.steps || [];
-      const logs = steps.map((s: any, idx: number) => ({
-        step: `Step ${s.step_index ?? idx + 1} (${s.node_id})`,
-        action: s.action || s.step_type || "action",
-        status: s.status || "passed",
-        duration: s.duration_ms ? `${(s.duration_ms / 1000).toFixed(2)}s` : "0.1s",
-        error: s.error_message || null,
-        time: new Date().toLocaleTimeString(),
-      }));
-
-      if (logs.length === 0) {
-        logs.push({
-          step: "Execution",
-          action: "flow",
-          status: exec?.status === "failed" ? "failed" : "passed",
-          duration: exec?.duration_ms ? `${(exec.duration_ms / 1000).toFixed(2)}s` : "0.5s",
-          error: exec?.summary?.error || null,
-          time: new Date().toLocaleTimeString(),
-        });
-      }
-
-      setConsoleLogs(logs);
-
-      // Update node visual status on the canvas
-      setNodes((nds) =>
-        nds.map((n) => {
-          const matchingStep = steps.find((s: any) => s.node_id === n.id);
-          return {
-            ...n,
-            data: {
-              ...n.data,
-              executionStatus: matchingStep ? matchingStep.status : undefined,
-            },
-          };
-        })
-      );
-
-      if (exec?.status === "failed") {
-        error("Execution Failed", exec.summary?.error || "Workflow step failed.");
-      } else {
-        const dur = exec?.duration_ms ? `${(exec.duration_ms / 1000).toFixed(2)}s` : "";
-        success("Execution Passed", `Flow completed successfully ${dur ? `in ${dur}` : ""}.`);
-      }
-    } catch (err: any) {
-      setConsoleLogs((prev) => [
-        ...prev,
-        {
-          step: "Error",
-          action: "system",
-          status: "failed",
-          duration: "0s",
-          error: err.message || "Failed to execute flow",
-          time: new Date().toLocaleTimeString(),
-        },
-      ]);
-      error("Execution Failed", err.message || "Execution encountered an error.");
+    } catch (saveErr) {
+      console.warn("Background draft update:", saveErr);
     } finally {
       setExecuting(false);
     }
@@ -826,6 +982,48 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
             <span>Publish</span>
           </button>
 
+          {/* Mode Switcher: Headless (Live Viewport) vs Headed (Real Browser) */}
+          <div className="flex items-center rounded-lg border border-neutral-300 dark:border-neutral-700 p-0.5 bg-neutral-100 dark:bg-neutral-900 text-xs">
+            <button
+              type="button"
+              onClick={() => setIsHeadless(true)}
+              className={`px-2.5 py-1 rounded-md transition font-semibold flex items-center gap-1.5 ${
+                isHeadless
+                  ? "bg-white dark:bg-black text-black dark:text-white shadow-xs"
+                  : "text-neutral-500 hover:text-black dark:hover:text-white"
+              }`}
+              title="Headless Mode: View live website viewport inside runner tab"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Headless</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsHeadless(false)}
+              className={`px-2.5 py-1 rounded-md transition font-semibold flex items-center gap-1.5 ${
+                !isHeadless
+                  ? "bg-white dark:bg-black text-black dark:text-white shadow-xs"
+                  : "text-neutral-500 hover:text-black dark:hover:text-white"
+              }`}
+              title="Headed Mode: Opens real visible browser window on machine"
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span>Headed</span>
+            </button>
+          </div>
+
+          {/* Direct New Tab Anchor Link */}
+          <a
+            href={`/dashboard?view=automation_live_runner&flowId=${activeFlowId || flowId || ""}&headless=${isHeadless}&autostart=true`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-black dark:text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+            title="Open Live Flow Runner in a new browser tab"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Open in Tab</span>
+          </a>
+
           {/* Execute Button */}
           <button
             onClick={handleExecute}
@@ -833,10 +1031,30 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
             className="px-3.5 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black text-xs font-semibold flex items-center gap-1.5 shadow-xs transition disabled:opacity-50"
           >
             <Play className={`w-3.5 h-3.5 ${executing ? "animate-spin" : ""}`} />
-            <span>{executing ? "Running..." : "Execute Flow"}</span>
+            <span>{executing ? "Launching..." : "Execute Flow"}</span>
           </button>
         </div>
       </div>
+
+      {/* Pop-up blocked warning banner */}
+      {blockedPopupUrl && (
+        <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2.5 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="font-bold">⚠️ Browser Pop-up was blocked:</span>
+            <span>Click to launch the live viewport automation tab:</span>
+          </div>
+          <a
+            href={blockedPopupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setBlockedPopupUrl(null)}
+            className="px-3 py-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+          >
+            <span>Open Runner Tab</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      )}
 
       {/* 2. 3-PANEL WORKSPACE (Left Catalog, Center Canvas, Right Configuration) */}
       <div className="flex-1 flex overflow-hidden relative">
@@ -945,7 +1163,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                 <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
                   <div>
                     <span className="font-bold text-neutral-900 dark:text-white capitalize">
-                      {String(selectedNode.data?.action || "Step").replace(/_/g, " ")}
+                      {String(selectedNode.data?.action || selectedNode.type || "Step").replace(/_/g, " ")}
                     </span>
                     <span className="text-[10px] text-neutral-400 font-mono block">
                       ID: {selectedNode.id}
@@ -956,6 +1174,28 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                   </span>
                 </div>
 
+                {selectedNode.type === "start" && (
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-1">
+                    <div className="font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+                      <Play className="w-3.5 h-3.5 text-black dark:text-white" /> Start Trigger
+                    </div>
+                    <p className="text-neutral-500 text-[11px]">
+                      Execution begins at this trigger and runs through all connected workflow actions.
+                    </p>
+                  </div>
+                )}
+
+                {(selectedNode.type === "stop" || selectedNode.type === "end") && (
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-1">
+                    <div className="font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+                      <XCircle className="w-3.5 h-3.5 text-black dark:text-white" /> End of Flow
+                    </div>
+                    <p className="text-neutral-500 text-[11px]">
+                      The automation flow terminates successfully when reaching this point.
+                    </p>
+                  </div>
+                )}
+
                 {/* Parameters by Action */}
                 {selectedNode.data?.action === "navigate" && (
                   <div className="space-y-3">
@@ -963,7 +1203,7 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                       <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Target URL *</label>
                       <input
                         type="url"
-                        value={(selectedNode.data?.config as any)?.url || ""}
+                        value={(selectedNode.data?.config as any)?.url || (selectedNode.data?.config as any)?.target?.url || ""}
                         onChange={(e) => updateConfig("url", e.target.value)}
                         placeholder="https://example.com/checkout"
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
@@ -981,15 +1221,15 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                   </div>
                 )}
 
-                {(["click", "double_click", "right_click", "hover", "check", "uncheck", "focus", "clear", "scroll_into_view"].includes(String(selectedNode.data?.action))) && (
+                {(["click", "double_click", "right_click", "hover", "check", "uncheck", "focus", "clear", "scroll_into_view", "fill", "type"].includes(String(selectedNode.data?.action))) && (
                   <div className="space-y-3">
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="font-bold text-slate-700 dark:text-slate-300">Target Selector</label>
+                        <label className="font-bold text-slate-700 dark:text-slate-300">Target Selector *</label>
                         <button
                           type="button"
                           onClick={() => {
-                            const sel = (selectedNode.data?.config as any)?.selector;
+                            const sel = (selectedNode.data?.config as any)?.selector || (selectedNode.data?.config as any)?.target?.selector;
                             if (sel) {
                               browserApi.validateSelector(sel)
                                 .then((r) => r.is_valid ? success("Valid Selector", `Recognized as ${r.selector_type.toUpperCase()}`) : error("Invalid Selector", r.error_message))
@@ -1005,12 +1245,29 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                       </div>
                       <input
                         type="text"
-                        value={(selectedNode.data?.config as any)?.selector || ""}
+                        value={(selectedNode.data?.config as any)?.selector || (selectedNode.data?.config as any)?.target?.selector || ""}
                         onChange={(e) => updateConfig("selector", e.target.value)}
-                        placeholder="#submit-btn, testid=order, role=button"
+                        placeholder="#submit-btn, input[name='search'], testid=order"
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono"
                       />
                     </div>
+
+                    {(selectedNode.data?.action === "fill" || selectedNode.data?.action === "type") && (
+                      <div>
+                        <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Input Value / Text *</label>
+                        <input
+                          type="text"
+                          value={(selectedNode.data?.config as any)?.value !== undefined ? (selectedNode.data?.config as any)?.value : ((selectedNode.data?.config as any)?.value_template || "")}
+                          onChange={(e) => {
+                            updateConfig("value", e.target.value);
+                            updateConfig("value_template", e.target.value);
+                          }}
+                          placeholder="Text to fill or {{env.variable}}"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                        />
+                      </div>
+                    )}
+
                     <div>
                       <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Fallbacks (comma-separated)</label>
                       <input
@@ -1694,30 +1951,6 @@ export const VisualFlowBuilder: React.FC<VisualFlowBuilderProps> = ({
                   </div>
                 )}
 
-                {(selectedNode.data?.action === "fill" || selectedNode.data?.action === "type") && (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Element Logical ID *</label>
-                      <input
-                        type="text"
-                        value={(selectedNode.data?.config as any)?.logical_id || ""}
-                        onChange={(e) => updateConfig("logical_id", e.target.value)}
-                        placeholder="e.g. user_email_input"
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Input Value / Template</label>
-                      <input
-                        type="text"
-                        value={(selectedNode.data?.config as any)?.value_template || ""}
-                        onChange={(e) => updateConfig("value_template", e.target.value)}
-                        placeholder="e.g. {{env.user_email}}"
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                      />
-                    </div>
-                  </div>
-                )}
 
                 {selectedNode.data?.action === "screenshot" && (
                   <div className="space-y-3">

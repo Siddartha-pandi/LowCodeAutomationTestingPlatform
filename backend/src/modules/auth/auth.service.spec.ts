@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PasswordService } from './password.service';
 import { UserEntity } from '../../database/entities/user.entity';
@@ -168,6 +168,79 @@ describe('AuthService (Integration & Unit)', () => {
           password: 'any-password',
         }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should generate reset token for active user', async () => {
+      const mockUser: any = {
+        id: 'user-123',
+        email: 'dev@test.com',
+        isActive: true,
+        passwordHash: '$2b$12$hashed',
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      };
+
+      userRepoMock.findOne.mockResolvedValue(mockUser);
+      userRepoMock.save.mockImplementation(async (u) => u);
+
+      const result = await service.forgotPassword({ email: 'dev@test.com' });
+
+      expect(result).toBeDefined();
+      expect(result.resetToken).toBeDefined();
+      expect(mockUser.resetPasswordToken).toBeDefined();
+      expect(mockUser.resetPasswordExpires).toBeDefined();
+      expect(userRepoMock.save).toHaveBeenCalled();
+    });
+
+    it('should return generic success message if user does not exist (enumeration safe)', async () => {
+      userRepoMock.findOne.mockResolvedValue(null);
+
+      const result = await service.forgotPassword({ email: 'nonexistent@test.com' });
+
+      expect(result.message).toContain('If this corporate email exists in our directory');
+      expect(result.resetToken).toBeUndefined();
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should reset password successfully with valid token', async () => {
+      const futureDate = new Date(Date.now() + 3600 * 1000);
+      const mockUser: any = {
+        id: 'user-123',
+        email: 'dev@test.com',
+        isActive: true,
+        resetPasswordToken: 'valid-token-123',
+        resetPasswordExpires: futureDate,
+        passwordHash: '$2b$12$oldhash',
+      };
+
+      userRepoMock.findOne.mockResolvedValue(mockUser);
+      passwordServiceMock.hashPassword.mockResolvedValue('$2b$12$newhash');
+      userRepoMock.save.mockImplementation(async (u) => u);
+
+      const result = await service.resetPassword({
+        token: 'valid-token-123',
+        new_password: 'NewPassword123!',
+      });
+
+      expect(result.message).toContain('Your password has been successfully reset');
+      expect(mockUser.passwordHash).toEqual('$2b$12$newhash');
+      expect(mockUser.resetPasswordToken).toBeNull();
+      expect(mockUser.resetPasswordExpires).toBeNull();
+      expect(userRepoMock.save).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException if token is expired or invalid', async () => {
+      userRepoMock.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.resetPassword({
+          token: 'invalid-token',
+          new_password: 'NewPassword123!',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

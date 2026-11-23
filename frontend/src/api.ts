@@ -59,6 +59,10 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
         detail = errJson.detail;
       } else if (errJson && errJson.detail) {
         detail = JSON.stringify(errJson.detail);
+      } else if (errJson && typeof errJson.message === "string") {
+        detail = errJson.message;
+      } else if (errJson && Array.isArray(errJson.message)) {
+        detail = errJson.message.join(", ");
       }
     } catch {
       // response is not json
@@ -86,6 +90,16 @@ export const authApi = {
       body: { email, password },
     }),
   me: () => request<any>("/api/v1/auth/me"),
+  forgotPassword: (email: string) =>
+    request<{ message: string; resetToken?: string; resetUrl?: string }>("/api/v1/auth/forgot-password", {
+      method: "POST",
+      body: { email },
+    }),
+  resetPassword: (token: string, new_password: string) =>
+    request<{ message: string }>("/api/v1/auth/reset-password", {
+      method: "POST",
+      body: { token, new_password },
+    }),
 };
 
 // 2. Flows (Workflows)
@@ -101,7 +115,7 @@ export const flowsApi = {
   publish: (id: string) => request<any>(`/api/v1/flows/${id}/publish`, { method: "POST" }),
   validate: (definition: any) =>
     request<any>("/api/v1/flows/validate", { method: "POST", body: { definition } }),
-  execute: (id: string, data?: { version_id?: string; initial_variables?: Record<string, any>; async_exec?: boolean; environment_id?: string }) =>
+  execute: (id: string, data?: { version_id?: string; initial_variables?: Record<string, any>; async_exec?: boolean; environment_id?: string; headless?: boolean }) =>
     request<any>(`/api/v1/flows/${id}/execute`, { method: "POST", body: data || {} }),
   delete: (id: string) =>
     request<void>(`/api/v1/flows/${id}`, { method: "DELETE" }),
@@ -263,7 +277,7 @@ export const browserApi = {
     request<any>("/api/v1/browser/launch", { method: "POST", body: data || {} }),
   navigate: (sessionId: string, url: string, timeout = 30) =>
     request<any>("/api/v1/browser/navigate", { method: "POST", body: { session_id: sessionId, url, timeout } }),
-  action: (sessionId: string, data: { action: string; selector?: string; text?: string; value?: string; timeout?: number }) =>
+  action: (sessionId: string, data: { action: string; selector?: string; text?: string; value?: string; timeout?: number; x?: number; y?: number }) =>
     request<any>("/api/v1/browser/action", { method: "POST", body: { session_id: sessionId, ...data } }),
   screenshot: (sessionId: string, data?: { custom_name?: string; full_page?: boolean }) =>
     request<any>("/api/v1/browser/screenshot", { method: "POST", body: { session_id: sessionId, ...data } }),
@@ -283,8 +297,8 @@ export const recorderApi = {
     request<any>("/api/v1/recorder/start", { method: "POST", body: { project_id: projectId, target_url: targetUrl } }),
   status: (sessionId: string) =>
     request<any>(`/api/v1/recorder/status?session_id=${sessionId}`),
-  recordAction: (sessionId: string, action: string, selector = "", value?: string) =>
-    request<any>("/api/v1/recorder/action", { method: "POST", body: { session_id: sessionId, action, selector, value } }),
+  recordAction: (sessionId: string, action: string, selector = "", value?: string, x?: number, y?: number) =>
+    request<any>("/api/v1/recorder/action", { method: "POST", body: { session_id: sessionId, action, selector, value, x, y } }),
   stop: (sessionId: string) =>
     request<any>("/api/v1/recorder/stop", { method: "POST", body: { session_id: sessionId } }),
   inspect: (sessionId: string) =>

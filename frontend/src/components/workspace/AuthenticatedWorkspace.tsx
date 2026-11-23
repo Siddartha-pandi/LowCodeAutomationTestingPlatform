@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { AllFlowsPage } from "@/components/flows/AllFlowsPage";
 import { VisualFlowBuilder } from "@/components/flows/VisualFlowBuilder";
+import { FlowLiveRunnerPage } from "@/components/flows/FlowLiveRunnerPage";
 import { CreateFlowPage } from "@/components/flows/CreateFlowPage";
 import { SchedulesPage } from "@/components/flows/SchedulesPage";
 import { FlowTemplatesPage } from "@/components/flows/FlowTemplatesPage";
@@ -76,6 +77,16 @@ export function AuthenticatedWorkspace() {
           projectId={currentProject.id}
           flowId={selectedFlowId}
           onNavigateHistory={() => setCurrentView("executions_history")}
+        />
+      );
+
+    case "automation_live_runner":
+      return (
+        <FlowLiveRunnerPage
+          projectId={currentProject.id}
+          flowId={selectedFlowId}
+          executionId={selectedExecutionId}
+          onNavigate={setCurrentView}
         />
       );
 

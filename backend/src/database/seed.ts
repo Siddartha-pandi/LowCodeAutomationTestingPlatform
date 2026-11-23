@@ -1,3 +1,9 @@
+import dns from 'node:dns';
+
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
@@ -54,11 +60,12 @@ async function seed() {
   const dbUrl = (process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/automation_platform_db')
     .replace('postgresql+psycopg://', 'postgresql://');
 
+  const shouldSync = process.env.DB_SYNCHRONIZE !== 'false';
   const dataSource = new DataSource({
     type: 'postgres',
     url: dbUrl,
     entities: [RoleEntity, UserEntity, UserRoleEntity, ProjectEntity, ProjectMemberEntity, EnvironmentEntity],
-    synchronize: process.env.DB_SYNCHRONIZE === 'true',
+    synchronize: shouldSync,
   });
 
   await dataSource.initialize();

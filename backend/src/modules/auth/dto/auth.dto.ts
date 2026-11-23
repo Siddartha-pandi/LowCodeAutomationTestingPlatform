@@ -57,3 +57,33 @@ export class LegacyAuthResponseDto {
   @ApiProperty({ example: 1 })
   user_id: number;
 }
+
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'admin@enterprise.local' })
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({ description: 'Secure password reset token' })
+  @IsString()
+  @IsNotEmpty()
+  token: string;
+
+  @ApiProperty({ example: 'NewSecret123!' })
+  @IsString()
+  @MinLength(6)
+  new_password: string;
+}
+
+export class MessageResponseDto {
+  @ApiProperty()
+  message: string;
+
+  @ApiProperty({ required: false })
+  resetToken?: string;
+
+  @ApiProperty({ required: false })
+  resetUrl?: string;
+}
+

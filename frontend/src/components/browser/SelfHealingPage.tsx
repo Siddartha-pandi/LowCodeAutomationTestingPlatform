@@ -164,10 +164,10 @@ export function SelfHealingPage({ projectId, onNavigate }: SelfHealingPageProps)
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <History className="w-5 h-5 text-purple-600" />
-            <span>Deterministic Self-Healing History</span>
+            <span>Self-Healing History & Recovery</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Audit trail of automated locator recoveries and human approval gates (Strict Zero-AI heuristics).
+            Audit trail of automated locator recoveries and approval gates.
           </p>
         </div>
 

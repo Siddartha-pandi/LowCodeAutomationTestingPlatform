@@ -352,9 +352,9 @@ export function FlowTemplatesPage({ projectId, onNavigate, onSelectFlow }: FlowT
             Pre-engineered enterprise browser workflows ready to clone and run with deterministic reliability.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-neutral-400 dark:text-neutral-200 border border-emerald-200 dark:border-emerald-800 w-fit">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Zero-AI Policy Compliant • Pure Deterministic DAG</span>
+        <div className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 w-fit">
+          <ShieldCheck className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" />
+          <span>Production Ready • Validated Workflows</span>
         </div>
       </div>
 

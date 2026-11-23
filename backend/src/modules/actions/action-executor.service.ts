@@ -34,6 +34,7 @@ export class ActionExecutorService {
 
       switch (action) {
         case 'start':
+        case 'stop':
         case 'end': {
           output = { status: 'ok', node: action };
           break;

@@ -30,6 +30,12 @@ export class UserEntity {
   @Column({ type: 'boolean', default: false, name: 'is_superuser' })
   isSuperuser: boolean;
 
+  @Column({ type: 'varchar', length: 256, nullable: true, name: 'reset_password_token' })
+  resetPasswordToken?: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true, name: 'reset_password_expires' })
+  resetPasswordExpires?: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

@@ -173,7 +173,7 @@ export const LiveBrowserExplorer: React.FC<LiveBrowserExplorerProps> = ({ projec
 
             {/* Create Profile Form */}
             <div style={{ background: "#ffffff", border: "1px solid #e5e5e5", borderRadius: "8px", padding: "18px", height: "fit-content" }}>
-              <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#000000", marginBottom: "12px" }}>Create Deterministic Profile</h3>
+              <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#000000", marginBottom: "12px" }}>Create Element Profile</h3>
               <form onSubmit={handleCreateProfile} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div>
                   <label style={{ fontSize: "11px", fontWeight: 600, color: "#525252" }}>Logical ID</label>
@@ -243,7 +243,7 @@ export const LiveBrowserExplorer: React.FC<LiveBrowserExplorerProps> = ({ projec
 
         {activeTab === "healing" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#000000" }}>Deterministic Self-Healing Audit History</h3>
+            <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#000000" }}>Self-Healing Audit History</h3>
             {healingEvents.map((evt) => (
               <div key={evt.id} style={{ background: "#ffffff", border: "1px solid #e5e5e5", borderRadius: "8px", padding: "14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>

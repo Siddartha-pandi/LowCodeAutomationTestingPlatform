@@ -147,20 +147,89 @@ export class InteractiveSessionService implements OnApplicationShutdown {
 
     switch (action) {
       case 'click':
-        await page.click(selector, { timeout: timeoutMs });
+        if (selector) {
+          await page.click(selector, { timeout: timeoutMs });
+        } else if (dto.x !== undefined && dto.y !== undefined) {
+          await page.mouse.click(dto.x, dto.y);
+        } else {
+          throw new BadRequestException('Selector or coordinates (x, y) required for click action');
+        }
+        break;
+      case 'click_at':
+      case 'mouse_click':
+        if (dto.x !== undefined && dto.y !== undefined) {
+          await page.mouse.click(dto.x, dto.y);
+        } else {
+          throw new BadRequestException('Coordinates (x, y) required for click_at action');
+        }
         break;
       case 'dblclick':
       case 'double_click':
-        await page.dblclick(selector, { timeout: timeoutMs });
+        if (selector) {
+          await page.dblclick(selector, { timeout: timeoutMs });
+        } else if (dto.x !== undefined && dto.y !== undefined) {
+          await page.mouse.dblclick(dto.x, dto.y);
+        }
         break;
       case 'fill': {
         const fillText = dto.text !== '' ? dto.text : dto.value || '';
-        await page.fill(selector, fillText, { timeout: timeoutMs });
+        const isValidSelector = selector && selector !== 'viewport' && !selector.startsWith('(');
+        let filled = false;
+
+        if (isValidSelector) {
+          try {
+            await page.fill(selector, fillText, { timeout: timeoutMs });
+            filled = true;
+          } catch {
+            filled = false;
+          }
+        }
+
+        if (!filled) {
+          if (dto.x !== undefined && dto.y !== undefined) {
+            await page.mouse.click(dto.x, dto.y);
+            await page.keyboard.press('ControlOrMeta+A');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.type(fillText);
+          } else if (isValidSelector) {
+            // Retry clicking selector first
+            await page.click(selector, { timeout: timeoutMs });
+            await page.keyboard.press('ControlOrMeta+A');
+            await page.keyboard.press('Backspace');
+            await page.keyboard.type(fillText);
+          } else {
+            await page.keyboard.type(fillText);
+          }
+        }
         break;
       }
       case 'type': {
         const typeText = dto.text !== '' ? dto.text : dto.value || '';
-        await page.type(selector, typeText, { timeout: timeoutMs });
+        const isValidSelector = selector && selector !== 'viewport' && !selector.startsWith('(');
+        if (isValidSelector) {
+          try {
+            await page.type(selector, typeText, { timeout: timeoutMs });
+          } catch {
+            if (dto.x !== undefined && dto.y !== undefined) {
+              await page.mouse.click(dto.x, dto.y);
+              await page.keyboard.type(typeText);
+            } else {
+              await page.keyboard.type(typeText);
+            }
+          }
+        } else if (dto.x !== undefined && dto.y !== undefined) {
+          await page.mouse.click(dto.x, dto.y);
+          await page.keyboard.type(typeText);
+        } else {
+          await page.keyboard.type(typeText);
+        }
+        break;
+      }
+      case 'press':
+      case 'press_key':
+      case 'keyboard_press': {
+        const key = dto.value || dto.text || 'Enter';
+        await page.keyboard.press(key);
         break;
       }
       case 'select': {
@@ -174,9 +243,14 @@ export class InteractiveSessionService implements OnApplicationShutdown {
       case 'uncheck':
         await page.uncheck(selector, { timeout: timeoutMs });
         break;
-      case 'scroll':
-        await page.evaluate(() => window.scrollBy(0, 400));
+      case 'scroll': {
+        const delta = Number(dto.value) || 400;
+        try {
+          await page.mouse.wheel(0, delta);
+        } catch {}
+        await page.evaluate((y) => window.scrollBy(0, y), delta);
         break;
+      }
       default:
         throw new BadRequestException(`Unsupported browser action '${action}'`);
     }
@@ -396,14 +470,107 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     const selector = (dto.selector || '').trim();
 
     // Execute the action in the real browser
+    let resolvedSelector = selector;
+    let elementInfo: any = null;
     if (action !== 'navigate') {
+      if ((!selector || selector === 'viewport') && dto.x !== undefined && dto.y !== undefined) {
+        try {
+          const inspected = await session.page.evaluate(({ px, py }) => {
+            let el = document.elementFromPoint(px, py);
+            if (!el) return null;
+
+            // If user clicked a wrapper div or label, find the interactive input/textarea inside
+            if (el.tagName.toLowerCase() !== 'input' && el.tagName.toLowerCase() !== 'textarea') {
+              const innerInput = el.querySelector('input, textarea');
+              if (innerInput) {
+                el = innerInput;
+              } else if (el.closest('label')?.querySelector('input, textarea')) {
+                el = el.closest('label')!.querySelector('input, textarea')!;
+              } else if (el.parentElement?.querySelector('input, textarea')) {
+                const sib = el.parentElement.querySelector('input, textarea');
+                if (sib) el = sib;
+              }
+            }
+
+            const tag = el.tagName.toLowerCase();
+            const isInput = tag === 'input' || tag === 'textarea' || (el as HTMLElement).isContentEditable;
+
+            // Generate unique, deterministic selector
+            let sel = '';
+            const testId = el.getAttribute('data-testid') || el.getAttribute('data-test') || el.getAttribute('data-cy');
+            if (testId) {
+              sel = `[data-testid="${testId}"]`;
+            } else if (el.id) {
+              sel = `#${CSS.escape(el.id)}`;
+            } else if (el.getAttribute('name')) {
+              sel = `${tag}[name="${el.getAttribute('name')}"]`;
+            } else if (el.getAttribute('placeholder')) {
+              sel = `${tag}[placeholder="${el.getAttribute('placeholder')}"]`;
+            } else if (el.getAttribute('aria-label')) {
+              sel = `${tag}[aria-label="${el.getAttribute('aria-label')}"]`;
+            } else if (el.getAttribute('type') && tag === 'input') {
+              const byType = `input[type="${el.getAttribute('type')}"]`;
+              if (document.querySelectorAll(byType).length === 1) {
+                sel = byType;
+              }
+            }
+
+            // Path-based unique selector if single attribute isn't unique
+            if (!sel || document.querySelectorAll(sel).length > 1) {
+              const path: string[] = [];
+              let current: Element | null = el;
+              while (current && current !== document.body && current.nodeType === Node.ELEMENT_NODE) {
+                let part = current.tagName.toLowerCase();
+                if (current.id) {
+                  path.unshift(`#${CSS.escape(current.id)}`);
+                  break;
+                }
+                const cName = current.getAttribute('name');
+                if (cName) {
+                  part += `[name="${cName}"]`;
+                } else {
+                  let sibling = current;
+                  let nth = 1;
+                  while ((sibling = sibling.previousElementSibling as any)) {
+                    if (sibling.tagName.toLowerCase() === current.tagName.toLowerCase()) nth++;
+                  }
+                  part += `:nth-of-type(${nth})`;
+                }
+                path.unshift(part);
+                current = current.parentElement;
+              }
+              sel = path.join(' > ');
+            }
+
+            return {
+              selector: sel,
+              tag,
+              isInput,
+              type: el.getAttribute('type') || 'text',
+              placeholder: el.getAttribute('placeholder') || '',
+              value: (el as HTMLInputElement).value || '',
+            };
+          }, { px: dto.x, py: dto.y });
+          if (inspected?.selector) {
+            resolvedSelector = inspected.selector;
+            elementInfo = inspected;
+          } else {
+            resolvedSelector = `(${dto.x}, ${dto.y})`;
+          }
+        } catch {
+          resolvedSelector = `(${dto.x}, ${dto.y})`;
+        }
+      }
+
       await this.executeAction(
         {
           session_id: dto.session_id,
           action,
-          selector,
+          selector: resolvedSelector,
           value: dto.value,
           text: dto.value,
+          x: dto.x,
+          y: dto.y,
         },
         userId,
         isSuperuser,
@@ -414,8 +581,8 @@ export class InteractiveSessionService implements OnApplicationShutdown {
 
     const recordEntry = {
       id: `act_${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`,
-      action,
-      selector,
+      action: action === 'click_at' ? 'click' : action,
+      selector: resolvedSelector,
       value: dto.value || null,
       timestamp: new Date().toISOString(),
       status: 'verified',
@@ -431,6 +598,7 @@ export class InteractiveSessionService implements OnApplicationShutdown {
       recorded_action: recordEntry,
       total_actions: session.recordingActions.length,
       image_base64: imageBase64,
+      element_info: elementInfo,
     };
   }
 
@@ -512,19 +680,51 @@ export class InteractiveSessionService implements OnApplicationShutdown {
         teardown_steps: [],
       };
     } else {
-      const nodes: any[] = [{ id: 'node-start', type: 'start', config: {} }];
+      const nodes: any[] = [
+        {
+          id: 'node-start',
+          type: 'start',
+          action: 'start',
+          position: { x: 280, y: 50 },
+          config: {},
+        },
+      ];
       const edges: any[] = [];
       let prevId = 'node-start';
 
       steps.forEach((s, i) => {
         const id = `node-step-${i + 1}`;
-        nodes.push({ id, type: s.action, action: s.action, config: { target: s.target, value: s.value } });
-        edges.push({ source: prevId, target: id });
+        const yPos = 50 + (i + 1) * 110;
+        const selector = s.target?.selector || (s.action === 'navigate' ? undefined : (typeof s.target === 'string' ? s.target : ''));
+        const url = s.action === 'navigate' ? (s.target?.url || s.target?.selector || (typeof s.target === 'string' ? s.target : undefined)) : undefined;
+        nodes.push({
+          id,
+          type: 'action',
+          action: s.action,
+          position: { x: 280, y: yPos },
+          config: {
+            target: s.target,
+            selector: selector || undefined,
+            url: url || undefined,
+            value: s.value,
+            value_template: s.value,
+            text: s.action === 'type' || s.action === 'keyboard_type' ? s.value : undefined,
+            key: s.action === 'press_key' ? (s.value || 'Enter') : undefined,
+          },
+        });
+        edges.push({ id: `e_${prevId}_${id}`, source: prevId, target: id });
         prevId = id;
       });
 
-      nodes.push({ id: 'node-end', type: 'end', config: {} });
-      edges.push({ source: prevId, target: 'node-end' });
+      const endYPos = 50 + (steps.length + 1) * 110;
+      nodes.push({
+        id: 'node-end',
+        type: 'stop',
+        action: 'stop',
+        position: { x: 280, y: endYPos },
+        config: {},
+      });
+      edges.push({ id: `e_${prevId}_end`, source: prevId, target: 'node-end' });
       definitionContent = { nodes, edges };
     }
 

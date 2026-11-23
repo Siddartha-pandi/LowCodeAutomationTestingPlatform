@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,7 +15,14 @@ import { UserEntity } from '../../database/entities/user.entity';
 import { RoleEntity } from '../../database/entities/role.entity';
 import { ProjectEntity } from '../../database/entities/project.entity';
 import { PasswordService } from './password.service';
-import { LoginDto, RegisterDto, TokenResponseDto } from './dto/auth.dto';
+import {
+  LoginDto,
+  RegisterDto,
+  TokenResponseDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  MessageResponseDto,
+} from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -169,6 +178,74 @@ export class AuthService {
       roles: (user.roles || []).map((r) => r.name),
       permissions: Array.from(permissions),
       created_at: user.createdAt?.toISOString?.() || user.createdAt,
+    };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto): Promise<MessageResponseDto> {
+    const email = dto.email.toLowerCase().trim();
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    // Consistent messaging to prevent email enumeration
+    const genericMessage =
+      'If this corporate email exists in our directory, a secure one-time password reset link has been dispatched to your corporate inbox.';
+
+    if (!user || !user.isActive) {
+      this.logger.warn(`Password reset requested for non-existent or inactive email: ${email}`);
+      return { message: genericMessage };
+    }
+
+    // Generate high-entropy 64-char hex token (256 bits)
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = rawToken;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour validity
+    await this.userRepository.save(user);
+
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      process.env.FRONTEND_URL ||
+      'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`;
+    this.logger.log(`Password reset link generated for ${user.email}: ${resetUrl}`);
+
+    const response: MessageResponseDto = {
+      message: genericMessage,
+    };
+
+    // Return resetToken and resetUrl in non-production environments to streamline testing and DX
+    if (process.env.NODE_ENV !== 'production') {
+      response.resetToken = rawToken;
+      response.resetUrl = resetUrl;
+    }
+
+    return response;
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<MessageResponseDto> {
+    if (!dto.token || !dto.new_password) {
+      throw new BadRequestException('Reset token and new password are required');
+    }
+
+    if (dto.new_password.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { resetPasswordToken: dto.token },
+    });
+
+    if (!user || !user.resetPasswordExpires || user.resetPasswordExpires.getTime() < Date.now()) {
+      throw new BadRequestException('Invalid or expired password reset token');
+    }
+
+    user.passwordHash = await this.passwordService.hashPassword(dto.new_password);
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await this.userRepository.save(user);
+
+    this.logger.log(`Password successfully reset for user ${user.email}`);
+
+    return {
+      message: 'Your password has been successfully reset. You may now sign in with your new credentials.',
     };
   }
 }

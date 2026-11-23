@@ -55,6 +55,7 @@ export type NavView =
   | "dashboard_overview"
   | "automation_all_flows"
   | "automation_builder"
+  | "automation_live_runner"
   | "automation_create_flow"
   | "automation_templates"
   | "automation_schedules"
@@ -189,6 +190,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -235,11 +237,18 @@ export function AppShell({
         setSearchOpen(false);
         setNotificationsOpen(false);
         setProfileMenuOpen(false);
+        setMobileOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Close mobile drawer when navigating
+  function handleNavigate(view: NavView) {
+    setMobileOpen(false);
+    onNavigate(view);
+  }
 
   useEffect(() => {
     if (searchOpen) {
@@ -292,11 +301,21 @@ export function AppShell({
 
   return (
     <div className="flex h-screen w-full bg-neutral-50 dark:bg-black text-black dark:text-white font-sans antialiased overflow-hidden transition-colors duration-200">
+      {/* Mobile backdrop overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* 1. SIDEBAR */}
       <aside
-        className={`flex flex-col bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 transition-all duration-200 z-30 ${
-          collapsed ? "w-16" : "w-64"
-        } shrink-0 select-none`}
+        className={`flex flex-col bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 transition-all duration-200 z-50 shrink-0 select-none
+          fixed inset-y-0 left-0 md:relative md:translate-x-0
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          ${collapsed ? "w-16" : "w-64"}
+        `}
       >
         {/* Brand / Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-neutral-200 dark:border-neutral-800">
@@ -315,12 +334,21 @@ export function AppShell({
           ) : (
             <BrowserAutomationLogo size={32} className="mx-auto" />
           )}
+          {/* Desktop collapse button */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900 transition"
+            className="hidden md:flex text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900 transition"
             title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
+          {/* Mobile close button */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="flex md:hidden text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900 transition"
+            title="Close menu"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -328,7 +356,7 @@ export function AppShell({
         {!collapsed && (
           <button
             type="button"
-            onClick={() => onNavigate("config_projects")}
+            onClick={() => handleNavigate("config_projects")}
             title="Click to switch workspace"
             className="w-full text-left px-4 py-2.5 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-950 dark:hover:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs transition cursor-pointer group"
           >
@@ -370,7 +398,7 @@ export function AppShell({
                 return (
                   <button
                     key={item.id}
-                    onClick={() => onNavigate(item.id)}
+                    onClick={() => handleNavigate(item.id)}
                     title={collapsed ? item.label : undefined}
                     className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg font-medium transition text-left relative ${
                       isActive
@@ -404,7 +432,7 @@ export function AppShell({
         <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black flex items-center justify-between gap-2">
           {!collapsed ? (
             <button
-              onClick={() => onNavigate("user_profile")}
+              onClick={() => handleNavigate("user_profile")}
               className="flex items-center gap-2 overflow-hidden text-left hover:opacity-90 transition flex-1"
             >
               <div className="w-7 h-7 rounded-full bg-black text-white dark:bg-white dark:text-black border border-neutral-700 dark:border-neutral-300 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
@@ -421,7 +449,7 @@ export function AppShell({
             </button>
           ) : (
             <button
-              onClick={() => onNavigate("user_profile")}
+              onClick={() => handleNavigate("user_profile")}
               className="w-7 h-7 mx-auto rounded-full bg-black text-white dark:bg-white dark:text-black border border-neutral-700 dark:border-neutral-300 flex items-center justify-center font-bold text-xs"
               title="Profile"
             >
@@ -443,9 +471,9 @@ export function AppShell({
       {/* 2. MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* TOP HEADER */}
-        <header className="h-14 bg-white dark:bg-black border-b border-neutral-200 dark:border-neutral-800 px-6 flex items-center justify-between shrink-0 shadow-xs z-20">
-          {/* Breadcrumb Navigation */}
-          <div className="flex items-center gap-2 text-xs">
+        <header className="h-14 bg-white dark:bg-black border-b border-neutral-200 dark:border-neutral-800 px-4 md:px-6 flex items-center justify-between shrink-0 shadow-xs z-20">
+          {/* Breadcrumb Navigation + Mobile hamburger */}
+          <div className="flex items-center gap-2 text-xs min-w-0">
             <span className="font-semibold text-neutral-400 uppercase tracking-wider text-[11px]">
               {activeSectionTitle}
             </span>
@@ -474,10 +502,10 @@ export function AppShell({
             {/* Quick action buttons */}
             <button
               onClick={() => onNavigate("automation_create_flow")}
-              className="px-3 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs flex items-center gap-1.5 shadow-xs transition"
+              className="px-2 md:px-3 py-1.5 rounded-lg bg-black dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-200 text-white dark:text-black font-semibold text-xs flex items-center gap-1.5 shadow-xs transition"
             >
               <PlusCircle className="w-3.5 h-3.5" />
-              <span>Create Flow</span>
+              <span className="hidden sm:inline">Create Flow</span>
             </button>
 
             {/* Light / Dark Mode Toggle */}
