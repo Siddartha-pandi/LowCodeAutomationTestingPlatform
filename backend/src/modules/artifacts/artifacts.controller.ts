@@ -21,7 +21,7 @@ export class ArtifactsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get artifact metadata and checksum' })
   async getMetadata(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.artifactsService.getArtifactMetadata(id, user.userId, user.isSuperuser);
+    return this.artifactsService.getArtifactMetadata(id, user.id, user.isSuperuser);
   }
 
   @Get(':id/download')
@@ -33,7 +33,7 @@ export class ArtifactsController {
   ) {
     const file = await this.artifactsService.getSafeArtifactFile(
       id,
-      user.userId,
+      user.id,
       user.isSuperuser,
     );
     res.setHeader('Content-Type', file.mimeType);
@@ -51,7 +51,7 @@ export class ArtifactsController {
   ) {
     const file = await this.artifactsService.getSafeArtifactFile(
       id,
-      user.userId,
+      user.id,
       user.isSuperuser,
     );
     res.setHeader('Content-Type', file.mimeType);
@@ -62,6 +62,6 @@ export class ArtifactsController {
   @Get(':id/verify')
   @ApiOperation({ summary: 'Verify artifact cryptographic SHA-256 integrity' })
   async verifyArtifact(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.artifactsService.verifyArtifactIntegrity(id, user.userId, user.isSuperuser);
+    return this.artifactsService.verifyArtifactIntegrity(id, user.id, user.isSuperuser);
   }
 }

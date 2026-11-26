@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     const storedToken = localStorage.getItem("auth_token");
     const storedUser = localStorage.getItem("auth_user");
 
@@ -33,6 +34,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+        authApi.me().then((me) => {
+          if (!active || !me) return;
+          const refreshed: UserProfile = {
+            email: me.email || JSON.parse(storedUser).email,
+            full_name: me.full_name || JSON.parse(storedUser).full_name,
+            role: (Array.isArray(me.roles) && me.roles[0]) || me.role || "User",
+          };
+          localStorage.setItem("auth_user", JSON.stringify(refreshed));
+          setUser(refreshed);
+        }).catch(() => {
+          // 401 handler clears session automatically
+        });
       } catch {
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_user");
@@ -47,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("auth:unauthorized", handleUnauthorized);
     return () => {
+      active = false;
       window.removeEventListener("auth:unauthorized", handleUnauthorized);
     };
   }, []);
@@ -78,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   function logout() {
+    authApi.logout().catch(() => {});
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     setToken(null);

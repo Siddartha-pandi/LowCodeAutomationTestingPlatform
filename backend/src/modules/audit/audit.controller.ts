@@ -10,6 +10,8 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RbacGuard } from '../../common/guards/rbac.guard';
+import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuditService } from './audit.service';
 import {
@@ -20,7 +22,8 @@ import {
 
 @ApiTags('Audit & Compliance')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
+@RequirePermissions('users:manage')
 @Controller('api/v1/audit')
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
@@ -49,6 +52,6 @@ export class AuditController {
     @Body() dto: PurgeRetentionDto,
     @CurrentUser() user: any,
   ) {
-    return this.auditService.purgeRetention(dto, user.userId);
+    return this.auditService.purgeRetention(dto, user.id);
   }
 }

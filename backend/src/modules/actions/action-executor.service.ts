@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Page } from 'playwright';
 import { LocatorResolverService, SelectorConfig } from '../selectors/locator-resolver.service';
+import { validateNavigationUrl } from '../../common/security/url-security';
 
 export interface ActionPayload {
   action: string;
@@ -43,6 +44,10 @@ export class ActionExecutorService {
         case 'navigate': {
           const url = cfg.url || cfg.target_url;
           if (!url) throw new Error("Action 'navigate' requires a 'url' config.");
+          const navCheck = await validateNavigationUrl(String(url));
+          if (!navCheck.allowed) {
+            throw new Error(`Navigation blocked by SSRF security policy: ${navCheck.reason}`);
+          }
           const waitUntil = cfg.wait_until || 'domcontentloaded';
           const timeout = cfg.timeout_ms || 30000;
           const resp = await page.goto(url, { waitUntil, timeout });

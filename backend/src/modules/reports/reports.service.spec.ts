@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ReportsService } from './reports.service';
 import { ExecutionEntity } from '../../database/entities/execution.entity';
+import { ProjectsService } from '../projects/projects.service';
 
 describe('ReportsService', () => {
   let service: ReportsService;
@@ -44,6 +45,13 @@ describe('ReportsService', () => {
         {
           provide: getRepositoryToken(ExecutionEntity),
           useValue: mockRepo,
+        },
+        {
+          provide: ProjectsService,
+          useValue: {
+            verifyProjectAccess: jest.fn().mockResolvedValue({ id: 'proj-1' }),
+            listProjects: jest.fn().mockResolvedValue([{ id: 'proj-1' }]),
+          },
         },
       ],
     }).compile();

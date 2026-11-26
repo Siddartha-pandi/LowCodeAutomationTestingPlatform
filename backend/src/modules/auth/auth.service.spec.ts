@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { AuthService } from './auth.service';
 import { PasswordService } from './password.service';
 import { UserEntity } from '../../database/entities/user.entity';
@@ -207,11 +208,12 @@ describe('AuthService (Integration & Unit)', () => {
   describe('resetPassword', () => {
     it('should reset password successfully with valid token', async () => {
       const futureDate = new Date(Date.now() + 3600 * 1000);
+      const tokenHash = crypto.createHash('sha256').update('valid-token-123').digest('hex');
       const mockUser: any = {
         id: 'user-123',
         email: 'dev@test.com',
         isActive: true,
-        resetPasswordToken: 'valid-token-123',
+        resetPasswordToken: tokenHash,
         resetPasswordExpires: futureDate,
         passwordHash: '$2b$12$oldhash',
       };

@@ -33,7 +33,7 @@ export class RecorderController {
     @Body() dto: StartRecorderDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.startRecorder(dto, user.userId);
+    return this.sessionService.startRecorder(dto, user.id);
   }
 
   @Get('status')
@@ -51,7 +51,7 @@ export class RecorderController {
     @Body() dto: RecordActionDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.recordAction(dto, user.userId, user.isSuperuser);
+    return this.sessionService.recordAction(dto, user.id, user.isSuperuser);
   }
 
   @Get('inspect/:sessionId')
@@ -60,7 +60,7 @@ export class RecorderController {
     @Param('sessionId') sessionId: string,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.inspectElement(sessionId, user.userId, user.isSuperuser);
+    return this.sessionService.inspectElement(sessionId, user.id, user.isSuperuser);
   }
 
   @Post('save')
@@ -69,7 +69,7 @@ export class RecorderController {
     @Body() dto: SaveRecordingDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.saveRecording(dto, user.userId, user.isSuperuser);
+    return this.sessionService.saveRecording(dto, user.id, user.isSuperuser);
   }
 
   @Post('stop')
@@ -78,6 +78,6 @@ export class RecorderController {
     @Body('session_id') sessionId: string,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.stopRecorder(sessionId, user.userId, user.isSuperuser);
+    return this.sessionService.stopRecorder(sessionId, user.id, user.isSuperuser);
   }
 }

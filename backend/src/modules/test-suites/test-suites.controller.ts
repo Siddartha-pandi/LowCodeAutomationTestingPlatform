@@ -34,7 +34,7 @@ export class TestSuitesController {
     @Body() dto: CreateTestSuiteDto,
     @CurrentUser() user: any,
   ) {
-    return this.testSuitesService.createTestSuite(dto, user.userId, user.isSuperuser);
+    return this.testSuitesService.createTestSuite(dto, user.id, user.isSuperuser);
   }
 
   @Get()
@@ -43,13 +43,13 @@ export class TestSuitesController {
     @Query('project_id') projectId: string | undefined,
     @CurrentUser() user: any,
   ) {
-    return this.testSuitesService.listTestSuites(projectId, user.userId, user.isSuperuser);
+    return this.testSuitesService.listTestSuites(projectId, user.id, user.isSuperuser);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get regression test suite by id' })
   async getTestSuite(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.testSuitesService.getTestSuite(id, user.userId, user.isSuperuser);
+    return this.testSuitesService.getTestSuite(id, user.id, user.isSuperuser);
   }
 
   @Put(':id')
@@ -59,14 +59,14 @@ export class TestSuitesController {
     @Body() dto: UpdateTestSuiteDto,
     @CurrentUser() user: any,
   ) {
-    return this.testSuitesService.updateTestSuite(id, dto, user.userId, user.isSuperuser);
+    return this.testSuitesService.updateTestSuite(id, dto, user.id, user.isSuperuser);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete test suite' })
   async deleteTestSuite(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.testSuitesService.deleteTestSuite(id, user.userId, user.isSuperuser);
+    return this.testSuitesService.deleteTestSuite(id, user.id, user.isSuperuser);
   }
 
   @Post(':id/execute')
@@ -76,6 +76,6 @@ export class TestSuitesController {
     @Body() dto: ExecuteTestSuiteDto,
     @CurrentUser() user: any,
   ) {
-    return this.testSuitesService.executeTestSuite(id, dto, user.userId, user.isSuperuser);
+    return this.testSuitesService.executeTestSuite(id, dto, user.id, user.isSuperuser);
   }
 }

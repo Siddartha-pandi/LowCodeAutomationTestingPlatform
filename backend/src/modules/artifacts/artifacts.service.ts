@@ -28,7 +28,9 @@ export class ArtifactsService {
     private readonly configService: ConfigService,
   ) {
     this.storageDir = path.resolve(
-      this.configService.get<string>('app.storage.dir') || 'storage',
+      this.configService.get<string>('app.storageDir') ||
+        this.configService.get<string>('app.storage.dir') ||
+        'storage',
     );
     // Ensure base storage directory exists
     if (!fs.existsSync(this.storageDir)) {
@@ -71,8 +73,8 @@ export class ArtifactsService {
     const resolved = path.resolve(artifact.filePath);
     const relative = path.relative(this.storageDir, resolved);
 
-    // Prevent path traversal
-    if (relative.startsWith('..') && !path.isAbsolute(artifact.filePath)) {
+    // Prevent path traversal for both relative and absolute artifact paths
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
       throw new ForbiddenException(
         `Path traversal detected: Artifact is outside storage directory`,
       );

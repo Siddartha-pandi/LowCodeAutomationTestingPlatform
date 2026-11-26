@@ -150,6 +150,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       email: user.email,
+      is_superuser: Boolean(user.isSuperuser),
       roles: (user.roles || []).map((r) => r.name),
       permissions: Array.from(permissions),
     };
@@ -194,9 +195,10 @@ export class AuthService {
       return { message: genericMessage };
     }
 
-    // Generate high-entropy 64-char hex token (256 bits)
+    // Generate high-entropy 64-char hex token (256 bits) and store SHA-256 hash
     const rawToken = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = rawToken;
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    user.resetPasswordToken = tokenHash;
     user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour validity
     await this.userRepository.save(user);
 
@@ -205,7 +207,7 @@ export class AuthService {
       process.env.FRONTEND_URL ||
       'http://localhost:3000';
     const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`;
-    this.logger.log(`Password reset link generated for ${user.email}: ${resetUrl}`);
+    this.logger.log(`Password reset link generated for ${user.email}`);
 
     const response: MessageResponseDto = {
       message: genericMessage,
@@ -229,8 +231,9 @@ export class AuthService {
       throw new BadRequestException('Password must be at least 6 characters');
     }
 
+    const tokenHash = crypto.createHash('sha256').update(dto.token).digest('hex');
     const user = await this.userRepository.findOne({
-      where: { resetPasswordToken: dto.token },
+      where: { resetPasswordToken: tokenHash },
     });
 
     if (!user || !user.resetPasswordExpires || user.resetPasswordExpires.getTime() < Date.now()) {

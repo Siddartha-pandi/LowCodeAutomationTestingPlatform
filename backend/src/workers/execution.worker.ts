@@ -12,6 +12,7 @@ import { ContextManagerService } from '../modules/browser/context-manager.servic
 import { PageManagerService } from '../modules/browser/page-manager.service';
 import { FlowExecutorService, FlowExecutionState } from '../modules/flows/flow-executor.service';
 import { EventPublisherService } from '../modules/monitoring/event-publisher.service';
+import { QueueService } from '../queue/queue.service';
 import { ExecutionEntity } from '../database/entities/execution.entity';
 import { ExecutionStepEntity } from '../database/entities/execution-step.entity';
 import { ExecutionLogEntity } from '../database/entities/execution-log.entity';
@@ -29,6 +30,7 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
     private readonly pageManager: PageManagerService,
     private readonly flowExecutor: FlowExecutorService,
     private readonly eventPublisher: EventPublisherService,
+    private readonly queueService: QueueService,
     @InjectRepository(ExecutionEntity)
     private readonly executionRepo: Repository<ExecutionEntity>,
     @InjectRepository(ExecutionStepEntity)
@@ -79,7 +81,10 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
     const payload = job.data;
     const start = Date.now();
     const executionId = payload.execution_id;
-    const storageDir = this.configService.get<string>('app.storage.dir') || 'storage';
+    const storageDir =
+      this.configService.get<string>('app.storageDir') ||
+      this.configService.get<string>('app.storage.dir') ||
+      'storage';
 
     this.logger.log(`Starting execution run ${executionId} (browser: ${payload.browser_config.browser_type})...`);
 
@@ -112,6 +117,7 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       storageDir,
       variables: { ...payload.variables },
       cancelled: false,
+      isCancelled: () => this.queueService.isExecutionCancelled(executionId),
       stepResults: [],
     };
 

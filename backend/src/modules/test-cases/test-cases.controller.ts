@@ -36,7 +36,7 @@ export class TestCasesController {
     @Body() dto: CreateTestCaseDto,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.createTestCase(dto, user.userId, user.isSuperuser);
+    return this.testCasesService.createTestCase(dto, user.id, user.isSuperuser);
   }
 
   @Get()
@@ -45,7 +45,7 @@ export class TestCasesController {
     @Query('project_id') projectId: string | undefined,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.listTestCases(projectId, user.userId, user.isSuperuser);
+    return this.testCasesService.listTestCases(projectId, user.id, user.isSuperuser);
   }
 
   // --- Datasets (must precede :id to prevent route shadowing) ---
@@ -56,7 +56,7 @@ export class TestCasesController {
     @Body() dto: CreateDatasetDto,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.createDataset(dto, user.userId, user.isSuperuser);
+    return this.testCasesService.createDataset(dto, user.id, user.isSuperuser);
   }
 
   @Get('datasets')
@@ -65,13 +65,13 @@ export class TestCasesController {
     @Query('project_id') projectId: string | undefined,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.listDatasets(projectId, user.userId, user.isSuperuser);
+    return this.testCasesService.listDatasets(projectId, user.id, user.isSuperuser);
   }
 
   @Get('datasets/:id')
   @ApiOperation({ summary: 'Get test dataset by id' })
   async getDataset(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.testCasesService.getDataset(id, user.userId, user.isSuperuser);
+    return this.testCasesService.getDataset(id, user.id, user.isSuperuser);
   }
 
   @Put('datasets/:id')
@@ -81,14 +81,14 @@ export class TestCasesController {
     @Body() dto: UpdateDatasetDto,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.updateDataset(id, dto, user.userId, user.isSuperuser);
+    return this.testCasesService.updateDataset(id, dto, user.id, user.isSuperuser);
   }
 
   @Delete('datasets/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete test dataset' })
   async deleteDataset(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.testCasesService.deleteDataset(id, user.userId, user.isSuperuser);
+    return this.testCasesService.deleteDataset(id, user.id, user.isSuperuser);
   }
 
   // --- Seed Legacy ---
@@ -99,7 +99,7 @@ export class TestCasesController {
     @Body() dto: SeedLegacyDto,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.seedLegacyTests(dto.project_id, user.userId, user.isSuperuser);
+    return this.testCasesService.seedLegacyTests(dto.project_id, user.id, user.isSuperuser);
   }
 
   // --- Test Case detail & lifecycle ---
@@ -107,7 +107,7 @@ export class TestCasesController {
   @Get(':id')
   @ApiOperation({ summary: 'Get test case details' })
   async getTestCase(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.testCasesService.getTestCase(id, user.userId, user.isSuperuser);
+    return this.testCasesService.getTestCase(id, user.id, user.isSuperuser);
   }
 
   @Put(':id')
@@ -117,20 +117,20 @@ export class TestCasesController {
     @Body() dto: UpdateTestCaseDto,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.updateTestCase(id, dto, user.userId, user.isSuperuser);
+    return this.testCasesService.updateTestCase(id, dto, user.id, user.isSuperuser);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete test case' })
   async deleteTestCase(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.testCasesService.deleteTestCase(id, user.userId, user.isSuperuser);
+    return this.testCasesService.deleteTestCase(id, user.id, user.isSuperuser);
   }
 
   @Post(':id/publish')
   @ApiOperation({ summary: 'Publish test case version' })
   async publishTestCase(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.testCasesService.publishTestCase(id, user.userId, user.isSuperuser);
+    return this.testCasesService.publishTestCase(id, user.id, user.isSuperuser);
   }
 
   @Post(':id/execute')
@@ -140,6 +140,6 @@ export class TestCasesController {
     @Body() dto: ExecuteTestCaseDto,
     @CurrentUser() user: any,
   ) {
-    return this.testCasesService.executeTestCase(id, dto, user.userId, user.isSuperuser);
+    return this.testCasesService.executeTestCase(id, dto, user.id, user.isSuperuser);
   }
 }

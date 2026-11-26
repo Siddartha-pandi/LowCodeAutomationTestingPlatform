@@ -2,6 +2,7 @@ import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ReportsService } from './reports.service';
 
 @ApiTags('Reports & Analytics')
@@ -13,16 +14,23 @@ export class ReportsController {
   @UseGuards(JwtAuthGuard)
   @Get('api/v1/reports/summary')
   @ApiOperation({ summary: 'Get aggregated execution metrics and trends' })
-  async getSummary(@Query('project_id') projectId?: string) {
-    return this.reportsService.getSummary(projectId);
+  async getSummary(
+    @Query('project_id') projectId: string | undefined,
+    @CurrentUser() user: any,
+  ) {
+    return this.reportsService.getSummary(projectId, user.id, user.isSuperuser);
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('api/v1/reports/export-csv')
   @ApiOperation({ summary: 'Export executions dataset to CSV' })
-  async exportCsv(@Query('project_id') projectId: string, @Res() res: Response) {
-    const file = await this.reportsService.exportCsv(projectId);
+  async exportCsv(
+    @Query('project_id') projectId: string | undefined,
+    @CurrentUser() user: any,
+    @Res() res: Response,
+  ) {
+    const file = await this.reportsService.exportCsv(projectId, user.id, user.isSuperuser);
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
     res.send(file.content);

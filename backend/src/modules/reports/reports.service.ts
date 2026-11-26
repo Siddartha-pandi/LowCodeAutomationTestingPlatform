@@ -2,18 +2,37 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ExecutionEntity } from '../../database/entities/execution.entity';
+import { ProjectsService } from '../projects/projects.service';
 
 @Injectable()
 export class ReportsService {
   constructor(
     @InjectRepository(ExecutionEntity)
     private readonly executionRepo: Repository<ExecutionEntity>,
+    private readonly projectsService: ProjectsService,
   ) {}
 
-  async getSummary(projectId?: string) {
+  async getSummary(projectId?: string, userId?: string, isSuperuser = false) {
     const qb = this.executionRepo.createQueryBuilder('exec');
     if (projectId) {
+      if (userId) {
+        await this.projectsService.verifyProjectAccess(projectId, userId, isSuperuser);
+      }
       qb.where('exec.projectId = :projectId', { projectId });
+    } else if (userId && !isSuperuser) {
+      const projects = await this.projectsService.listProjects(userId, false);
+      if (projects.length === 0) {
+        return {
+          total_executions: 0,
+          passed: 0,
+          failed: 0,
+          running: 0,
+          pass_rate: 0,
+          average_duration_ms: 0,
+          recent_executions: [],
+        };
+      }
+      qb.where('exec.projectId IN (:...projectIds)', { projectIds: projects.map((p) => p.id) });
     }
 
     const executions = await qb
@@ -52,10 +71,22 @@ export class ReportsService {
     };
   }
 
-  async exportCsv(projectId?: string): Promise<{ filename: string; content: string }> {
+  async exportCsv(projectId?: string, userId?: string, isSuperuser = false): Promise<{ filename: string; content: string }> {
     const qb = this.executionRepo.createQueryBuilder('exec');
     if (projectId) {
+      if (userId) {
+        await this.projectsService.verifyProjectAccess(projectId, userId, isSuperuser);
+      }
       qb.where('exec.projectId = :projectId', { projectId });
+    } else if (userId && !isSuperuser) {
+      const projects = await this.projectsService.listProjects(userId, false);
+      if (projects.length === 0) {
+        return {
+          filename: `executions-report-${Date.now()}.csv`,
+          content: 'Execution ID,Project ID,Definition ID,Trigger,Status,Duration (ms),Timestamp',
+        };
+      }
+      qb.where('exec.projectId IN (:...projectIds)', { projectIds: projects.map((p) => p.id) });
     }
 
     const executions = await qb

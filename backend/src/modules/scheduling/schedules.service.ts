@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { In, LessThanOrEqual, Repository } from 'typeorm';
 import { CronExpressionParser } from 'cron-parser';
 import { ScheduleEntity } from '../../database/entities/schedule.entity';
 import { AutomationDefinitionEntity } from '../../database/entities/automation-definition.entity';
@@ -13,6 +13,7 @@ import { DefinitionVersionEntity } from '../../database/entities/definition-vers
 import { ExecutionEntity } from '../../database/entities/execution.entity';
 import { EnvironmentEntity } from '../../database/entities/environment.entity';
 import { QueueService } from '../../queue/queue.service';
+import { ProjectsService } from '../projects/projects.service';
 import { CreateScheduleDto, UpdateScheduleDto } from './dto/schedule.dto';
 import { testCaseToGraphDefinition } from '../test-cases/test-cases.service';
 
@@ -32,9 +33,10 @@ export class SchedulesService {
     @InjectRepository(EnvironmentEntity)
     private readonly environmentRepository: Repository<EnvironmentEntity>,
     private readonly queueService: QueueService,
+    private readonly projectsService: ProjectsService,
   ) {}
 
-  async createSchedule(dto: CreateScheduleDto, userId: string): Promise<any> {
+  async createSchedule(dto: CreateScheduleDto, userId: string, isSuperuser = false): Promise<any> {
     this.validateCron(dto.cron_expression, dto.timezone);
 
     const definition = await this.definitionRepository.findOne({
@@ -42,6 +44,10 @@ export class SchedulesService {
     });
     if (!definition) {
       throw new NotFoundException(`Automation definition '${dto.definition_id}' not found`);
+    }
+
+    if (definition.projectId) {
+      await this.projectsService.verifyProjectAccess(definition.projectId, userId, isSuperuser);
     }
 
     const nextRun = this.computeNextRun(dto.cron_expression, dto.timezone);
@@ -59,7 +65,25 @@ export class SchedulesService {
     return this.formatSchedule(saved);
   }
 
-  async listSchedules(definitionId?: string): Promise<any[]> {
+  async listSchedules(definitionId?: string, userId?: string, isSuperuser = false): Promise<any[]> {
+    if (!isSuperuser && userId) {
+      const projects = await this.projectsService.listProjects(userId, false);
+      if (projects.length === 0) return [];
+      const projectIds = projects.map((p) => p.id);
+      const defs = await this.definitionRepository.find({
+        where: { projectId: In(projectIds) },
+        select: ['id'],
+      });
+      const allowedDefIds = defs.map((d) => d.id);
+      if (allowedDefIds.length === 0) return [];
+      if (definitionId && !allowedDefIds.includes(definitionId)) return [];
+      const schedules = await this.scheduleRepository.find({
+        where: { definitionId: definitionId ? definitionId : In(allowedDefIds) },
+        order: { createdAt: 'DESC' },
+      });
+      return schedules.map((s) => this.formatSchedule(s));
+    }
+
     const where: any = {};
     if (definitionId) {
       where.definitionId = definitionId;
@@ -71,15 +95,25 @@ export class SchedulesService {
     return schedules.map((s) => this.formatSchedule(s));
   }
 
-  async getSchedule(id: string): Promise<any> {
+  private async verifyScheduleAccess(schedule: ScheduleEntity, userId: string, isSuperuser = false): Promise<void> {
+    if (isSuperuser) return;
+    const def = await this.definitionRepository.findOne({ where: { id: schedule.definitionId } });
+    if (def?.projectId) {
+      await this.projectsService.verifyProjectAccess(def.projectId, userId, isSuperuser);
+    }
+  }
+
+  async getSchedule(id: string, userId: string, isSuperuser = false): Promise<any> {
     const schedule = await this.scheduleRepository.findOne({ where: { id } });
     if (!schedule) throw new NotFoundException(`Schedule '${id}' not found`);
+    await this.verifyScheduleAccess(schedule, userId, isSuperuser);
     return this.formatSchedule(schedule);
   }
 
-  async updateSchedule(id: string, dto: UpdateScheduleDto): Promise<any> {
+  async updateSchedule(id: string, dto: UpdateScheduleDto, userId: string, isSuperuser = false): Promise<any> {
     const schedule = await this.scheduleRepository.findOne({ where: { id } });
     if (!schedule) throw new NotFoundException(`Schedule '${id}' not found`);
+    await this.verifyScheduleAccess(schedule, userId, isSuperuser);
 
     if (dto.cron_expression !== undefined) {
       const tz = dto.timezone || schedule.timezone;
@@ -103,9 +137,10 @@ export class SchedulesService {
     return this.formatSchedule(saved);
   }
 
-  async deleteSchedule(id: string): Promise<void> {
+  async deleteSchedule(id: string, userId: string, isSuperuser = false): Promise<void> {
     const schedule = await this.scheduleRepository.findOne({ where: { id } });
     if (!schedule) throw new NotFoundException(`Schedule '${id}' not found`);
+    await this.verifyScheduleAccess(schedule, userId, isSuperuser);
     await this.scheduleRepository.remove(schedule);
   }
 

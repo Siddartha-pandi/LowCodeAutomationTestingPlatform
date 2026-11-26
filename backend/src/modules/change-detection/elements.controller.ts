@@ -35,7 +35,7 @@ export class ElementsController {
     @Body() dto: CreateElementProfileDto,
     @CurrentUser() user: any,
   ) {
-    return this.elementsService.createElementProfile(dto, user.userId);
+    return this.elementsService.createElementProfile(dto, user.id);
   }
 
   @Get()
@@ -44,13 +44,13 @@ export class ElementsController {
     @Query('project_id') projectId: string | undefined,
     @CurrentUser() user: any,
   ) {
-    return this.elementsService.listElementProfiles(projectId, user.userId, user.isSuperuser);
+    return this.elementsService.listElementProfiles(projectId, user.id, user.isSuperuser);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get element profile by id' })
   async getProfile(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.elementsService.getElementProfile(id, user.userId, user.isSuperuser);
+    return this.elementsService.getElementProfile(id, user.id, user.isSuperuser);
   }
 
   @Put(':id')
@@ -60,14 +60,14 @@ export class ElementsController {
     @Body() dto: UpdateElementProfileDto,
     @CurrentUser() user: any,
   ) {
-    return this.elementsService.updateElementProfile(id, dto, user.userId, user.isSuperuser);
+    return this.elementsService.updateElementProfile(id, dto, user.id, user.isSuperuser);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete element profile' })
   async deleteProfile(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.elementsService.deleteElementProfile(id, user.userId, user.isSuperuser);
+    return this.elementsService.deleteElementProfile(id, user.id, user.isSuperuser);
   }
 
   @Post(':id/locators')
@@ -77,6 +77,6 @@ export class ElementsController {
     @Body() dto: AddLocatorDto,
     @CurrentUser() user: any,
   ) {
-    return this.elementsService.addLocator(id, dto, user.userId, user.isSuperuser);
+    return this.elementsService.addLocator(id, dto, user.id, user.isSuperuser);
   }
 }

@@ -79,7 +79,7 @@ export class ExecutionsController {
     @Query() query: ListExecutionsQueryDto,
     @CurrentUser() user: any,
   ) {
-    return this.executionsService.listExecutions(query, user.userId, user.isSuperuser);
+    return this.executionsService.listExecutions(query, user.id, user.isSuperuser);
   }
 
   @ApiBearerAuth()
@@ -87,7 +87,7 @@ export class ExecutionsController {
   @Get('api/v1/executions/:id')
   @ApiOperation({ summary: 'Get execution details with step metrics' })
   async getExecution(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.executionsService.getExecution(id, user.userId, user.isSuperuser);
+    return this.executionsService.getExecution(id, user.id, user.isSuperuser);
   }
 
   @ApiBearerAuth()
@@ -96,7 +96,7 @@ export class ExecutionsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete execution run' })
   async deleteExecution(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.executionsService.deleteExecution(id, user.userId, user.isSuperuser);
+    return this.executionsService.deleteExecution(id, user.id, user.isSuperuser);
   }
 
   @ApiBearerAuth()
@@ -104,7 +104,7 @@ export class ExecutionsController {
   @Post('api/v1/executions/:id/cancel')
   @ApiOperation({ summary: 'Cancel queued or active execution' })
   async cancelExecution(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.executionsService.cancelExecution(id, user.userId, user.isSuperuser);
+    return this.executionsService.cancelExecution(id, user.id, user.isSuperuser);
   }
 
   @ApiBearerAuth()
@@ -112,7 +112,7 @@ export class ExecutionsController {
   @Get('api/v1/executions/:id/artifacts')
   @ApiOperation({ summary: 'List artifacts for an execution' })
   async listArtifacts(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.executionsService.listArtifacts(id, user.userId, user.isSuperuser);
+    return this.executionsService.listArtifacts(id, user.id, user.isSuperuser);
   }
 
   @ApiBearerAuth()
@@ -124,7 +124,7 @@ export class ExecutionsController {
     @Query() query: ListLogsQueryDto,
     @CurrentUser() user: any,
   ) {
-    return this.executionsService.getExecutionLogs(id, query, user.userId, user.isSuperuser);
+    return this.executionsService.getExecutionLogs(id, query, user.id, user.isSuperuser);
   }
 
   @ApiBearerAuth()
@@ -140,7 +140,7 @@ export class ExecutionsController {
     const file = await this.executionsService.downloadExecutionLogs(
       id,
       query,
-      user.userId,
+      user.id,
       user.isSuperuser,
     );
     res.setHeader('Content-Type', file.contentType);
@@ -159,7 +159,7 @@ export class ExecutionsController {
   ) {
     const filePath = await this.executionsService.getExecutionViewportPath(
       id,
-      user.userId,
+      user.id,
       user.isSuperuser,
     );
     res.sendFile(filePath);

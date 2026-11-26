@@ -43,6 +43,6 @@ export class HealingController {
     @Body() dto: ApprovalActionDto,
     @CurrentUser() user: any,
   ) {
-    return this.healingService.respondToApproval(id, dto.decision, user.userId);
+    return this.healingService.respondToApproval(id, dto.decision, user.id);
   }
 }

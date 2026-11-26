@@ -76,27 +76,27 @@ export class MonitoringGateway
         }
       }
 
-      let payload: any = { sub: 'dev-user', is_superuser: false };
-      if (token) {
-        try {
-          const jwtSecret = this.configService.get<string>('app.jwtSecret');
-          if (!jwtSecret) {
-            throw new Error('JWT secret is not configured');
-          }
-          payload = this.jwtService.verify(token, { secret: jwtSecret });
-        } catch (err: any) {
-          this.logger.warn(`Rejected WS connection: Invalid token for ${executionId}`);
-          client.close(1008, 'Invalid token');
-          return;
-        }
-      } else if (process.env.NODE_ENV !== 'development') {
+      if (!token) {
         this.logger.warn(`Rejected WS connection: Missing auth token for ${executionId}`);
         client.close(1008, 'Authentication required');
         return;
       }
 
+      let payload: any;
+      try {
+        const jwtSecret = this.configService.get<string>('app.jwtSecret');
+        if (!jwtSecret) {
+          throw new Error('JWT secret is not configured');
+        }
+        payload = this.jwtService.verify(token, { secret: jwtSecret });
+      } catch (err: any) {
+        this.logger.warn(`Rejected WS connection: Invalid token for ${executionId}`);
+        client.close(1008, 'Invalid token');
+        return;
+      }
+
       const userId = payload.sub || payload.userId;
-      const isSuperuser = payload.is_superuser ?? false;
+      const isSuperuser = Boolean(payload.is_superuser);
 
       // Verify execution exists and user has project access
       const execution = await this.executionRepository.findOne({ where: { id: executionId } });

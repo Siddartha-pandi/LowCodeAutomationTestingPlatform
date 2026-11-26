@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BrowserContext, Page, Request, Route } from 'playwright';
+import { evaluateRequestUrl } from '../../common/security/url-security';
 
 @Injectable()
 export class PageManagerService {
@@ -24,44 +25,15 @@ export class PageManagerService {
       });
     }
 
-    // SSRF Interceptor: Block cloud metadata and restricted networks
+    // SSRF Interceptor: Block cloud metadata, private networks, disallowed schemes, and unapproved domains
     await page.route('**/*', (route: Route, request: Request) => {
       const urlStr = request.url();
-      try {
-        const parsed = new URL(urlStr);
-        const host = parsed.hostname.toLowerCase();
-
-        // 1. Strictly block cloud metadata
-        if (
-          host === '169.254.169.254' ||
-          host === 'metadata.google.internal' ||
-          host === 'metadata.goog' ||
-          host.startsWith('169.254.')
-        ) {
-          this.logger.warn(`SSRF Block: Route abort for cloud metadata attempt: ${urlStr}`);
-          return route.abort('accessdenied');
-        }
-
-        // 2. Allowed domain policy check if allowlist configured
-        if (allowedDomains.length > 0 && !allowedDomains.includes('*')) {
-          const match = allowedDomains.some((pattern) => {
-            if (pattern.startsWith('*.')) {
-              const suffix = pattern.substring(2).toLowerCase();
-              return host === suffix || host.endsWith(`.${suffix}`);
-            }
-            return host === pattern.toLowerCase();
-          });
-
-          if (!match && !['data:', 'blob:', 'about:blank'].includes(urlStr)) {
-            this.logger.warn(`SSRF Block: Route abort for unapproved domain: ${host}`);
-            return route.abort('accessdenied');
-          }
-        }
-
-        return route.continue();
-      } catch (e) {
-        return route.continue();
+      const check = evaluateRequestUrl(urlStr, allowedDomains, { allowSubresourceSchemes: true });
+      if (!check.allowed) {
+        this.logger.warn(`SSRF Block: ${check.reason} (${urlStr})`);
+        return route.abort('accessdenied');
       }
+      return route.continue();
     });
 
     return page;

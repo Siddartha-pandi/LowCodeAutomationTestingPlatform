@@ -23,7 +23,7 @@ export class DomController {
     @Body('session_id') sessionId: string,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.inspectElement(sessionId, user.userId, user.isSuperuser);
+    return this.sessionService.inspectElement(sessionId, user.id, user.isSuperuser);
   }
 
   @Post('explore')
@@ -32,6 +32,6 @@ export class DomController {
     @Body() dto: DomExploreDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.exploreDom(dto, user.userId);
+    return this.sessionService.exploreDom(dto, user.id);
   }
 }

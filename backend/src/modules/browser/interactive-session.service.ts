@@ -11,6 +11,7 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 import * as fs from 'fs';
 import { BrowserManagerService } from './browser-manager.service';
+import { evaluateRequestUrl, validateNavigationUrl } from '../../common/security/url-security';
 import {
   ActionDto,
   DomExploreDto,
@@ -85,29 +86,17 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     const page = await context.newPage();
     const allowedDomains = dto.allowed_domains || ['*'];
 
-    // Setup network policy if domains are restricted
-    if (!allowedDomains.includes('*')) {
-      await page.route('**/*', (route) => {
-        try {
-          const url = new URL(route.request().url());
-          const hostname = url.hostname.toLowerCase();
-          const isAllowed = allowedDomains.some((d) => {
-            const cleanD = d.toLowerCase().trim();
-            if (cleanD.startsWith('*.')) {
-              return hostname.endsWith(cleanD.slice(2)) || hostname === cleanD.slice(2);
-            }
-            return hostname === cleanD;
-          });
-          if (isAllowed || route.request().resourceType() === 'document') {
-            route.continue();
-          } else {
-            route.abort();
-          }
-        } catch {
-          route.continue();
-        }
+    // Setup network policy for all requests (including document navigations) to prevent SSRF
+    await page.route('**/*', (route) => {
+      const check = evaluateRequestUrl(route.request().url(), allowedDomains, {
+        allowSubresourceSchemes: true,
       });
-    }
+      if (!check.allowed) {
+        this.logger.warn(`Interactive session SSRF block: ${check.reason} (${route.request().url()})`);
+        return route.abort('accessdenied');
+      }
+      return route.continue();
+    });
 
     const session: ActiveSession = {
       sessionId,
@@ -138,8 +127,13 @@ export class InteractiveSessionService implements OnApplicationShutdown {
 
     const timeoutMs = (dto.timeout || 30) * 1000;
     let url = dto.url.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url)) {
       url = `https://${url}`;
+    }
+
+    const navCheck = await validateNavigationUrl(url, session.allowedDomains);
+    if (!navCheck.allowed) {
+      throw new ForbiddenException(`Navigation blocked by security policy: ${navCheck.reason}`);
     }
 
     await session.page.goto(url, { timeout: timeoutMs, waitUntil: 'load' });

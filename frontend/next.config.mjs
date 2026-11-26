@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
-  webpack: (config, { dev, isServer }) => {
-    if (dev) {
+  webpack: (config, { dev }) => {
+    if (dev && process.env.WATCHPACK_POLLING === 'true') {
       config.watchOptions = {
         poll: 1000,
         aggregateTimeout: 300,

@@ -62,7 +62,7 @@ export class BrowserController {
     @Body() dto: LaunchSessionDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.launchSession(dto, user.userId);
+    return this.sessionService.launchSession(dto, user.id);
   }
 
   @Post('navigate')
@@ -71,7 +71,7 @@ export class BrowserController {
     @Body() dto: NavigateDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.navigateSession(dto, user.userId, user.isSuperuser);
+    return this.sessionService.navigateSession(dto, user.id, user.isSuperuser);
   }
 
   @Post('action')
@@ -80,7 +80,7 @@ export class BrowserController {
     @Body() dto: ActionDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.executeAction(dto, user.userId, user.isSuperuser);
+    return this.sessionService.executeAction(dto, user.id, user.isSuperuser);
   }
 
   @Post('screenshot')
@@ -89,7 +89,7 @@ export class BrowserController {
     @Body() dto: ScreenshotDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.captureScreenshot(dto, user.userId, user.isSuperuser);
+    return this.sessionService.captureScreenshot(dto, user.id, user.isSuperuser);
   }
 
   @Get('viewport/:sessionId')
@@ -98,7 +98,7 @@ export class BrowserController {
     @Param('sessionId') sessionId: string,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.getViewport(sessionId, user.userId, user.isSuperuser);
+    return this.sessionService.getViewport(sessionId, user.id, user.isSuperuser);
   }
 
   @Post('close')
@@ -107,7 +107,7 @@ export class BrowserController {
     @Body() dto: CloseSessionDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.closeSession(dto.session_id, user.userId, user.isSuperuser);
+    return this.sessionService.closeSession(dto.session_id, user.id, user.isSuperuser);
   }
 
   @Post('validate-selector')
@@ -122,6 +122,6 @@ export class BrowserController {
     @Body() dto: TestSelectorDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.testSelector(dto, user.userId, user.isSuperuser);
+    return this.sessionService.testSelector(dto, user.id, user.isSuperuser);
   }
 }

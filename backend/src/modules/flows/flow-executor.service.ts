@@ -13,6 +13,7 @@ export interface FlowExecutionState {
   storageDir: string;
   variables: Record<string, any>;
   cancelled: boolean;
+  isCancelled?: () => Promise<boolean>;
   stepResults: Array<{
     nodeId: string;
     action: string;
@@ -130,6 +131,35 @@ export class FlowExecutorService {
       }
     }
 
+    if (errors.length === 0) {
+      const inDegree = new Map<string, number>();
+      const adj = new Map<string, string[]>();
+      for (const id of nodeIds) {
+        inDegree.set(id, 0);
+        adj.set(id, []);
+      }
+      for (const edge of graph.edges || []) {
+        adj.get(edge.source)!.push(edge.target);
+        inDegree.set(edge.target, (inDegree.get(edge.target) || 0) + 1);
+      }
+      const q: string[] = [];
+      for (const [id, deg] of inDegree.entries()) {
+        if (deg === 0) q.push(id);
+      }
+      let visited = 0;
+      while (q.length > 0) {
+        const curr = q.shift()!;
+        visited++;
+        for (const next of adj.get(curr) || []) {
+          inDegree.set(next, inDegree.get(next)! - 1);
+          if (inDegree.get(next) === 0) q.push(next);
+        }
+      }
+      if (visited !== nodeIds.size) {
+        errors.push('Flow graph contains a cycle.');
+      }
+    }
+
     return {
       valid: errors.length === 0,
       errors,
@@ -173,8 +203,7 @@ export class FlowExecutorService {
     }
 
     if (sorted.length !== graph.nodes.length) {
-      this.logger.warn('Cycle or disconnected components detected in flow graph. Falling back to declared node order.');
-      return graph.nodes;
+      throw new Error('Cycle detected in flow graph: deterministic execution requires an acyclic graph.');
     }
 
     return sorted;
@@ -206,11 +235,21 @@ export class FlowExecutorService {
     }
 
     const sortedNodes = this.topologicalSort(graph);
+    const skippedNodes = new Set<string>();
+    const incomingEdges = new Map<string, any[]>();
+    for (const edge of graph.edges || []) {
+      const list = incomingEdges.get(edge.target) || [];
+      list.push(edge);
+      incomingEdges.set(edge.target, list);
+    }
+
     let stepsPassed = 0;
     let stepsFailed = 0;
 
     for (const node of sortedNodes) {
-      if (state.cancelled) {
+      const cancelledNow = state.isCancelled ? await state.isCancelled() : state.cancelled;
+      if (cancelledNow) {
+        state.cancelled = true;
         this.logger.warn(`Execution ${state.executionId} cancelled before node ${node.id}`);
         return {
           status: 'cancelled',
@@ -219,6 +258,19 @@ export class FlowExecutorService {
           stepsFailed,
           errorMessage: 'Execution cancelled by user.',
         };
+      }
+
+      // Skip node if marked skipped or if all of its incoming edges come from skipped nodes
+      const inc = incomingEdges.get(node.id) || [];
+      if (skippedNodes.has(node.id) || (inc.length > 0 && inc.every((e) => skippedNodes.has(e.source)))) {
+        skippedNodes.add(node.id);
+        state.stepResults.push({
+          nodeId: node.id,
+          action: (node.action || node.type || '').toLowerCase(),
+          status: 'skipped',
+          duration_ms: 0,
+        });
+        continue;
       }
 
       const actionType = (node.action || node.type || '').toLowerCase();
@@ -242,6 +294,16 @@ export class FlowExecutorService {
       if (actionType === 'condition' || actionType === 'if_else') {
         const conditionResult = this.evaluateCondition(config, state.variables);
         state.variables[`${node.id}_result`] = conditionResult;
+        for (const edge of graph.edges || []) {
+          if (edge.source !== node.id) continue;
+          const branch = String((edge as any).sourceHandle || (edge as any).label || (edge as any).condition || '').toLowerCase().trim();
+          if (
+            (conditionResult && (branch === 'false' || branch === 'no')) ||
+            (!conditionResult && (branch === 'true' || branch === 'yes'))
+          ) {
+            skippedNodes.add(edge.target);
+          }
+        }
         stepSuccess = true;
       } else {
         // Execute Action / Assertion with optional retry policy

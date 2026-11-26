@@ -35,6 +35,7 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
   try {
     response = await fetch(url, {
       method: options.method ?? "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -100,6 +101,7 @@ export const authApi = {
       body: { email, password },
     }),
   me: () => request<any>("/api/v1/auth/me"),
+  logout: () => request<{ status: string; message: string }>("/api/v1/auth/logout", { method: "POST" }),
   forgotPassword: (email: string) =>
     request<{ message: string; resetToken?: string; resetUrl?: string }>("/api/v1/auth/forgot-password", {
       method: "POST",
