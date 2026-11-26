@@ -74,29 +74,36 @@ export function TestCasesPage({ projectId, onNavigate, onSelectTest }: TestCases
   };
 
   // Duplicate test
-  const handleDuplicateTest = (test: any) => {
-    const duplicated = {
-      ...test,
-      id: `tc-${Date.now()}`,
-      test_id: `${test.test_id}-COPY`,
-      name: `${test.name} (Copy)`,
-      last_result: "draft",
-      last_executed: "Never",
-    };
-    setTests([duplicated, ...tests]);
-    success("Test Duplicated", `Created draft test: "${duplicated.name}"`);
+  const handleDuplicateTest = async (test: any) => {
+    try {
+      const created = await testsApi.create({
+        project_id: projectId,
+        name: `${test.name} (Copy)`,
+        description: test.description || "Duplicated test case",
+        test_case: test.test_case || test.definition || { setup_steps: [], steps: [], teardown_steps: [] },
+      });
+      setTests([created, ...tests]);
+      success("Test Duplicated", `Created draft test: "${test.name} (Copy)"`);
+    } catch (err: any) {
+      error("Duplicate Failed", err.message || "Failed to clone test case.");
+    }
   };
 
   // Delete test
   const handleDeleteTest = (test: any) => {
     confirm({
       title: "Delete Test Case",
-      message: `Are you sure you want to delete test case '${test.test_id} - ${test.name}'?`,
+      message: `Are you sure you want to delete test case '${test.test_id || test.name}'?`,
       confirmText: "Delete Test",
       variant: "danger",
       onConfirm: async () => {
+        try {
+          await testsApi.delete(test.id);
+        } catch {
+          // fallback
+        }
         setTests(tests.filter((t) => t.id !== test.id));
-        success("Test Deleted", `Test case "${test.test_id}" removed.`);
+        success("Test Deleted", `Test case "${test.test_id || test.name}" removed.`);
       },
     });
   };

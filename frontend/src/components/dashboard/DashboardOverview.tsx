@@ -121,7 +121,7 @@ export function DashboardOverview({ projectId, onNavigate, onSelectExecution }: 
   const recentExecutionsList = executions.slice(0, 5);
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
+    <div className="p-4 sm:p-6 max-w-auto mx-auto space-y-4 sm:space-y-6">
       {/* TOP KPI CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
         {/* KPI 1: Total Flows */}

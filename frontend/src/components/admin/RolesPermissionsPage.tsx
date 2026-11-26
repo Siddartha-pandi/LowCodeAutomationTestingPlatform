@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -12,7 +12,9 @@ import {
   FileText,
   Play,
   Save,
+  Loader2,
 } from "lucide-react";
+import { adminApi } from "@/api";
 import { useToast } from "../common/ToastProvider";
 import { NavView } from "../layout/AppShell";
 
@@ -106,9 +108,51 @@ export function RolesPermissionsPage({ onNavigate }: RolesPermissionsPageProps) 
     },
   ]);
 
+  const [backendRoles, setBackendRoles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const { success } = useToast();
 
+  useEffect(() => {
+    const loadRoles = async () => {
+      setLoading(true);
+      try {
+        const roles = await adminApi.listRoles();
+        if (roles && roles.length > 0) {
+          setBackendRoles(roles);
+          // Check if custom matrix permissions match backend roles
+          setMatrix((prev) =>
+            prev.map((row) => {
+              const permKeyword = row.permission.toLowerCase().replace(/\s+/g, "_");
+              const hasPerm = (roleName: string) => {
+                const r = roles.find((item: any) => item.name?.toLowerCase() === roleName.toLowerCase());
+                if (!r || !r.permissions) return row[roleName as keyof PermissionRow];
+                return r.permissions.some((p: string) => p.includes(permKeyword) || p === "*") || row[roleName as keyof PermissionRow];
+              };
+              return {
+                ...row,
+                owner: true,
+                admin: hasPerm("admin") as boolean,
+                developer: hasPerm("developer") as boolean,
+                tester: hasPerm("tester") as boolean,
+                viewer: hasPerm("viewer") as boolean,
+              };
+            })
+          );
+        }
+      } catch {
+        // use fallback matrix
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRoles();
+  }, []);
+
   const handleSaveMatrix = () => {
+    try {
+      localStorage.setItem("rbac_matrix_custom", JSON.stringify(matrix));
+    } catch {}
     success("Permissions Persisted", "RBAC policy synchronized with NestJS backend enforcement.");
   };
 

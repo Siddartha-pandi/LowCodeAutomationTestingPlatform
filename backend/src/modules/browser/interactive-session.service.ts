@@ -44,6 +44,8 @@ interface ActiveSession {
 export class InteractiveSessionService implements OnApplicationShutdown {
   private readonly logger = new Logger(InteractiveSessionService.name);
   private readonly sessions = new Map<string, ActiveSession>();
+  private readonly idleTimeoutMs = 20 * 60 * 1000; // 20 minutes
+  private readonly cleanupInterval: NodeJS.Timeout;
 
   constructor(
     private readonly browserManager: BrowserManagerService,
@@ -51,7 +53,25 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     private readonly definitionRepository: Repository<AutomationDefinitionEntity>,
     @InjectRepository(DefinitionVersionEntity)
     private readonly versionRepository: Repository<DefinitionVersionEntity>,
-  ) {}
+  ) {
+    this.cleanupInterval = setInterval(() => {
+      void this.reapIdleSessions();
+    }, 5 * 60 * 1000);
+    this.cleanupInterval.unref?.();
+  }
+
+  private async reapIdleSessions(): Promise<void> {
+    const now = Date.now();
+    for (const [id, session] of this.sessions.entries()) {
+      if (now - session.lastActiveAt.getTime() > this.idleTimeoutMs) {
+        this.logger.log(`Reaping idle browser session '${id}' (inactive > 20m)`);
+        this.sessions.delete(id);
+        try {
+          await session.context.close();
+        } catch {}
+      }
+    }
+  }
 
   async launchSession(dto: LaunchSessionDto, userId: string): Promise<any> {
     const sessionId = dto.session_id || `sess_${crypto.randomUUID().replace(/-/g, '')}`;
@@ -147,22 +167,20 @@ export class InteractiveSessionService implements OnApplicationShutdown {
 
     switch (action) {
       case 'click':
-        if (selector) {
+      case 'click_at':
+      case 'mouse_click': {
+        if (dto.x !== undefined && dto.y !== undefined) {
+          // Accurate viewport click by coordinates
+          await page.mouse.click(dto.x, dto.y, { delay: 50 });
+        } else if (selector && selector !== 'viewport') {
           await page.click(selector, { timeout: timeoutMs });
-        } else if (dto.x !== undefined && dto.y !== undefined) {
-          await page.mouse.click(dto.x, dto.y);
         } else {
           throw new BadRequestException('Selector or coordinates (x, y) required for click action');
         }
+        // Allow brief network/DOM cycle for navigation or state updates
+        await page.waitForTimeout(500);
         break;
-      case 'click_at':
-      case 'mouse_click':
-        if (dto.x !== undefined && dto.y !== undefined) {
-          await page.mouse.click(dto.x, dto.y);
-        } else {
-          throw new BadRequestException('Coordinates (x, y) required for click_at action');
-        }
-        break;
+      }
       case 'dblclick':
       case 'double_click':
         if (selector) {
@@ -251,6 +269,46 @@ export class InteractiveSessionService implements OnApplicationShutdown {
         await page.evaluate((y) => window.scrollBy(0, y), delta);
         break;
       }
+      case 'scroll_top':
+      case 'scroll_to_top': {
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        break;
+      }
+      case 'scroll_bottom':
+      case 'scroll_to_bottom': {
+        await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+        break;
+      }
+      case 'hover':
+      case 'mouse_move': {
+        if (selector) {
+          await page.hover(selector, { timeout: timeoutMs });
+        } else if (dto.x !== undefined && dto.y !== undefined) {
+          await page.mouse.move(dto.x, dto.y);
+        }
+        break;
+      }
+      case 'wait':
+      case 'sleep': {
+        const waitMs = Number(dto.value || dto.text) || 1000;
+        await page.waitForTimeout(waitMs);
+        break;
+      }
+      case 'reload':
+      case 'refresh': {
+        await page.reload({ timeout: timeoutMs, waitUntil: 'load' });
+        break;
+      }
+      case 'back':
+      case 'go_back': {
+        await page.goBack({ timeout: timeoutMs });
+        break;
+      }
+      case 'forward':
+      case 'go_forward': {
+        await page.goForward({ timeout: timeoutMs });
+        break;
+      }
       default:
         throw new BadRequestException(`Unsupported browser action '${action}'`);
     }
@@ -263,6 +321,7 @@ export class InteractiveSessionService implements OnApplicationShutdown {
       action,
       selector,
       current_url: page.url(),
+      title: await page.title().catch(() => ''),
       image_base64: imageBase64,
     };
   }
@@ -787,48 +846,157 @@ export class InteractiveSessionService implements OnApplicationShutdown {
       url = `https://${url}`;
     }
 
-    const browser = await this.browserManager.getBrowser('chromium', true);
-    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-    const page = await context.newPage();
+    let session: ActiveSession | undefined;
+    let page: any;
+    let context: any;
+    let createdTransient = false;
+
+    if (dto.session_id && this.sessions.has(dto.session_id)) {
+      session = this.sessions.get(dto.session_id);
+      page = session!.page;
+      context = session!.context;
+      session!.lastActiveAt = new Date();
+      // If the session is already active, only navigate if page is on about:blank
+      // or if an explicitly different domain/path is targeted, but preserve in-page transitions, query params, hash changes, modals
+      if (url && (page.url() === 'about:blank' || page.url() === 'about:blank/')) {
+        await page.goto(url, { timeout: 30000, waitUntil: 'load' });
+      }
+    } else {
+      // Create or reuse persistent interactive session so live interaction is possible
+      const sessionId = dto.session_id || `sess_${crypto.randomUUID().replace(/-/g, '')}`;
+      const browser = await this.browserManager.getBrowser('chromium', true);
+      context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      page = await context.newPage();
+      
+      const newSession: ActiveSession = {
+        sessionId,
+        projectId: dto.project_id,
+        userId,
+        context,
+        page,
+        createdAt: new Date(),
+        lastActiveAt: new Date(),
+        allowedDomains: ['*'],
+        recordingActions: [],
+      };
+      this.sessions.set(sessionId, newSession);
+      session = newSession;
+
+      await page.goto(url, { timeout: 30000, waitUntil: 'load' });
+    }
 
     try {
-      await page.goto(url, { timeout: 30000, waitUntil: 'load' });
-
-      const shot = await page.screenshot({ fullPage: false });
+      const isFullPage = Boolean(dto.full_page);
+      const shot = await page.screenshot({ fullPage: isFullPage });
       const imageBase64 = `data:image/png;base64,${shot.toString('base64')}`;
 
       const elements = await page.evaluate(() => {
         const nodes = Array.from(
-          document.querySelectorAll('a, button, input, select, textarea, [role]'),
+          document.querySelectorAll('a, button, input, select, textarea, [role], [data-testid], h1, h2, h3, form'),
         );
-        return nodes.slice(0, 100).map((el: any) => ({
-          tag: el.tagName.toLowerCase(),
-          id: el.id || null,
-          testId: el.getAttribute('data-testid') || el.getAttribute('data-test') || null,
-          text: (el.innerText || el.value || '').trim().slice(0, 60),
-          role: el.getAttribute('role') || null,
-          type: el.getAttribute('type') || null,
-          selector: el.id
-            ? `#${el.id}`
-            : el.getAttribute('data-testid')
-            ? `[data-testid="${el.getAttribute('data-testid')}"]`
-            : el.tagName.toLowerCase(),
-        }));
+        return nodes.slice(0, 150).map((el: any) => {
+          const rect = el.getBoundingClientRect();
+          const computedStyle = window.getComputedStyle(el);
+          const isVisible =
+            rect.width > 0 &&
+            rect.height > 0 &&
+            computedStyle.display !== 'none' &&
+            computedStyle.visibility !== 'hidden' &&
+            computedStyle.opacity !== '0';
+
+          const tag = el.tagName.toLowerCase();
+          const elId = el.id || null;
+          const testId = el.getAttribute('data-testid') || el.getAttribute('data-test') || null;
+          const role = el.getAttribute('role') || (tag === 'button' ? 'button' : tag === 'a' ? 'link' : null);
+          const text = (el.innerText || el.value || '').trim().slice(0, 80);
+          const accessibleName =
+            el.getAttribute('aria-label') ||
+            el.getAttribute('title') ||
+            el.getAttribute('placeholder') ||
+            text ||
+            null;
+
+          const stableAttributes: Record<string, string> = {};
+          if (elId) stableAttributes['id'] = elId;
+          if (testId) stableAttributes['data-testid'] = testId;
+          if (el.getAttribute('name')) stableAttributes['name'] = el.getAttribute('name');
+          if (el.getAttribute('type')) stableAttributes['type'] = el.getAttribute('type');
+          if (el.getAttribute('placeholder')) stableAttributes['placeholder'] = el.getAttribute('placeholder');
+          if (el.getAttribute('href')) stableAttributes['href'] = el.getAttribute('href');
+          if (el.getAttribute('value')) stableAttributes['value'] = el.getAttribute('value');
+
+          const ariaProperties: Record<string, string> = {};
+          if (el.getAttribute('aria-label')) ariaProperties['aria-label'] = el.getAttribute('aria-label');
+          if (el.getAttribute('aria-describedby')) ariaProperties['aria-describedby'] = el.getAttribute('aria-describedby');
+          if (role) ariaProperties['role'] = role;
+
+          const ancestors: Array<{ tag: string; id?: string | null; role?: string | null; depth: number }> = [];
+          let parent = el.parentElement;
+          let depth = 1;
+          while (parent && depth <= 3) {
+            ancestors.push({
+              tag: parent.tagName.toLowerCase(),
+              id: parent.id || null,
+              role: parent.getAttribute('role') || null,
+              depth,
+            });
+            parent = parent.parentElement;
+            depth++;
+          }
+
+          let defaultSelector = tag;
+          if (elId) {
+            defaultSelector = `#${elId}`;
+          } else if (testId) {
+            defaultSelector = `[data-testid="${testId}"]`;
+          } else if (el.getAttribute('name')) {
+            defaultSelector = `${tag}[name="${el.getAttribute('name')}"]`;
+          } else if (role && accessibleName) {
+            defaultSelector = `role=${role}[name="${accessibleName.slice(0, 30)}"]`;
+          }
+
+          return {
+            tag,
+            element_id: elId,
+            role,
+            accessible_name: accessibleName,
+            text,
+            is_visible: isVisible,
+            is_enabled: !el.disabled,
+            box: {
+              x: Math.round(rect.x),
+              y: Math.round(rect.y),
+              width: Math.round(rect.width),
+              height: Math.round(rect.height),
+            },
+            stable_attributes: stableAttributes,
+            aria_properties: ariaProperties,
+            ancestors,
+            selector: defaultSelector,
+          };
+        });
       });
 
+      const title = await page.title().catch(() => '');
       return {
+        session_id: session?.sessionId,
         url: page.url(),
-        title: await page.title(),
+        title,
+        page_url: page.url(),
+        page_title: title,
         total_elements: elements.length,
         elements,
+        screenshot: imageBase64,
         image_base64: imageBase64,
       };
-    } finally {
-      await context.close().catch(() => {});
+    } catch (err) {
+      this.logger.error(`Failed during exploreDom: ${err}`);
+      throw err;
     }
   }
 
   async onApplicationShutdown() {
+    clearInterval(this.cleanupInterval);
     this.logger.log(`Closing ${this.sessions.size} interactive browser sessions on shutdown...`);
     for (const [id, session] of this.sessions.entries()) {
       try {

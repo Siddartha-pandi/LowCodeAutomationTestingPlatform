@@ -76,17 +76,18 @@ export class MonitoringGateway
         }
       }
 
-      let payload: any = { sub: 'authenticated-user', is_superuser: true };
+      let payload: any = { sub: 'dev-user', is_superuser: false };
       if (token) {
         try {
-          const jwtSecret = this.configService.get<string>('app.jwtSecret') || 'default-secret';
+          const jwtSecret = this.configService.get<string>('app.jwtSecret');
+          if (!jwtSecret) {
+            throw new Error('JWT secret is not configured');
+          }
           payload = this.jwtService.verify(token, { secret: jwtSecret });
         } catch (err: any) {
-          if (process.env.NODE_ENV !== 'development') {
-            this.logger.warn(`Rejected WS connection: Invalid token for ${executionId}`);
-            client.close(1008, 'Invalid token');
-            return;
-          }
+          this.logger.warn(`Rejected WS connection: Invalid token for ${executionId}`);
+          client.close(1008, 'Invalid token');
+          return;
         }
       } else if (process.env.NODE_ENV !== 'development') {
         this.logger.warn(`Rejected WS connection: Missing auth token for ${executionId}`);

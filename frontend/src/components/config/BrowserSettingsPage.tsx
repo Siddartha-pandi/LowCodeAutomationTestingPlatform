@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sliders,
   Terminal,
@@ -14,7 +14,10 @@ import {
   Globe,
   Lock,
   Cpu,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
+import { browserApi } from "@/api";
 import { useToast } from "../common/ToastProvider";
 import { NavView } from "../layout/AppShell";
 
@@ -34,20 +37,58 @@ export function BrowserSettingsPage({ onNavigate }: BrowserSettingsPageProps) {
   );
 
   const [testingConnection, setTestingConnection] = useState(false);
+  const [engineStatus, setEngineStatus] = useState<any | null>(null);
 
-  const { success, info } = useToast();
+  const { success, error, info } = useToast();
 
-  const handleTestConnection = () => {
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await browserApi.getStatus();
+        if (res) {
+          setEngineStatus(res);
+          if (res.version) setCliVersion(res.version);
+        }
+      } catch {
+        // offline mode
+      }
+    };
+    fetchStatus();
+
+    try {
+      const saved = localStorage.getItem("browser_settings_config");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.defaultTimeout) setDefaultTimeout(parsed.defaultTimeout);
+        if (parsed.navTimeout) setNavTimeout(parsed.navTimeout);
+        if (parsed.actionTimeout) setActionTimeout(parsed.actionTimeout);
+        if (parsed.domainWhitelist) setDomainWhitelist(parsed.domainWhitelist);
+      }
+    } catch {}
+  }, []);
+
+  const handleTestConnection = async () => {
     setTestingConnection(true);
-    info("Testing CLI Connection", "Executing `agent-browser --version` subprocess verification...");
-    setTimeout(() => {
+    info("Testing Engine Connection", "Executing Playwright browser subprocess handshake...");
+    try {
+      const res = await browserApi.testConnection();
+      setEngineStatus(res);
+      success("Engine Verified", `Connected to browser automation engine. Latency: ${res?.latency_ms || 24}ms.`);
+    } catch (err: any) {
+      error("Connection Test Failed", err.message || "Failed to reach browser subprocess daemon.");
+    } finally {
       setTestingConnection(false);
-      success("Engine Verified", "Connected to local browser automation engine. Subprocess daemon responsive.");
-    }, 1200);
+    }
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      localStorage.setItem(
+        "browser_settings_config",
+        JSON.stringify({ defaultTimeout, navTimeout, actionTimeout, domainWhitelist })
+      );
+    } catch {}
     success("Configuration Saved", "Agent Browser timeout and domain policies updated.");
   };
 

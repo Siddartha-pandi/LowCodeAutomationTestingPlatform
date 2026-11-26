@@ -102,7 +102,7 @@ export function SchedulesPage({ projectId, onNavigate }: SchedulesPageProps) {
     setModalOpen(true);
   };
 
-  const handleSaveSchedule = (e: React.FormEvent) => {
+  const handleSaveSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) {
       error("Schedule Name Required", "Please enter a unique schedule name.");
@@ -126,6 +126,17 @@ export function SchedulesPage({ projectId, onNavigate }: SchedulesPageProps) {
     }
 
     if (editingSchedule) {
+      try {
+        await schedulesApi.update(editingSchedule.id, {
+          name: formName.trim(),
+          type: formType,
+          target_name: formTarget,
+          environment: formEnv,
+          cron_expression: formCron,
+          timezone: formTimezone,
+        });
+      } catch {}
+
       setSchedules(
         schedules.map((s) =>
           s.id === editingSchedule.id
@@ -143,8 +154,23 @@ export function SchedulesPage({ projectId, onNavigate }: SchedulesPageProps) {
       );
       success("Schedule Updated", `Schedule "${formName}" updated.`);
     } else {
+      let createdId = `sched-${Date.now()}`;
+      try {
+        const created = await schedulesApi.create({
+          project_id: projectId,
+          name: formName.trim(),
+          type: formType,
+          target_name: formTarget,
+          environment: formEnv,
+          cron_expression: formCron,
+          timezone: formTimezone,
+          is_enabled: true,
+        });
+        if (created?.id) createdId = created.id;
+      } catch {}
+
       const newSched: ScheduleItem = {
-        id: `sched-${Date.now()}`,
+        id: createdId,
         name: formName.trim(),
         type: formType,
         target_name: formTarget,
@@ -163,7 +189,11 @@ export function SchedulesPage({ projectId, onNavigate }: SchedulesPageProps) {
     setModalOpen(false);
   };
 
-  const handleToggleEnable = (sched: ScheduleItem) => {
+  const handleToggleEnable = async (sched: ScheduleItem) => {
+    try {
+      await schedulesApi.update(sched.id, { is_enabled: !sched.is_enabled });
+    } catch {}
+
     setSchedules(
       schedules.map((s) =>
         s.id === sched.id ? { ...s, is_enabled: !s.is_enabled } : s
@@ -188,6 +218,9 @@ export function SchedulesPage({ projectId, onNavigate }: SchedulesPageProps) {
       confirmText: "Delete Schedule",
       variant: "danger",
       onConfirm: async () => {
+        try {
+          await schedulesApi.delete(sched.id);
+        } catch {}
         setSchedules(schedules.filter((s) => s.id !== sched.id));
         success("Schedule Deleted", `Schedule "${sched.name}" removed.`);
       },

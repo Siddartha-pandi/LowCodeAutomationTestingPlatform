@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Image as ImageIcon,
   Search,
@@ -15,7 +15,9 @@ import {
   Layers,
   Globe,
   Camera,
+  Loader2,
 } from "lucide-react";
+import { executionsApi } from "@/api";
 import { useToast } from "../common/ToastProvider";
 import { useConfirm } from "../common/ConfirmModal";
 import { NavView } from "../layout/AppShell";
@@ -38,6 +40,7 @@ interface ScreenshotItem {
 
 export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGalleryPageProps) {
   const [screenshots, setScreenshots] = useState<ScreenshotItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,6 +48,53 @@ export function ScreenshotsGalleryPage({ projectId, onNavigate }: ScreenshotsGal
 
   const { success } = useToast();
   const { confirm } = useConfirm();
+
+  useEffect(() => {
+    const loadScreenshots = async () => {
+      setLoading(true);
+      try {
+        const execs = await executionsApi.list({ projectId });
+        const items: ScreenshotItem[] = [];
+
+        if (execs && Array.isArray(execs)) {
+          for (const ex of execs) {
+            if (ex.screenshots && Array.isArray(ex.screenshots)) {
+              for (const sc of ex.screenshots) {
+                items.push({
+                  id: sc.id || `sc_${items.length + 1}`,
+                  name: sc.name || `${ex.name || "step"}_viewport.png`,
+                  execution_id: ex.id,
+                  step_name: sc.step_name || "Viewport Snapshot",
+                  timestamp: ex.created_at ? new Date(ex.created_at).toLocaleTimeString() : "Recent",
+                  environment: ex.environment || "Staging",
+                  size_kb: sc.size_kb || 142,
+                  url: sc.url || sc.image_base64 || executionsApi.getViewportUrl(ex.id),
+                });
+              }
+            } else if (ex.viewport_screenshot || ex.image_base64) {
+              items.push({
+                id: `sc_${ex.id}`,
+                name: `${ex.name || "execution"}_viewport.png`,
+                execution_id: ex.id,
+                step_name: "Final Step Viewport",
+                timestamp: ex.created_at ? new Date(ex.created_at).toLocaleTimeString() : "Recent",
+                environment: ex.environment || "Staging",
+                size_kb: 168,
+                url: ex.viewport_screenshot || ex.image_base64 || executionsApi.getViewportUrl(ex.id),
+              });
+            }
+          }
+        }
+        setScreenshots(items);
+      } catch {
+        setScreenshots([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadScreenshots();
+  }, [projectId]);
 
   const handleDownload = (sc: ScreenshotItem) => {
     const link = document.createElement("a");

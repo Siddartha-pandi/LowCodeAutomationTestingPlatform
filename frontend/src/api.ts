@@ -10,6 +10,7 @@ export interface ApiRequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   headers?: Record<string, string>;
+  timeoutMs?: number;
 }
 
 const API_BASE_URL = (
@@ -20,9 +21,16 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
   const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
   const url = `${API_BASE_URL}${path}`;
 
+  const isLongRunning =
+    path.includes("/dom/") ||
+    path.includes("/browser/") ||
+    path.includes("/recorder/") ||
+    path.includes("/execute");
+  const effectiveTimeoutMs = options.timeoutMs ?? (isLongRunning ? 30000 : 10000);
+
   let response: Response;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7000);
+  const timeoutId = setTimeout(() => controller.abort(), effectiveTimeoutMs);
 
   try {
     response = await fetch(url, {
@@ -37,7 +45,9 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
     });
   } catch (err: any) {
     if (err?.name === "AbortError") {
-      throw new Error(`Connection to backend at ${url} timed out after 7s. Please verify backend is running.`);
+      throw new Error(
+        `Connection to backend at ${url} timed out after ${Math.round(effectiveTimeoutMs / 1000)}s. Please verify backend is running.`
+      );
     }
     throw new Error(
       `Cannot connect to backend server at ${API_BASE_URL}. Please ensure the NestJS backend is running (e.g. 'make backend' or 'make dev').`
@@ -192,7 +202,7 @@ export const executionsApi = {
 export const intelligenceApi = {
   extractDom: (sessionId: string, selector?: string) =>
     request<any>("/api/v1/dom/extract", { method: "POST", body: { session_id: sessionId, selector } }),
-  exploreDom: (projectId: string, url: string, sessionId?: string) =>
+  exploreDom: (projectId: string, url: string, sessionId?: string, fullPage = false) =>
     request<{
       session_id: string;
       page_url: string;
@@ -202,7 +212,7 @@ export const intelligenceApi = {
       elements: any[];
     }>("/api/v1/dom/explore", {
       method: "POST",
-      body: { project_id: projectId, url, session_id: sessionId },
+      body: { project_id: projectId, url, session_id: sessionId, full_page: fullPage },
     }),
   listElements: (projectId: string) =>
     request<any[]>(`/api/v1/elements?project_id=${projectId}`),

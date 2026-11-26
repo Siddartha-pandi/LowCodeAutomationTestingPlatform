@@ -92,6 +92,32 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
   const { success, info, error } = useToast();
   const { confirm } = useConfirm();
 
+  const loadDatasets = React.useCallback(async () => {
+    try {
+      const list = await testsApi.listDatasets(projectId);
+      if (list && list.length > 0) {
+        const mapped: DatasetItem[] = list.map((d: any) => ({
+          id: String(d.id),
+          name: d.name,
+          description: d.description || "",
+          format: (d.format || "csv") as "csv" | "json",
+          rowCount: Array.isArray(d.rows) ? d.rows.length : 0,
+          columns: Array.isArray(d.headers) ? d.headers : [],
+          data: Array.isArray(d.rows) ? d.rows : [],
+          lastModified: d.updated_at ? new Date(d.updated_at).toLocaleTimeString() : "Recent",
+        }));
+        setDatasets(mapped);
+        setActiveDatasetId(mapped[0].id);
+      }
+    } catch {
+      // Keep initial datasets as fallback
+    }
+  }, [projectId]);
+
+  React.useEffect(() => {
+    loadDatasets();
+  }, [loadDatasets]);
+
   const activeDataset = datasets.find((d) => d.id === activeDatasetId) || datasets[0];
 
   const handleOpenEditDatasetModal = (ds: DatasetItem) => {
@@ -102,7 +128,15 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
     setDatasetModalOpen(true);
   };
 
-  const handleSaveDatasetMetadata = (e: React.FormEvent) => {
+  const handleOpenCreateDatasetModal = () => {
+    setEditingDataset(null);
+    setDsNameInput("");
+    setDsDescInput("");
+    setDsFormatInput("csv");
+    setDatasetModalOpen(true);
+  };
+
+  const handleSaveDatasetMetadata = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dsNameInput.trim()) {
       error("Name Required", "Dataset title cannot be empty.");
@@ -110,6 +144,16 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
     }
 
     if (editingDataset) {
+      try {
+        await testsApi.updateDataset(editingDataset.id, {
+          name: dsNameInput.trim(),
+          description: dsDescInput.trim() || undefined,
+          format: dsFormatInput,
+        });
+      } catch {
+        // optimistic
+      }
+
       const updated = {
         ...editingDataset,
         name: dsNameInput.trim(),
@@ -121,6 +165,34 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
       setDatasetModalOpen(false);
       setEditingDataset(null);
       success("Dataset Updated", `Dataset '${dsNameInput}' configuration saved.`);
+    } else {
+      try {
+        const created = await testsApi.createDataset({
+          project_id: projectId,
+          name: dsNameInput.trim(),
+          description: dsDescInput.trim() || undefined,
+          format: dsFormatInput,
+          headers: ["param_1", "expected_value"],
+          rows: [{ param_1: "sample_input", expected_value: "expected_output" }],
+        });
+
+        const newDs: DatasetItem = {
+          id: String(created.id),
+          name: created.name,
+          description: created.description || "",
+          format: (created.format || dsFormatInput) as any,
+          rowCount: 1,
+          columns: created.headers || ["param_1", "expected_value"],
+          data: created.rows || [{ param_1: "sample_input", expected_value: "expected_output" }],
+          lastModified: "Just now",
+        };
+        setDatasets([newDs, ...datasets]);
+        setActiveDatasetId(newDs.id);
+        setDatasetModalOpen(false);
+        success("Dataset Created", `Dataset '${dsNameInput}' initialized in database.`);
+      } catch (err: any) {
+        error("Create Failed", err.message || "Failed to create dataset in backend.");
+      }
     }
   };
 
@@ -151,15 +223,30 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
     if (!activeDataset) return;
     setIsSaving(true);
     try {
-      await testsApi.createDataset({
-        project_id: projectId,
-        name: activeDataset.name,
-        description: activeDataset.description,
-        format: activeDataset.format,
-        headers: activeDataset.columns,
-        rows: activeDataset.data,
-      });
-      success("Saved to Database", `Dataset '${activeDataset.name}' persisted successfully.`);
+      const isCustomId = activeDataset.id.startsWith("ds_");
+      if (!isCustomId) {
+        await testsApi.updateDataset(activeDataset.id, {
+          name: activeDataset.name,
+          description: activeDataset.description,
+          format: activeDataset.format,
+          headers: activeDataset.columns,
+          rows: activeDataset.data,
+        });
+        success("Saved to Database", `Dataset '${activeDataset.name}' updated in database.`);
+      } else {
+        const created = await testsApi.createDataset({
+          project_id: projectId,
+          name: activeDataset.name,
+          description: activeDataset.description,
+          format: activeDataset.format,
+          headers: activeDataset.columns,
+          rows: activeDataset.data,
+        });
+        const updatedList = datasets.map((d) => (d.id === activeDataset.id ? { ...d, id: String(created.id) } : d));
+        setDatasets(updatedList);
+        setActiveDatasetId(String(created.id));
+        success("Saved to Database", `Dataset '${activeDataset.name}' persisted to database.`);
+      }
     } catch (err: any) {
       error("Save Failed", err.message || "Failed to persist dataset to database.");
     } finally {
@@ -226,20 +313,7 @@ export function TestDataPage({ projectId, onNavigate }: TestDataPageProps) {
 
   // Create new dataset
   const handleCreateDataset = () => {
-    const newId = `ds_${Date.now()}`;
-    const newDs: DatasetItem = {
-      id: newId,
-      name: "New Data-Driven Test Set",
-      description: "Custom test parameters dataset",
-      format: "csv",
-      rowCount: 1,
-      columns: ["parameter_1", "expected_value"],
-      data: [{ parameter_1: "test_val", expected_value: "expected_val" }],
-      lastModified: "Just now",
-    };
-    setDatasets([...datasets, newDs]);
-    setActiveDatasetId(newId);
-    success("Dataset Created", "New parameterized dataset created.");
+    handleOpenCreateDatasetModal();
   };
 
   return (

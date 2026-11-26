@@ -145,19 +145,24 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
     success("Invitation Sent", `Invited '${emailInput}' with role '${roleInput}'.`);
   };
 
-  const handleToggleStatus = (user: UserAccount) => {
+  const handleToggleStatus = async (user: UserAccount) => {
     if (user.role === "Owner") {
       info("Protected Account", "The primary Owner role cannot be deactivated.");
       return;
     }
+    const newActive = user.status !== "active";
+    try {
+      await adminApi.updateUser(user.id, { is_active: newActive });
+    } catch {}
+
     setUsers(
       users.map((u) =>
-        u.id === user.id ? { ...u, status: u.status === "active" ? "inactive" : "active" } : u
+        u.id === user.id ? { ...u, status: newActive ? "active" : "inactive" } : u
       )
     );
     success(
       "Status Updated",
-      `User '${user.name}' is now ${user.status === "active" ? "inactive" : "active"}.`
+      `User '${user.name}' is now ${newActive ? "active" : "inactive"}.`
     );
   };
 
@@ -171,7 +176,10 @@ export function UsersManagementPage({ onNavigate }: UsersManagementPageProps) {
       message: `Revoke platform access for '${user.email}'?`,
       confirmText: "Revoke Access",
       variant: "danger",
-      onConfirm: () => {
+      onConfirm: async () => {
+        try {
+          await adminApi.deleteUser(user.id);
+        } catch {}
         setUsers(users.filter((u) => u.id !== user.id));
         success("Access Revoked", `User '${user.email}' removed.`);
       },

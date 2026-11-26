@@ -48,6 +48,7 @@ import {
   Database,
   Video,
 } from "lucide-react";
+import { intelligenceApi, executionsApi } from "@/api";
 import { useTheme } from "../common/ThemeProvider";
 import { BrowserAutomationLogo } from "../common/BrowserLogo";
 
@@ -196,34 +197,117 @@ export function AppShell({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
+  // Collapsible dropdown sections state
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("sidebar_collapsed_sections");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return {};
+  });
+
+  const toggleSection = (sectionTitle: string) => {
+    setCollapsedSections((prev) => {
+      const next = { ...prev, [sectionTitle]: !prev[sectionTitle] };
+      try {
+        localStorage.setItem("sidebar_collapsed_sections", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  // Ensure the section containing currentView is automatically expanded
+  useEffect(() => {
+    const activeSection = NAV_SECTIONS.find((sec) =>
+      sec.items.some((item) => item.id === currentView)
+    );
+    if (activeSection && collapsedSections[activeSection.title]) {
+      setCollapsedSections((prev) => {
+        const next = { ...prev, [activeSection.title]: false };
+        try {
+          localStorage.setItem("sidebar_collapsed_sections", JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+    }
+  }, [currentView]);
+
   const { resolvedTheme, toggleTheme } = useTheme();
 
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "n1",
-      title: "Self-Healing Triggered",
-      description: "Element '#submit-order' healed with 96.4% confidence",
-      time: "10m ago",
-      read: false,
-      type: "success",
-    },
-    {
-      id: "n2",
-      title: "Schedule Execution Complete",
-      description: "Daily QA Regression Suite passed 28/28 assertions",
-      time: "1h ago",
-      read: false,
-      type: "info",
-    },
-    {
-      id: "n3",
-      title: "Healing Approval Required",
-      description: "Checkout button changed in Staging. Confidence 91.2%",
-      time: "3h ago",
-      read: true,
-      type: "warning",
-    },
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    const loadLiveNotifications = async () => {
+      try {
+        const [approvalsRes, eventsRes, execsRes] = await Promise.allSettled([
+          intelligenceApi.listApprovals("pending"),
+          intelligenceApi.listHealingEvents(),
+          executionsApi.list({ projectId: currentProject?.id }),
+        ]);
+
+        const notifs: Notification[] = [];
+
+        if (approvalsRes.status === "fulfilled" && approvalsRes.value?.length > 0) {
+          for (const app of approvalsRes.value.slice(0, 3)) {
+            notifs.push({
+              id: `app_${app.id}`,
+              title: "Healing Approval Required",
+              description: `Proposed change for '${app.element_id || "target"}' requires operator sign-off`,
+              time: "Pending",
+              read: false,
+              type: "warning",
+            });
+          }
+        }
+
+        if (eventsRes.status === "fulfilled" && eventsRes.value?.length > 0) {
+          for (const ev of eventsRes.value.slice(0, 3)) {
+            notifs.push({
+              id: `heal_${ev.id}`,
+              title: "Self-Healing Auto-Resolved",
+              description: `Element '${ev.element_id || "target"}' healed with high confidence`,
+              time: "Recent",
+              read: false,
+              type: "success",
+            });
+          }
+        }
+
+        if (execsRes.status === "fulfilled" && execsRes.value?.length > 0) {
+          for (const ex of execsRes.value.slice(0, 2)) {
+            const isFailed = ex.status === "failed";
+            notifs.push({
+              id: `exec_${ex.id}`,
+              title: isFailed ? "Execution Failed" : "Execution Completed",
+              description: `'${ex.name || "Flow"}' finished with status ${ex.status}`,
+              time: ex.created_at ? new Date(ex.created_at).toLocaleTimeString() : "Recent",
+              read: true,
+              type: isFailed ? "warning" : "info",
+            });
+          }
+        }
+
+        if (notifs.length === 0) {
+          notifs.push({
+            id: "welcome_init",
+            title: "Workspace Ready",
+            description: `Connected to active project '${currentProject?.name || "Enterprise Suite"}'.`,
+            time: "Now",
+            read: true,
+            type: "info",
+          });
+        }
+
+        setNotifications(notifs);
+      } catch {
+        // Fallback
+      }
+    };
+
+    loadLiveNotifications();
+  }, [currentProject?.id]);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -324,7 +408,7 @@ export function AppShell({
               <BrowserAutomationLogo size={32} className="shrink-0" />
               <div className="leading-tight truncate">
                 <div className="font-bold text-xs tracking-tight text-black dark:text-white truncate">
-                  {process.env.NEXT_PUBLIC_APP_NAME || "AgentFlow"}
+                  {process.env.NEXT_PUBLIC_APP_NAME || "Dolphin Flow"}
                 </div>
                 <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-medium tracking-wider uppercase truncate">
                   {process.env.NEXT_PUBLIC_COMPANY_NAME || "Enterprise Platform"}
@@ -383,19 +467,16 @@ export function AppShell({
           </button>
         )}
 
-        {/* Navigation List across 7 Categories */}
-        <div className="flex-1 overflow-y-auto px-2 py-3 space-y-3.5 text-xs scrollbar-thin">
-          {NAV_SECTIONS.map((sec) => (
-            <div key={sec.title} className="space-y-1">
-              {!collapsed && (
-                <div className="px-2 py-0.5 text-[10px] font-bold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase">
-                  {sec.title}
-                </div>
-              )}
-              {sec.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentView === item.id;
-                return (
+        {/* Navigation List across Categories with Collapsible Dropdowns */}
+        <div className="flex-1 overflow-y-auto px-2 py-3 space-y-2 text-xs scrollbar-thin">
+          {NAV_SECTIONS.map((sec) => {
+            // Dashboard section has a single item and doesn't need a collapsible dropdown header
+            if (sec.title === "DASHBOARD") {
+              const item = sec.items[0];
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <div key={sec.title} className="space-y-0.5">
                   <button
                     key={item.id}
                     onClick={() => handleNavigate(item.id)}
@@ -422,10 +503,77 @@ export function AppShell({
                       </span>
                     )}
                   </button>
-                );
-              })}
-            </div>
-          ))}
+                </div>
+              );
+            }
+
+            const isSectionCollapsed = Boolean(collapsedSections[sec.title]);
+            const hasActiveItem = sec.items.some((item) => item.id === currentView);
+
+            return (
+              <div key={sec.title} className="space-y-0.5">
+                {!collapsed ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(sec.title)}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wider text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 uppercase transition cursor-pointer select-none group"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span>{sec.title}</span>
+                      {hasActiveItem && isSectionCollapsed && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-black dark:bg-white animate-pulse" />
+                      )}
+                    </span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-neutral-400 group-hover:text-black dark:text-neutral-500 dark:group-hover:text-white transition-transform duration-200 ${
+                        isSectionCollapsed ? "-rotate-90" : "rotate-0"
+                      }`}
+                    />
+                  </button>
+                ) : (
+                  <div className="h-px bg-neutral-200 dark:bg-neutral-800 my-2 mx-1" />
+                )}
+
+                {/* Section Items - Toggleable Dropdown List */}
+                {(!isSectionCollapsed || collapsed) && (
+                  <div className="space-y-0.5 pt-0.5">
+                    {sec.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = currentView === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleNavigate(item.id)}
+                          title={collapsed ? item.label : undefined}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg font-medium transition text-left relative ${
+                            isActive
+                              ? "bg-black text-white dark:bg-white dark:text-black font-bold shadow-xs"
+                              : "text-neutral-600 hover:text-black hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
+                          }`}
+                        >
+                          <Icon
+                            className={`w-4 h-4 shrink-0 ${
+                              isActive
+                                ? "text-white dark:text-black"
+                                : "text-neutral-500 group-hover:text-black dark:text-neutral-400 dark:group-hover:text-white"
+                            }`}
+                          />
+                          {!collapsed && (
+                            <span className="truncate flex-1">{item.label}</span>
+                          )}
+                          {!collapsed && item.badge && (
+                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-neutral-200 dark:bg-neutral-800 text-black dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 font-mono font-medium">
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* User Info / Profile footer */}

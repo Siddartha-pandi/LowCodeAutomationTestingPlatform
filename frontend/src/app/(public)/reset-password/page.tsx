@@ -91,7 +91,7 @@ function ResetPasswordForm() {
           </div>
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white">
-              AgentFlow
+              Dolphin Flow
             </h1>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 font-normal">
               Enterprise Browser Automation &amp; Testing Platform

@@ -31,7 +31,10 @@ export function normalizeDatabaseUrl(url: string): string {
           type: 'postgres',
           url,
           autoLoadEntities: true,
-          synchronize: process.env.DB_SYNCHRONIZE !== 'false', // Auto-syncs schema in development unless explicitly disabled
+          synchronize:
+            process.env.NODE_ENV === 'production'
+              ? process.env.DB_SYNCHRONIZE === 'true'
+              : process.env.DB_SYNCHRONIZE !== 'false', // Auto-syncs schema in dev; requires explicit opt-in in production
           logging: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
           ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
           retryAttempts: 10,

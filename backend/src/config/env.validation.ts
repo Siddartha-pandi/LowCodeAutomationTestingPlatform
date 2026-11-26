@@ -17,5 +17,19 @@ export function validateEnvironment(config: Record<string, unknown>) {
     const errors = parsed.error.format();
     throw new Error(`Environment validation failed: ${JSON.stringify(errors, null, 2)}`);
   }
+
+  if (config.NODE_ENV === 'production') {
+    const jwtSecret = config.JWT_SECRET_KEY || config.JWT_SECRET;
+    if (!jwtSecret || jwtSecret === 'enterprise-production-jwt-secret-key-32chars') {
+      throw new Error('Environment validation failed: JWT_SECRET must be explicitly set to a strong secret in production.');
+    }
+    if (!config.APP_ENCRYPTION_KEY && !config.CREDENTIALS_MASTER_KEY) {
+      throw new Error('Environment validation failed: APP_ENCRYPTION_KEY must be set in production.');
+    }
+    if (!config.DATABASE_URL) {
+      throw new Error('Environment validation failed: DATABASE_URL must be set in production.');
+    }
+  }
+
   return parsed.data;
 }

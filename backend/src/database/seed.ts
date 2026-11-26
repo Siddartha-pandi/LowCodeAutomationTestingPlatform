@@ -1,6 +1,6 @@
-import dns from 'node:dns';
+import * as dns from 'node:dns';
 
-if (typeof dns.setDefaultResultOrder === 'function') {
+if (dns && typeof dns.setDefaultResultOrder === 'function') {
   dns.setDefaultResultOrder('ipv4first');
 }
 
@@ -64,6 +64,7 @@ async function seed() {
   const dataSource = new DataSource({
     type: 'postgres',
     url: dbUrl,
+    ssl: { rejectUnauthorized: false },
     entities: [RoleEntity, UserEntity, UserRoleEntity, ProjectEntity, ProjectMemberEntity, EnvironmentEntity],
     synchronize: shouldSync,
   });
@@ -96,50 +97,30 @@ async function seed() {
     roleMap[r.name] = existing;
   }
 
-  // 2. Seed Default Admin User
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
-  const adminPass = process.env.ADMIN_PASSWORD || 'Admin123!Secure';
+  // 2. Default Admin User setup (only if ADMIN_EMAIL is explicitly provided in environment)
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPass = process.env.ADMIN_PASSWORD;
 
-  let admin = await userRepo.findOne({ where: { email: adminEmail } });
-  if (!admin) {
-    console.log(`Creating default admin user (${adminEmail})...`);
-    const hashed = await bcrypt.hash(adminPass, 12);
-    admin = userRepo.create({
-      email: adminEmail,
-      passwordHash: hashed,
-      fullName: 'System Administrator',
-      isActive: true,
-      isSuperuser: true,
-    });
-    admin = await userRepo.save(admin);
+  if (adminEmail && adminPass) {
+    let admin = await userRepo.findOne({ where: { email: adminEmail } });
+    if (!admin) {
+      console.log(`Creating initial admin user (${adminEmail})...`);
+      const hashed = await bcrypt.hash(adminPass, 12);
+      admin = userRepo.create({
+        email: adminEmail,
+        passwordHash: hashed,
+        fullName: 'System Administrator',
+        isActive: true,
+        isSuperuser: true,
+      });
+      admin = await userRepo.save(admin);
 
-    if (roleMap['admin']) {
-      const ur = userRoleRepo.create({ userId: admin.id, roleId: roleMap['admin'].id });
-      await userRoleRepo.save(ur);
+      if (roleMap['admin']) {
+        const ur = userRoleRepo.create({ userId: admin.id, roleId: roleMap['admin'].id });
+        await userRoleRepo.save(ur);
+      }
+      console.log(`Admin account created with ID: ${admin.id}`);
     }
-    console.log(`Admin account created with ID: ${admin.id}`);
-  } else {
-    console.log(`Admin account already exists (${admin.id}).`);
-  }
-
-  // 3. Seed Default Project Workspace
-  let defaultProject = await projectRepo.findOne({ where: { name: 'Default Workspace' } });
-  if (!defaultProject) {
-    console.log('Creating Default Workspace project...');
-    defaultProject = projectRepo.create({
-      name: 'Default Workspace',
-      description: 'Default automated testing workspace',
-      ownerId: admin.id,
-    });
-    defaultProject = await projectRepo.save(defaultProject);
-
-    const member = memberRepo.create({
-      projectId: defaultProject.id,
-      userId: admin.id,
-      role: 'admin',
-    });
-    await memberRepo.save(member);
-    console.log(`Default Workspace created with ID: ${defaultProject.id}`);
   }
 
   await dataSource.destroy();

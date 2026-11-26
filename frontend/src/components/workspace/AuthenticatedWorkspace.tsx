@@ -34,6 +34,7 @@ import { UsersManagementPage } from "@/components/admin/UsersManagementPage";
 import { RolesPermissionsPage } from "@/components/admin/RolesPermissionsPage";
 import { AuditLogsPage } from "@/components/admin/AuditLogsPage";
 import { UserProfilePage } from "@/components/admin/UserProfilePage";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 export function AuthenticatedWorkspace() {
   const { user, logout } = useAuth();
@@ -50,7 +51,8 @@ export function AuthenticatedWorkspace() {
     setSelectedTestId,
   } = useApp();
 
-  switch (currentView) {
+  const renderView = () => {
+    switch (currentView) {
     case "dashboard_overview":
       return (
         <DashboardOverview
@@ -322,6 +324,9 @@ export function AuthenticatedWorkspace() {
           }}
         />
       );
-  }
+    }
+  };
+
+  return <ErrorBoundary resetKey={currentView}>{renderView()}</ErrorBoundary>;
 }
 

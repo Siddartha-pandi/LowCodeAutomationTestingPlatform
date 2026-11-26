@@ -1,9 +1,27 @@
 import dns from 'node:dns';
 
-// Force Node.js to prefer IPv4 over IPv6 across all database and network sockets
+// Force Node.js to use IPv4 exclusively when resolving domain names.
+// In Node.js 18-20+, autoSelectFamily attempts dual-stack connect which causes
+// AggregateError [ETIMEDOUT] / ENETUNREACH on cloud databases (e.g. Neon) when IPv6 route is unreachable.
 if (typeof dns.setDefaultResultOrder === 'function') {
   dns.setDefaultResultOrder('ipv4first');
 }
+const origLookup = dns.lookup;
+const ipv4Lookup = (hostname: string, options: any, callback?: any) => {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+  if (options && options.all) {
+    return origLookup(hostname, { ...options, family: 4 }, (err: NodeJS.ErrnoException | null, addresses: unknown) => {
+      if (err) return callback(err);
+      const list = Array.isArray(addresses) ? (addresses as dns.LookupAddress[]) : [];
+      callback(null, list.filter((a) => a.family === 4));
+    });
+  }
+  return origLookup(hostname, { ...options, family: 4 }, callback);
+};
+(dns as any).lookup = Object.assign(ipv4Lookup, origLookup);
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';

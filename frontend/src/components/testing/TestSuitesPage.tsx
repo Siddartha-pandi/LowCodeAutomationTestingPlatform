@@ -134,24 +134,38 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
       return;
     }
 
-    const newSuite: TestSuiteItem = {
-      id: `suite-${Date.now()}`,
-      name: newSuiteName.trim(),
-      description: newSuiteDesc.trim() || "No description provided.",
-      total_tests: 1,
-      passed: 1,
-      failed: 0,
-      skipped: 0,
-      last_execution: "Never",
-      success_rate: 100,
-      sequence_mode: newSequenceMode,
-      tests: [{ id: "tc-001", name: "Default Sanity Assertion", priority: 1 }],
-    };
+    try {
+      const created = await testSuitesApi.create({
+        project_id: projectId,
+        name: newSuiteName.trim(),
+        description: newSuiteDesc.trim() || undefined,
+        test_suite: {
+          sequence_mode: newSequenceMode,
+          tests: [],
+        },
+      });
 
-    setSuites([newSuite, ...suites]);
-    setSelectedSuiteId(newSuite.id);
-    setModalOpen(false);
-    success("Test Suite Created", `Suite "${newSuiteName}" created.`);
+      const newSuite: TestSuiteItem = {
+        id: created.id,
+        name: created.name || newSuiteName.trim(),
+        description: created.description || newSuiteDesc.trim() || "No description provided.",
+        total_tests: 0,
+        passed: 0,
+        failed: 0,
+        skipped: 0,
+        last_execution: "Never",
+        success_rate: 100,
+        sequence_mode: newSequenceMode,
+        tests: [],
+      };
+
+      setSuites([newSuite, ...suites]);
+      setSelectedSuiteId(newSuite.id);
+      setModalOpen(false);
+      success("Test Suite Created", `Suite "${newSuiteName}" created in database.`);
+    } catch (err: any) {
+      error("Create Suite Failed", err.message || "Failed to create test suite.");
+    }
   };
 
   const handleRemoveTestFromSuite = (suite: TestSuiteItem, testId: string) => {
@@ -190,7 +204,10 @@ export function TestSuitesPage({ projectId, onNavigate }: TestSuitesPageProps) {
       message: `Delete test suite "${suite.name}"? This will not delete the individual test cases.`,
       confirmText: "Delete Suite",
       variant: "danger",
-      onConfirm: () => {
+      onConfirm: async () => {
+        try {
+          await testSuitesApi.delete(suite.id);
+        } catch {}
         const remaining = suites.filter((s) => s.id !== suite.id);
         setSuites(remaining);
         if (remaining.length > 0) setSelectedSuiteId(remaining[0].id);

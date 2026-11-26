@@ -265,7 +265,7 @@ export function EnterpriseLoginForm({
                 id="login-title"
                 className="text-2xl font-bold tracking-tight text-black dark:text-white"
               >
-                AgentFlow
+                Dolphin Flow
               </h1>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 font-normal">
                 Enterprise Browser Automation & Testing Platform
@@ -635,7 +635,7 @@ export function EnterpriseLoginForm({
       {standalone && (
         <footer className="w-full max-w-7xl mx-auto pt-4 border-t border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-500 dark:text-neutral-400 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div>
-            <span>AgentFlow Platform &bull; Enterprise Edition</span>
+            <span>Dolphin Flow &bull; Enterprise Edition</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <span className="text-neutral-600 dark:text-neutral-400 font-medium">SOC2 Type II Compliant</span>

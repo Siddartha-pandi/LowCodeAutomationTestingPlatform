@@ -34,7 +34,7 @@ import {
   Sparkles,
   Check,
 } from "lucide-react";
-import { recorderApi, browserApi, flowsApi, testsApi } from "@/api";
+import { recorderApi, browserApi, flowsApi, testsApi, environmentsApi } from "@/api";
 import { useToast } from "../common/ToastProvider";
 import { useConfirm } from "../common/ConfirmModal";
 import { NavView } from "../layout/AppShell";
@@ -62,7 +62,9 @@ export function BrowserRecorderPage({
   onSelectTest,
 }: BrowserRecorderPageProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const [targetUrl, setTargetUrl] = useState("https://mahila-action-vsk.vercel.app/");
+  const [targetUrl, setTargetUrl] = useState("");
+  const [environments, setEnvironments] = useState<any[]>([]);
+  const [selectedEnvId, setSelectedEnvId] = useState("");
   const [currentUrl, setCurrentUrl] = useState("");
   const [navbarUrl, setNavbarUrl] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -114,6 +116,26 @@ export function BrowserRecorderPage({
   useEffect(() => {
     sessionIdRef.current = sessionId;
   }, [sessionId]);
+
+  useEffect(() => {
+    const loadEnvs = async () => {
+      try {
+        const envList = await environmentsApi.list(projectId);
+        if (envList && envList.length > 0) {
+          setEnvironments(envList);
+          setSelectedEnvId(String(envList[0].id));
+          if (envList[0].base_url) {
+            setTargetUrl(envList[0].base_url);
+          }
+        } else {
+          setTargetUrl("");
+        }
+      } catch {
+        setTargetUrl("");
+      }
+    };
+    loadEnvs();
+  }, [projectId]);
 
   const stopPolling = useCallback(() => {
     if (pollingIntervalRef.current) {
@@ -385,7 +407,7 @@ export function BrowserRecorderPage({
     setIsLoading(true);
     try {
       info("Initializing Session", "Spawning isolated Agent Browser subprocess...");
-      const res = await recorderApi.start(projectId || "p1-default", url);
+      const res = await recorderApi.start(projectId, url);
 
       const newSessionId = res.session_id;
       setSessionId(newSessionId);
@@ -641,7 +663,7 @@ export function BrowserRecorderPage({
         try {
           const res = await recorderApi.save({
             session_id: sessionId,
-            project_id: projectId || "p1-default",
+            project_id: projectId,
             name: saveTitle.trim(),
             target_type: saveType,
             description: `Imported from Browser Recorder (${recordedActions.length} steps)`,
@@ -688,7 +710,7 @@ export function BrowserRecorderPage({
           edges.push({ id: `e_${i}`, source: nodes[i].id, target: nodes[i + 1].id });
         }
         const created = await flowsApi.create({
-          project_id: projectId || "p1-default",
+          project_id: projectId,
           name: saveTitle.trim(),
           description: `Imported from Browser Recorder (${recordedActions.length} steps)`,
           definition: {
@@ -714,7 +736,7 @@ export function BrowserRecorderPage({
           config: act.action === "navigate" ? { url: act.target } : { value: act.value },
         }));
         const created = await testsApi.create({
-          project_id: projectId || "p1-default",
+          project_id: projectId,
           name: saveTitle.trim(),
           description: `Imported from Browser Recorder (${recordedActions.length} steps)`,
           test_case: {
@@ -1243,6 +1265,27 @@ export function BrowserRecorderPage({
 
       {/* Target URL & Session Controls Bar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-2xs flex flex-col sm:flex-row items-center gap-3">
+        {environments.length > 0 && !isRecording && (
+          <select
+            value={selectedEnvId}
+            onChange={(e) => {
+              const id = e.target.value;
+              setSelectedEnvId(id);
+              const env = environments.find((ev) => String(ev.id) === id);
+              if (env?.base_url) {
+                setTargetUrl(env.base_url);
+              }
+            }}
+            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 text-xs font-medium focus:outline-none cursor-pointer"
+            title="Select Project Environment"
+          >
+            {environments.map((env) => (
+              <option key={env.id} value={String(env.id)}>
+                Env: {env.name}
+              </option>
+            ))}
+          </select>
+        )}
         <div className="relative flex-1 w-full">
           <Globe className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input

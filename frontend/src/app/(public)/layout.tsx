@@ -17,7 +17,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <Link href="/" className="flex items-center gap-3 group">
             <BrowserAutomationLogo size={32} />
             <span className="font-bold text-base sm:text-lg tracking-tight text-neutral-900 dark:text-white group-hover:opacity-80 transition">
-              AgentFlow
+              Dolphin Flow
             </span>
           </Link>
 
@@ -55,7 +55,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 flex flex-row items-center justify-between gap-4 text-left">
           <div className="flex items-center gap-2">
             <BrowserAutomationLogo size={18} />
-            <span className="text-[11px] sm:text-xs">&copy; {new Date().getFullYear()} AgentFlow. All rights reserved.</span>
+            <span className="text-[11px] sm:text-xs">&copy; {new Date().getFullYear()} Dolphin Flow. All rights reserved.</span>
           </div>
 
           <div className="flex items-center gap-4 sm:gap-6 text-[11px] sm:text-xs">

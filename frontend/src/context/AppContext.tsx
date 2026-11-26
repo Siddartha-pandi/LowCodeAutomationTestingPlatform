@@ -28,14 +28,31 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
-  const [currentView, setCurrentView] = useState<NavView>(() => {
+  const [currentView, setCurrentViewState] = useState<NavView>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const v = params.get("view") as NavView;
       if (v) return v;
+      try {
+        const savedView = localStorage.getItem("active_nav_view") as NavView;
+        if (savedView) return savedView;
+      } catch {}
     }
     return "dashboard_overview";
   });
+
+  const setCurrentView = useCallback((view: NavView) => {
+    setCurrentViewState(view);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("active_nav_view", view);
+      } catch {}
+      // Update the URL query param seamlessly without a full page reload
+      const url = new URL(window.location.href);
+      url.searchParams.set("view", view);
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   const [currentProject, setCurrentProjectState] = useState<ProjectInfo>(() => {
     if (typeof window !== "undefined") {
@@ -78,7 +95,22 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       const v = params.get("view") as NavView;
       const eid = params.get("executionId") || params.get("id");
       const fid = params.get("flowId");
-      if (v) setCurrentView(v);
+      if (v) {
+        setCurrentViewState(v);
+        try {
+          localStorage.setItem("active_nav_view", v);
+        } catch {}
+      } else {
+        try {
+          const savedView = localStorage.getItem("active_nav_view") as NavView;
+          if (savedView) {
+            setCurrentViewState(savedView);
+            const url = new URL(window.location.href);
+            url.searchParams.set("view", savedView);
+            window.history.replaceState({}, "", url.toString());
+          }
+        } catch {}
+      }
       if (eid) setSelectedExecutionId(eid);
       if (fid) setSelectedFlowId(fid);
     };
@@ -109,8 +141,14 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         setProjects(mapped);
 
         // Check if current active project exists in the returned list
-        const savedId = typeof window !== "undefined" ? localStorage.getItem("active_project_id") : null;
-        const matching = mapped.find((p) => p.id === savedId) || mapped[mapped.length - 1]; // pick newest created project if newly registered
+        const savedProject = typeof window !== "undefined" ? localStorage.getItem("active_project") : null;
+        let savedId: string | null = null;
+        if (savedProject) {
+          try {
+            savedId = JSON.parse(savedProject)?.id;
+          } catch {}
+        }
+        const matching = (savedId ? mapped.find((p) => p.id === savedId) : null) || mapped[0];
         if (matching) {
           setCurrentProject(matching);
         }

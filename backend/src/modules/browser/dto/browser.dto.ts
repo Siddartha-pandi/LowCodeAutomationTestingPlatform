@@ -230,4 +230,9 @@ export class DomExploreDto {
   @IsString()
   @IsOptional()
   session_id?: string;
+
+  @ApiPropertyOptional({ default: false })
+  @IsBoolean()
+  @IsOptional()
+  full_page?: boolean;
 }

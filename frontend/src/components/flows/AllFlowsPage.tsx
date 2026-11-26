@@ -74,18 +74,19 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
   };
 
   // Duplicate Flow
-  const handleDuplicateFlow = (flow: any) => {
-    const duplicated = {
-      ...flow,
-      id: `flow-${Date.now()}`,
-      name: `${flow.name} (Copy)`,
-      status: "draft",
-      version: "v1.0",
-      last_executed: "Never",
-      updated_at: new Date().toISOString(),
-    };
-    setFlows([duplicated, ...flows]);
-    success("Flow Duplicated", `Created draft copy: "${duplicated.name}"`);
+  const handleDuplicateFlow = async (flow: any) => {
+    try {
+      const created = await flowsApi.create({
+        project_id: projectId,
+        name: `${flow.name} (Copy)`,
+        description: flow.description || "Cloned visual flow definition",
+        definition: flow.definition || flow.flow_graph || { nodes: [], edges: [] },
+      });
+      setFlows([created, ...flows]);
+      success("Flow Duplicated", `Created draft copy: "${flow.name} (Copy)"`);
+    } catch (err: any) {
+      error("Duplicate Failed", err.message || "Failed to clone visual flow.");
+    }
   };
 
   // Publish Flow
@@ -109,6 +110,11 @@ export function AllFlowsPage({ projectId, onNavigate, onSelectFlow }: AllFlowsPa
       confirmText: "Delete Flow",
       variant: "danger",
       onConfirm: async () => {
+        try {
+          await flowsApi.delete(flow.id);
+        } catch {
+          // fallback
+        }
         setFlows(flows.filter((f) => f.id !== flow.id));
         success("Flow Deleted", `Flow "${flow.name}" has been removed.`);
       },
