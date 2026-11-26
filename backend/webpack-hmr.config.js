@@ -11,9 +11,9 @@ module.exports = function (options, webpack) {
       }),
     ],
     watchOptions: {
-      poll: 1000,
+      ...(process.env.WEBPACK_POLLING === 'true' ? { poll: 1000 } : {}),
       aggregateTimeout: 300,
-      ignored: /node_modules/,
+      ignored: /(node_modules|dist|storage|coverage|\.git)/,
     },
     plugins: [
       ...(options.plugins || []),

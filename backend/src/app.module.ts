@@ -1,6 +1,8 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CsrfMiddleware } from './common/security/csrf.middleware';
 import { appConfig } from './config/configuration';
+import { validateEnvironment } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { QueueModule } from './queue/queue.module';
 import { BrowserModule } from './modules/browser/browser.module';
@@ -33,6 +35,7 @@ const isEmbeddedWorkerEnabled = process.env.EMBED_WORKER !== 'false';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
+      validate: validateEnvironment,
     }),
     DatabaseModule,
     QueueModule,
@@ -61,4 +64,8 @@ const isEmbeddedWorkerEnabled = process.env.EMBED_WORKER !== 'false';
   ],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CsrfMiddleware).forRoutes('*');
+  }
+}

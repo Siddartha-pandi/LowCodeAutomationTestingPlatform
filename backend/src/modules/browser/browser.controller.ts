@@ -62,7 +62,7 @@ export class BrowserController {
     @Body() dto: LaunchSessionDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.launchSession(dto, user.id);
+    return this.sessionService.launchSession(dto, user.id, user.isSuperuser);
   }
 
   @Post('navigate')

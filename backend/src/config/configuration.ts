@@ -1,15 +1,22 @@
 import { registerAs } from '@nestjs/config';
+import * as crypto from 'node:crypto';
+
+// Ephemeral per-process fallback used ONLY in local dev/test when env vars are omitted.
+// Production startup validation (env.validation.ts) strictly rejects missing secrets.
+const EPHEMERAL_DEV_JWT_SECRET = crypto.randomBytes(32).toString('hex');
+const EPHEMERAL_DEV_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
+const EPHEMERAL_DEV_INTERNAL_KEY = crypto.randomBytes(32).toString('hex');
 
 export const appConfig = registerAs('app', () => ({
   port: parseInt(process.env.PORT || process.env.AUTOMATION_SERVICE_PORT || '8000', 10),
-  jwtSecret: process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || 'enterprise-production-jwt-secret-key-32chars',
+  jwtSecret: process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || EPHEMERAL_DEV_JWT_SECRET,
   tokenExpiryMinutes: parseInt(process.env.TOKEN_EXPIRY_MINUTES || '480', 10),
   appEncryptionKey:
     process.env.APP_ENCRYPTION_KEY ||
     process.env.CREDENTIALS_MASTER_KEY ||
-    'enterprise-master-encryption-key-32chars',
+    EPHEMERAL_DEV_ENCRYPTION_KEY,
   internalServiceKey:
-    process.env.INTERNAL_SERVICE_KEY || 'enterprise-internal-secret-service-key-32chars',
+    process.env.INTERNAL_SERVICE_KEY || EPHEMERAL_DEV_INTERNAL_KEY,
   storageDir:
     process.env.STORAGE_DIR ||
     (process.platform === 'win32'

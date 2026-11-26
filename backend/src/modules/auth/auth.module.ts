@@ -20,12 +20,18 @@ import { RbacGuard } from '../../common/guards/rbac.guard';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('app.jwtSecret') || 'enterprise-production-jwt-secret-key-32chars',
-        signOptions: {
-          expiresIn: `${configService.get<number>('app.tokenExpiryMinutes') || 480}m`,
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('app.jwtSecret');
+        if (!secret) {
+          throw new Error('JWT secret is not configured in app.jwtSecret');
+        }
+        return {
+          secret,
+          signOptions: {
+            expiresIn: `${configService.get<number>('app.tokenExpiryMinutes') || 480}m`,
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController],

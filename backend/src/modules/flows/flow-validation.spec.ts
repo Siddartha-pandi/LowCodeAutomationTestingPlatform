@@ -172,5 +172,85 @@ describe('FlowExecutorService (DAG Graph Validation & Topological Sorting)', () 
       const outcome = await execService.executeFlow({} as any, graph as any, state);
       expect(outcome.status).toBe('cancelled');
     });
+
+    it('should return timed_out when execution timeout budget is exceeded', async () => {
+      const mockPage = {
+        url: () => 'https://example.com',
+        title: async () => 'Example',
+        waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      } as any;
+      const actionExecutor = {
+        execute: jest.fn().mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1200))),
+      } as any;
+      const eventPublisher = { publish: jest.fn().mockResolvedValue(undefined) } as any;
+      const pageManager = { captureViewportFrame: jest.fn().mockResolvedValue(null) } as any;
+
+      const execService = new FlowExecutorService(
+        actionExecutor,
+        {} as any,
+        {} as any,
+        eventPublisher,
+        pageManager,
+      );
+
+      const graph = {
+        nodes: [{ id: 'slow', type: 'click', config: { selector: '#btn' } }],
+        edges: [],
+      };
+      const state: any = {
+        executionId: 'exec-timeout',
+        storageDir: '/tmp',
+        variables: {},
+        cancelled: false,
+        executionTimeoutMs: 50,
+        stepTimeoutMs: 500,
+        stepResults: [],
+      };
+
+      const outcome = await execService.executeFlow(mockPage, graph as any, state);
+      expect(outcome.status).toBe('timed_out');
+    });
+
+    it('should abort retries immediately when cancelled mid-retry', async () => {
+      let cancelFlag = false;
+      const mockPage = {
+        url: () => 'https://example.com',
+        title: async () => 'Example',
+        waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      } as any;
+      const actionExecutor = {
+        execute: jest.fn().mockImplementation(async () => {
+          cancelFlag = true;
+          return { success: false, error: 'transient failure' };
+        }),
+      } as any;
+      const eventPublisher = { publish: jest.fn().mockResolvedValue(undefined) } as any;
+      const pageManager = { captureViewportFrame: jest.fn().mockResolvedValue(null) } as any;
+
+      const execService = new FlowExecutorService(
+        actionExecutor,
+        {} as any,
+        {} as any,
+        eventPublisher,
+        pageManager,
+      );
+
+      const graph = {
+        nodes: [{ id: 'flaky', type: 'click', config: { selector: '#btn', max_retries: 3 } }],
+        edges: [],
+      };
+      const state: any = {
+        executionId: 'exec-retry-cancel',
+        storageDir: '/tmp',
+        variables: {},
+        cancelled: false,
+        isCancelled: async () => cancelFlag,
+        stepResults: [],
+      };
+
+      const outcome = await execService.executeFlow(mockPage, graph as any, state);
+      expect(outcome.status).toBe('cancelled');
+      expect(actionExecutor.execute).toHaveBeenCalledTimes(1);
+    });
   });
 });

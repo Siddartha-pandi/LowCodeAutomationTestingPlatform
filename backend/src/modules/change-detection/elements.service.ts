@@ -27,8 +27,8 @@ export class ElementsService {
     private readonly projectsService: ProjectsService,
   ) {}
 
-  async createElementProfile(dto: CreateElementProfileDto, userId: string): Promise<any> {
-    const project = await this.projectsService.resolveProject(dto.project_id, userId);
+  async createElementProfile(dto: CreateElementProfileDto, userId: string, isSuperuser = false): Promise<any> {
+    const project = await this.projectsService.resolveProject(dto.project_id, userId, isSuperuser);
     if (!project) throw new NotFoundException('Project not found');
 
     const existing = await this.profileRepository.findOne({

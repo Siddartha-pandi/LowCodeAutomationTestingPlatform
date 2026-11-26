@@ -160,6 +160,10 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     return false;
   }
 
+  isQueueHealthy(): boolean {
+    return Boolean(this.redisClient && this.redisClient.status === 'ready');
+  }
+
   async getQueueMetrics(): Promise<{ waiting: number; active: number; failed: number; completed: number }> {
     const counts = await this.executionQueue.getJobCounts('waiting', 'active', 'failed', 'completed');
     return {

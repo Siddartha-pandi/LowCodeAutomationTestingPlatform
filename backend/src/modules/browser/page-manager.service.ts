@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BrowserContext, Page, Request, Route } from 'playwright';
-import { evaluateRequestUrl } from '../../common/security/url-security';
+import { BrowserContext, Page } from 'playwright';
+import { attachPageSecurityPolicies } from '../../common/security/url-security';
 
 @Injectable()
 export class PageManagerService {
@@ -25,15 +25,9 @@ export class PageManagerService {
       });
     }
 
-    // SSRF Interceptor: Block cloud metadata, private networks, disallowed schemes, and unapproved domains
-    await page.route('**/*', (route: Route, request: Request) => {
-      const urlStr = request.url();
-      const check = evaluateRequestUrl(urlStr, allowedDomains, { allowSubresourceSchemes: true });
-      if (!check.allowed) {
-        this.logger.warn(`SSRF Block: ${check.reason} (${urlStr})`);
-        return route.abort('accessdenied');
-      }
-      return route.continue();
+    // SSRF Interceptor: Block cloud metadata, private networks, disallowed schemes, downloads, and unapproved domains
+    await attachPageSecurityPolicies(page, allowedDomains, (reason, urlStr) => {
+      this.logger.warn(`SSRF Block: ${reason} (${urlStr})`);
     });
 
     return page;

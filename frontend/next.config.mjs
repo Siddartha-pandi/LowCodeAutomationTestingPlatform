@@ -2,11 +2,11 @@
 const nextConfig = {
   reactStrictMode: false,
   webpack: (config, { dev }) => {
-    if (dev && process.env.WATCHPACK_POLLING === 'true') {
+    if (dev) {
       config.watchOptions = {
-        poll: 1000,
+        ...(process.env.WATCHPACK_POLLING === 'true' ? { poll: 1000 } : {}),
         aggregateTimeout: 300,
-        ignored: ['**/node_modules', '**/.next'],
+        ignored: ['**/node_modules/**', '**/.next/**', '**/dist/**', '**/storage/**', '**/.git/**'],
       };
     }
     return config;

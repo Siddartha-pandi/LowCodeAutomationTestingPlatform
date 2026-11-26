@@ -81,11 +81,13 @@ export class SuiteWorker implements OnModuleInit, OnModuleDestroy {
 
     let passedCount = 0;
     let failedCount = 0;
+    let wasCancelled = false;
 
     for (const testCaseId of test_case_ids) {
       // Check if suite was cancelled
       const currentSuite = await this.executionRepo.findOne({ where: { id: suite_execution_id } });
-      if (currentSuite?.status === 'cancelled') {
+      if (currentSuite?.status === 'cancelled' || (await this.queueService.isExecutionCancelled(suite_execution_id))) {
+        wasCancelled = true;
         break;
       }
 
@@ -149,7 +151,7 @@ export class SuiteWorker implements OnModuleInit, OnModuleDestroy {
     }
 
     const duration_ms = Date.now() - start;
-    const finalStatus = failedCount === 0 ? 'passed' : 'failed';
+    const finalStatus = wasCancelled ? 'cancelled' : failedCount === 0 ? 'passed' : 'failed';
 
     await this.executionRepo.update(suite_execution_id, {
       status: finalStatus,

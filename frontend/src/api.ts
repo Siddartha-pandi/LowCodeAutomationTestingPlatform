@@ -17,9 +17,25 @@ const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 ).replace(/\/$/, "");
 
+let memoryCsrfToken: string | null = null;
+
+export function setCsrfTokenCache(token: string | null) {
+  memoryCsrfToken = token;
+}
+
+function getCsrfToken(): string | null {
+  if (typeof document !== "undefined") {
+    const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return memoryCsrfToken;
+}
+
 export async function request<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
   const url = `${API_BASE_URL}${path}`;
+  const method = (options.method ?? "GET").toUpperCase();
+  const isMutating = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
+  const csrfToken = isMutating ? getCsrfToken() : null;
 
   const isLongRunning =
     path.includes("/dom/") ||
@@ -34,11 +50,11 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
 
   try {
     response = await fetch(url, {
-      method: options.method ?? "GET",
+      method,
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
         ...options.headers,
       },
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
@@ -61,7 +77,10 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
     if (response.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_user");
-      window.dispatchEvent(new Event("auth:unauthorized"));
+      setCsrfTokenCache(null);
+      if (!path.includes("/api/v1/auth/me")) {
+        window.dispatchEvent(new Event("auth:unauthorized"));
+      }
     }
     let detail = `Request failed with status ${response.status}`;
     try {

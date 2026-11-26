@@ -61,11 +61,11 @@ export function ExecutionDetailsPage({
       loadExecution();
     }, 1500);
 
-    // Live WebSocket connection for running executions
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") || "" : "";
+    // Live WebSocket connection for running executions (authenticated via HttpOnly cookie)
     const wsProto = typeof window !== "undefined" && window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-    const wsUrl = `${wsProto}//${wsHost}:8000/ws/executions/${executionId}?token=${encodeURIComponent(token)}`;
+    const baseWsUrl = (process.env.NEXT_PUBLIC_WS_URL || `${wsProto}//${wsHost}:8000`).replace(/\/$/, "");
+    const wsUrl = `${baseWsUrl}/ws/executions/${executionId}`;
 
     let ws: WebSocket | null = null;
     try {

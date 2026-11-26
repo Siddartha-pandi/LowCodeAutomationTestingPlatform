@@ -9,10 +9,12 @@ import { RecorderController } from './recorder.controller';
 import { DomController } from './dom.controller';
 import { AutomationDefinitionEntity } from '../../database/entities/automation-definition.entity';
 import { DefinitionVersionEntity } from '../../database/entities/definition-version.entity';
+import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AutomationDefinitionEntity, DefinitionVersionEntity]),
+    ProjectsModule,
   ],
   controllers: [BrowserController, RecorderController, DomController],
   providers: [

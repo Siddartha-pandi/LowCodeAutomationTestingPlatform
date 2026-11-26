@@ -261,11 +261,14 @@ export class TestCasesService {
     // Convert test case definition to DAG graph
     const graphDef = testCaseToGraphDefinition(targetVersion.definitionJson);
 
-    // Domain allowlist from environment if specified
+    // Domain allowlist from environment if specified (must belong to same project)
     let allowedDomains = ['*'];
     if (dto.environment_id) {
       const env = await this.environmentRepository.findOne({ where: { id: dto.environment_id } });
-      if (env?.allowedDomains?.length) {
+      if (!env || env.projectId !== test.projectId) {
+        throw new NotFoundException(`Environment '${dto.environment_id}' not found in this project`);
+      }
+      if (env.allowedDomains?.length) {
         allowedDomains = env.allowedDomains;
       }
     }

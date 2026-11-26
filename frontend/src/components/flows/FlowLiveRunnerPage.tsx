@@ -119,12 +119,10 @@ export function FlowLiveRunnerPage({
     setStatus("running");
     setIsRunning(true);
 
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("auth_token") || localStorage.getItem("token") || ""
-      : "";
     const wsProto = typeof window !== "undefined" && window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-    const wsUrl = `${wsProto}//${wsHost}:8000/ws/executions/${activeExecId}?token=${encodeURIComponent(token)}`;
+    const baseWsUrl = (process.env.NEXT_PUBLIC_WS_URL || `${wsProto}//${wsHost}:8000`).replace(/\/$/, "");
+    const wsUrl = `${baseWsUrl}/ws/executions/${activeExecId}`;
 
     let ws: WebSocket | null = null;
     try {

@@ -48,16 +48,52 @@ export class ArtifactsService {
 
     await this.verifyAccess(artifact.executionId, userId, isSuperuser);
 
+    let filePathRel = artifact.filePath;
+    try {
+      const resolved = path.resolve(artifact.filePath);
+      const rel = path.relative(this.storageDir, resolved);
+      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) {
+        filePathRel = rel;
+      } else {
+        filePathRel = path.basename(artifact.filePath);
+      }
+    } catch {
+      filePathRel = path.basename(artifact.filePath);
+    }
+
     return {
       id: artifact.id,
       execution_id: artifact.executionId,
       artifact_type: artifact.artifactType,
-      file_path: artifact.filePath,
+      file_path: filePathRel,
       file_size_bytes: artifact.fileSizeBytes,
       mime_type: artifact.mimeType,
       sha256_hash: artifact.sha256Hash,
       created_at: artifact.createdAt,
     };
+  }
+
+  private assertWithinStorage(targetPath: string): string {
+    const resolved = path.resolve(targetPath);
+    const relative = path.relative(this.storageDir, resolved);
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+      throw new ForbiddenException(
+        `Path traversal detected: Artifact is outside storage directory`,
+      );
+    }
+    if (!fs.existsSync(resolved)) {
+      throw new NotFoundException(`File missing from storage: ${path.basename(resolved)}`);
+    }
+    // Resolve symlinks to prevent symlink escapes outside storageDir
+    const realStorage = fs.realpathSync(this.storageDir);
+    const realTarget = fs.realpathSync(resolved);
+    const realRel = path.relative(realStorage, realTarget);
+    if (!realRel || realRel.startsWith('..') || path.isAbsolute(realRel)) {
+      throw new ForbiddenException(
+        `Symlink traversal detected: Artifact resolves outside storage directory`,
+      );
+    }
+    return realTarget;
   }
 
   async getSafeArtifactFile(
@@ -70,23 +106,11 @@ export class ArtifactsService {
 
     await this.verifyAccess(artifact.executionId, userId, isSuperuser);
 
-    const resolved = path.resolve(artifact.filePath);
-    const relative = path.relative(this.storageDir, resolved);
-
-    // Prevent path traversal for both relative and absolute artifact paths
-    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
-      throw new ForbiddenException(
-        `Path traversal detected: Artifact is outside storage directory`,
-      );
-    }
-
-    if (!fs.existsSync(resolved)) {
-      throw new NotFoundException(`File missing from storage: ${path.basename(resolved)}`);
-    }
+    const safeRealPath = this.assertWithinStorage(artifact.filePath);
 
     return {
-      filePath: resolved,
-      filename: path.basename(resolved),
+      filePath: safeRealPath,
+      filename: path.basename(safeRealPath),
       mimeType: artifact.mimeType || 'application/octet-stream',
       sha256: artifact.sha256Hash,
     };
@@ -104,12 +128,10 @@ export class ArtifactsService {
 
     let isIntact = false;
     try {
-      const resolved = path.resolve(artifact.filePath);
-      if (fs.existsSync(resolved)) {
-        const fileBuffer = fs.readFileSync(resolved);
-        const computed = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-        isIntact = computed.toLowerCase() === artifact.sha256Hash.toLowerCase();
-      }
+      const safeRealPath = this.assertWithinStorage(artifact.filePath);
+      const fileBuffer = fs.readFileSync(safeRealPath);
+      const computed = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+      isIntact = computed.toLowerCase() === artifact.sha256Hash.toLowerCase();
     } catch (err: any) {
       this.logger.warn(`Integrity verification failed for ${id}: ${err.message}`);
     }

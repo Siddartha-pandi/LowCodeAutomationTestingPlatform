@@ -1,20 +1,18 @@
-# Production Readiness Checklist — LowCodeAutomationTestingPlatform
+# Production Readiness Checklist (Reconciled) — LowCodeAutomationTestingPlatform
 
-## 1. Security Requirements
-- [ ] **Fix all Critical/High audit findings** (AUD-001 through AUD-012).
-- [ ] **Secrets Management:** Ensure `JWT_SECRET`, `APP_ENCRYPTION_KEY`, and `INTERNAL_SERVICE_KEY` are injected from a secret manager (e.g., AWS Secrets Manager, Azure Key Vault, or K8s Secrets) — never use `.devcontainer/docker-compose.yml` values.
-- [ ] **TLS / HTTPS:** Terminate TLS at reverse proxy/load balancer; ensure `NODE_ENV=production` so cookies set `Secure: true` and `env.validation.ts` enforces strong secrets.
-- [ ] **SSRF & Network Egress:** Enforce both application-level `UrlSecurityService` and container/network-level egress firewall rules blocking RFC1918, loopback, and cloud metadata (`169.254.169.254`).
+## 1. Completed in Codebase
+- [x] SSRF URL, IPv4/IPv6, DNS A/AAAA, redirect, and Playwright route/download protections (`url-security.ts`).
+- [x] Production startup validation rejecting weak secrets, `ALLOW_LOCALHOST_AUTOMATION=true`, and `DB_SYNCHRONIZE=true` (`env.validation.ts`).
+- [x] HttpOnly cookie authentication + double-submit CSRF + production CORS hardening.
+- [x] Project-level multi-tenant isolation & RBAC across controllers and services.
+- [x] Execution state machine, single-dispatch BullMQ/fallback, cancellation, and bounded timeouts.
+- [x] Shared Redis pub/sub subscriber in `EventPublisherService` and symlink-safe artifact access.
+- [x] TypeORM `DataSource` and `InitialSchema` migration + production `synchronize: false`.
+- [x] Multi-stage production `backend/Dockerfile`, `frontend/Dockerfile`, and `docker-compose.prod.yml`.
 
-## 2. Database & Migrations
-- [ ] **Generate TypeORM Migrations:** Replace `DB_SYNCHRONIZE=true` with versioned TypeORM migrations (`typeorm migration:generate` / `migration:run`).
-- [ ] **Backups:** Configure automated PostgreSQL point-in-time recovery (PITR) and Redis RDB/AOF persistence.
-
-## 3. Infrastructure & Deployment
-- [ ] **Complete Production Dockerfiles:** Update `backend/Dockerfile` and `frontend/Dockerfile` with multi-stage builds, `npm ci`, `npm run build`, non-root user, and healthchecks.
-- [ ] **Separate Worker Scaling:** Deploy API (`EMBED_WORKER=false`) and Playwright Workers (`node dist/worker`) as separate containers/pods with appropriate CPU/memory limits (2GB+ RAM / shm per Playwright worker).
-- [ ] **Artifact Storage:** Mount shared persistent volume or S3-compatible object storage for `STORAGE_DIR` when API and workers run in separate containers.
-
-## 4. Monitoring & Observability
-- [ ] **Healthchecks:** `/health` endpoint checks DB, Redis, and Playwright availability.
-- [ ] **Log Aggregation & Metrics:** Ship structured JSON logs and monitor BullMQ queue depth (`waiting`, `active`, `failed`).
+## 2. Remaining Pre-Launch Operational Gates (Required Before Go-Live)
+- [ ] Run `docker compose -f docker-compose.prod.yml up -d --build` in target environment and verify health checks.
+- [ ] Run `npm run migration:run` against staging/production PostgreSQL and verify `typeorm_migrations` state.
+- [ ] Apply host/cloud firewall egress rules on `worker_egress_net` blocking RFC1918 and `169.254.169.254/32`.
+- [ ] Execute full E2E suite against live PostgreSQL, Redis, and Playwright browsers.
+- [ ] Configure automated PostgreSQL backups/PITR, Redis AOF persistence checks, and log aggregation.

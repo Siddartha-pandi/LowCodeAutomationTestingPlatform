@@ -43,22 +43,24 @@ async function bootstrap() {
   const port = configService.get<number>('app.port') || 8000;
   const corsOrigins = configService.get<string[]>('app.corsOrigins') || ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
-  // 1. CORS Configuration
+  // 1. CORS Configuration (strict allowlist in production; never allow wildcard with credentials)
+  const isProd = process.env.NODE_ENV === 'production';
+  const safeCorsOrigins = corsOrigins.filter((o) => o !== '*');
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or same-origin)
+      // Allow requests with no origin (same-origin, curl, server-to-server)
       if (!origin) return callback(null, true);
-      if (
-        corsOrigins.includes(origin) ||
-        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
-      ) {
+      if (safeCorsOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      if (!isProd && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
         return callback(null, true);
       }
       return callback(new Error(`CORS policy rejection: origin ${origin} not allowed.`), false);
     },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Accept,Authorization,X-Internal-Service-Key,X-Correlation-ID',
+    allowedHeaders: 'Content-Type,Accept,Authorization,X-Internal-Service-Key,X-Correlation-ID,X-CSRF-Token',
   });
 
   // 2. Cookie Parser Middleware

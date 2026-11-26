@@ -23,6 +23,7 @@ import { EventPublisherService } from '../monitoring/event-publisher.service';
 import { ExecutionEventType } from '../../contracts/events.contract';
 import { computeDefinitionChecksum } from './flow-checksum';
 import { CreateFlowDto, ExecuteFlowDto, UpdateFlowDto } from './dto/flow.dto';
+import { canTransitionExecutionStatus, isTerminalExecutionStatus } from '../executions/execution-state';
 
 @Injectable()
 export class FlowsService {
@@ -243,18 +244,22 @@ export class FlowsService {
       throw new BadRequestException('Flow has no runnable definition version.');
     }
 
-    // Resolve domain allowlist
+    // Resolve domain allowlist (verify environment belongs to same project)
     let allowedDomains = ['*'];
     if (dto.environment_id) {
       const env = await this.environmentRepository.findOne({ where: { id: dto.environment_id } });
-      if (env && env.allowedDomains && env.allowedDomains.length > 0) {
+      if (!env || env.projectId !== flow.projectId) {
+        throw new NotFoundException(`Environment '${dto.environment_id}' not found in this project`);
+      }
+      if (env.allowedDomains && env.allowedDomains.length > 0) {
         allowedDomains = env.allowedDomains;
       }
     }
 
     const isHeadless = dto.headless !== false;
+    const useQueue = this.queueService.isQueueHealthy() && dto.async_exec !== false;
 
-    // 1. Create Execution record in PostgreSQL with running status
+    // 1. Create Execution record in PostgreSQL (queued if BullMQ is active, running if in-process fallback)
     const execution = this.executionRepository.create({
       projectId: flow.projectId,
       definitionId: flow.id,
@@ -262,8 +267,8 @@ export class FlowsService {
       environmentId: dto.environment_id,
       triggerType: 'manual',
       triggeredBy: userId,
-      status: 'running',
-      startedAt: new Date(),
+      status: useQueue ? 'queued' : 'running',
+      startedAt: useQueue ? undefined : new Date(),
       summary: {
         flow_name: flow.name,
         version_num: targetVersion.versionNum,
@@ -274,36 +279,44 @@ export class FlowsService {
 
     const savedExecution = await this.executionRepository.save(execution);
 
-    // 2. Launch in-process Playwright browser execution in background
-    this.runBackgroundExecution(savedExecution.id, flow, targetVersion, dto, userId, allowedDomains, isHeadless);
-
-    // Also attempt BullMQ queue if available
-    this.queueService.addExecutionJob({
-      execution_id: savedExecution.id,
-      project_id: flow.projectId,
-      environment_id: dto.environment_id,
-      user_id: userId,
-      flow_id: flow.id,
-      browser_config: {
-        browser_type: 'chromium',
-        headless: isHeadless,
-        viewport: { width: 1280, height: 800 },
-        record_video: false,
-        record_trace: true,
-        timeout_ms: 30000,
-      },
-      allowed_domains: allowedDomains,
-      variables: dto.initial_variables || {},
-      graph_definition: targetVersion.definitionJson as any,
-      correlation_id: `corr-${savedExecution.id}`,
-    }).catch(() => {
-      // Offline fallback already running in-process via runBackgroundExecution
-    });
+    // 2. Dispatch to single execution path (prevent duplicate BullMQ + in-process execution)
+    if (useQueue) {
+      await this.queueService.addExecutionJob({
+        execution_id: savedExecution.id,
+        project_id: flow.projectId,
+        environment_id: dto.environment_id,
+        user_id: userId,
+        flow_id: flow.id,
+        browser_config: {
+          browser_type: 'chromium',
+          headless: isHeadless,
+          viewport: { width: 1280, height: 800 },
+          record_video: false,
+          record_trace: true,
+          timeout_ms: 30000,
+        },
+        allowed_domains: allowedDomains,
+        variables: dto.initial_variables || {},
+        graph_definition: targetVersion.definitionJson as any,
+        correlation_id: `corr-${savedExecution.id}`,
+      });
+    } else {
+      this.logger.warn(`Redis queue unavailable or async_exec=false; running execution ${savedExecution.id} in-process.`);
+      void this.runBackgroundExecution(
+        savedExecution.id,
+        flow,
+        targetVersion,
+        dto,
+        userId,
+        allowedDomains,
+        isHeadless,
+      );
+    }
 
     return {
       execution_id: savedExecution.id,
       id: savedExecution.id,
-      status: 'running',
+      status: savedExecution.status,
       flow_id: flow.id,
       flow_name: flow.name,
       created_at: savedExecution.createdAt,
@@ -321,7 +334,10 @@ export class FlowsService {
     isHeadless = true,
   ) {
     const startTime = Date.now();
-    const storageDir = this.configService.get<string>('app.storage.dir') || 'storage';
+    const storageDir =
+      this.configService.get<string>('app.storageDir') ||
+      this.configService.get<string>('app.storage.dir') ||
+      'storage';
     let isolatedSession: any = null;
 
     try {
@@ -378,6 +394,9 @@ export class FlowsService {
         storageDir,
         variables: { ...(dto.initial_variables || {}) },
         cancelled: false,
+        isCancelled: () => this.queueService.isExecutionCancelled(executionId),
+        executionTimeoutMs: (this.configService.get<number>('app.defaultTimeoutMs') || 30000) * 10,
+        stepTimeoutMs: this.configService.get<number>('app.defaultTimeoutMs') || 30000,
         stepResults: [],
       };
 
@@ -385,7 +404,7 @@ export class FlowsService {
       const durationMs = Date.now() - startTime;
 
       const execution = await this.executionRepository.findOne({ where: { id: executionId } });
-      if (execution) {
+      if (execution && !isTerminalExecutionStatus(execution.status) && canTransitionExecutionStatus(execution.status, outcome.status)) {
         execution.status = outcome.status;
         execution.durationMs = durationMs;
         execution.completedAt = new Date();
@@ -426,7 +445,7 @@ export class FlowsService {
     } catch (err: any) {
       this.logger.error(`Flow execution ${executionId} error: ${err.message}`);
       const execution = await this.executionRepository.findOne({ where: { id: executionId } });
-      if (execution) {
+      if (execution && !isTerminalExecutionStatus(execution.status)) {
         execution.status = 'failed';
         execution.durationMs = Date.now() - startTime;
         execution.completedAt = new Date();

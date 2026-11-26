@@ -33,7 +33,7 @@ export class RecorderController {
     @Body() dto: StartRecorderDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.startRecorder(dto, user.id);
+    return this.sessionService.startRecorder(dto, user.id, user.isSuperuser);
   }
 
   @Get('status')
@@ -42,7 +42,7 @@ export class RecorderController {
     @Query('session_id') sessionId?: string,
     @CurrentUser() user?: any,
   ) {
-    return this.sessionService.getRecorderStatus(sessionId, user?.userId);
+    return this.sessionService.getRecorderStatus(sessionId, user?.id, user?.isSuperuser);
   }
 
   @Post('action')

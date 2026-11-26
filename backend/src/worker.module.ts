@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { appConfig } from './config/configuration';
+import { validateEnvironment } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { BrowserModule } from './modules/browser/browser.module';
 import { SelectorsModule } from './modules/selectors/selectors.module';
@@ -26,6 +27,7 @@ import { DefinitionVersionEntity } from './database/entities/definition-version.
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
+      validate: validateEnvironment,
     }),
     DatabaseModule,
     TypeOrmModule.forFeature([

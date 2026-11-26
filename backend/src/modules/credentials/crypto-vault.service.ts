@@ -9,8 +9,10 @@ export class CryptoVaultService {
   private getEncryptionKey(): Buffer {
     const rawKey =
       this.configService.get<string>('app.appEncryptionKey') ||
-      this.configService.get<string>('app.jwtSecret') ||
-      'enterprise-master-encryption-key-32chars';
+      this.configService.get<string>('app.jwtSecret');
+    if (!rawKey) {
+      throw new Error('Encryption key is not configured (APP_ENCRYPTION_KEY / CREDENTIALS_MASTER_KEY)');
+    }
     return crypto.createHash('sha256').update(rawKey, 'utf8').digest();
   }
 

@@ -51,7 +51,15 @@ export class ActionExecutorService {
           const waitUntil = cfg.wait_until || 'domcontentloaded';
           const timeout = cfg.timeout_ms || 30000;
           const resp = await page.goto(url, { waitUntil, timeout });
-          output = { url: page.url(), status: resp?.status() };
+          const finalUrl = page.url();
+          if (finalUrl && finalUrl !== 'about:blank') {
+            const postRedirectCheck = await validateNavigationUrl(finalUrl);
+            if (!postRedirectCheck.allowed) {
+              await page.goto('about:blank').catch(() => {});
+              throw new Error(`Post-redirect destination blocked by SSRF security policy: ${postRedirectCheck.reason}`);
+            }
+          }
+          output = { url: finalUrl, status: resp?.status() };
           break;
         }
 
@@ -250,16 +258,10 @@ export class ActionExecutorService {
           const urlStr = cfg.url || cfg.endpoint;
           if (!urlStr) throw new Error("Action 'api_request' requires 'url'");
 
-          // SSRF validation
-          const parsed = new URL(urlStr);
-          const host = parsed.hostname.toLowerCase();
-          if (
-            host === '169.254.169.254' ||
-            host === 'metadata.google.internal' ||
-            host === 'metadata.goog' ||
-            host.startsWith('169.254.')
-          ) {
-            throw new Error(`SSRF Block: API Request to cloud metadata '${host}' is strictly prohibited.`);
+          // SSRF validation via shared security policy
+          const apiCheck = await validateNavigationUrl(String(urlStr));
+          if (!apiCheck.allowed) {
+            throw new Error(`SSRF Block: ${apiCheck.reason}`);
           }
 
           const headers = cfg.headers || {};

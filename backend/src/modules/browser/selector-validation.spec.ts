@@ -8,6 +8,7 @@ describe('Selector Validation & Parser (Zero-AI Deterministic)', () => {
       {} as any,
       {} as any,
       {} as any,
+      { verifyProjectAccess: jest.fn().mockResolvedValue({ id: 'proj-1' }) } as any,
     );
   });
 
@@ -33,5 +34,24 @@ describe('Selector Validation & Parser (Zero-AI Deterministic)', () => {
     const res = service.validateSelector('');
     expect(res.is_valid).toBe(false);
     expect(res.error_message).toContain('empty');
+  });
+
+  it('should block SSRF metadata and private URLs in exploreDom', async () => {
+    await expect(
+      service.exploreDom({ url: 'http://169.254.169.254/latest/meta-data/' } as any, 'user-1', false),
+    ).rejects.toThrow(/security policy|blocked/i);
+  });
+
+  it('should block cross-user access in getRecorderStatus', () => {
+    (service as any).sessions.set('rec_123', {
+      sessionId: 'rec_123',
+      userId: 'owner-1',
+      recordingActions: [],
+      createdAt: new Date(),
+    });
+
+    expect(() => service.getRecorderStatus('rec_123', 'attacker-2', false)).toThrow(/Access denied/);
+    const superView = service.getRecorderStatus('rec_123', 'super-1', true);
+    expect(superView.session_id).toBe('rec_123');
   });
 });

@@ -11,7 +11,7 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 import * as fs from 'fs';
 import { BrowserManagerService } from './browser-manager.service';
-import { evaluateRequestUrl, validateNavigationUrl } from '../../common/security/url-security';
+import { attachPageSecurityPolicies, validateNavigationUrl } from '../../common/security/url-security';
 import {
   ActionDto,
   DomExploreDto,
@@ -28,6 +28,7 @@ import { DefinitionVersionEntity } from '../../database/entities/definition-vers
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { computeDefinitionChecksum } from '../flows/flow-checksum';
+import { ProjectsService } from '../projects/projects.service';
 
 interface ActiveSession {
   sessionId: string;
@@ -54,6 +55,7 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     private readonly definitionRepository: Repository<AutomationDefinitionEntity>,
     @InjectRepository(DefinitionVersionEntity)
     private readonly versionRepository: Repository<DefinitionVersionEntity>,
+    private readonly projectsService: ProjectsService,
   ) {
     this.cleanupInterval = setInterval(() => {
       void this.reapIdleSessions();
@@ -74,7 +76,10 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     }
   }
 
-  async launchSession(dto: LaunchSessionDto, userId: string): Promise<any> {
+  async launchSession(dto: LaunchSessionDto, userId: string, isSuperuser = false): Promise<any> {
+    if (dto.project_id) {
+      await this.projectsService.verifyProjectAccess(dto.project_id, userId, isSuperuser);
+    }
     const sessionId = dto.session_id || `sess_${crypto.randomUUID().replace(/-/g, '')}`;
 
     const browser = await this.browserManager.getBrowser('chromium', true);
@@ -86,16 +91,8 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     const page = await context.newPage();
     const allowedDomains = dto.allowed_domains || ['*'];
 
-    // Setup network policy for all requests (including document navigations) to prevent SSRF
-    await page.route('**/*', (route) => {
-      const check = evaluateRequestUrl(route.request().url(), allowedDomains, {
-        allowSubresourceSchemes: true,
-      });
-      if (!check.allowed) {
-        this.logger.warn(`Interactive session SSRF block: ${check.reason} (${route.request().url()})`);
-        return route.abort('accessdenied');
-      }
-      return route.continue();
+    await attachPageSecurityPolicies(page, allowedDomains, (reason, urlStr) => {
+      this.logger.warn(`Interactive session SSRF block: ${reason} (${urlStr})`);
     });
 
     const session: ActiveSession = {
@@ -121,22 +118,42 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     };
   }
 
+  private async navigateSafely(
+    page: Page,
+    rawUrl: string,
+    allowedDomains: string[],
+    timeoutMs = 30000,
+  ): Promise<string> {
+    let url = rawUrl.trim();
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url)) {
+      url = `https://${url}`;
+    }
+
+    const navCheck = await validateNavigationUrl(url, allowedDomains);
+    if (!navCheck.allowed) {
+      throw new ForbiddenException(`Navigation blocked by security policy: ${navCheck.reason}`);
+    }
+
+    await page.goto(url, { timeout: timeoutMs, waitUntil: 'load' });
+
+    const finalUrl = page.url();
+    if (finalUrl && finalUrl !== 'about:blank') {
+      const postCheck = await validateNavigationUrl(finalUrl, allowedDomains);
+      if (!postCheck.allowed) {
+        await page.goto('about:blank').catch(() => {});
+        throw new ForbiddenException(`Post-redirect destination blocked by security policy: ${postCheck.reason}`);
+      }
+    }
+
+    return finalUrl || url;
+  }
+
   async navigateSession(dto: NavigateDto, userId: string, isSuperuser = false): Promise<any> {
     const session = this.getVerifiedSession(dto.session_id, userId, isSuperuser);
     session.lastActiveAt = new Date();
 
     const timeoutMs = (dto.timeout || 30) * 1000;
-    let url = dto.url.trim();
-    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url)) {
-      url = `https://${url}`;
-    }
-
-    const navCheck = await validateNavigationUrl(url, session.allowedDomains);
-    if (!navCheck.allowed) {
-      throw new ForbiddenException(`Navigation blocked by security policy: ${navCheck.reason}`);
-    }
-
-    await session.page.goto(url, { timeout: timeoutMs, waitUntil: 'load' });
+    await this.navigateSafely(session.page, dto.url, session.allowedDomains, timeoutMs);
 
     const screenshotBuffer = await session.page.screenshot({ fullPage: false });
     const imageBase64 = `data:image/png;base64,${screenshotBuffer.toString('base64')}`;
@@ -463,12 +480,20 @@ export class InteractiveSessionService implements OnApplicationShutdown {
   // Recorder Endpoints
   // ---------------------------------------------------------------------------
 
-  async startRecorder(dto: StartRecorderDto, userId: string): Promise<any> {
+  async startRecorder(dto: StartRecorderDto, userId: string, isSuperuser = false): Promise<any> {
+    if (dto.project_id) {
+      await this.projectsService.verifyProjectAccess(dto.project_id, userId, isSuperuser);
+    }
     const sessionId = `rec_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
+    const allowedDomains = ['*'];
 
-    let targetUrl = dto.target_url.trim();
-    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-      targetUrl = `https://${targetUrl}`;
+    let preUrl = dto.target_url.trim();
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(preUrl)) {
+      preUrl = `https://${preUrl}`;
+    }
+    const preCheck = await validateNavigationUrl(preUrl, allowedDomains);
+    if (!preCheck.allowed) {
+      throw new ForbiddenException(`Navigation blocked by security policy: ${preCheck.reason}`);
     }
 
     const browser = await this.browserManager.getBrowser('chromium', true);
@@ -477,7 +502,17 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     });
     const page = await context.newPage();
 
-    await page.goto(targetUrl, { timeout: 45000, waitUntil: 'load' });
+    await attachPageSecurityPolicies(page, allowedDomains, (reason, urlStr) => {
+      this.logger.warn(`Recorder SSRF block: ${reason} (${urlStr})`);
+    });
+
+    let targetUrl: string;
+    try {
+      targetUrl = await this.navigateSafely(page, dto.target_url, allowedDomains, 45000);
+    } catch (err) {
+      await context.close().catch(() => {});
+      throw err;
+    }
 
     const shot = await page.screenshot({ fullPage: false });
     const imageBase64 = `data:image/png;base64,${shot.toString('base64')}`;
@@ -629,7 +664,7 @@ export class InteractiveSessionService implements OnApplicationShutdown {
         isSuperuser,
       );
     } else if (selector) {
-      await session.page.goto(selector, { timeout: 30000 });
+      await this.navigateSafely(session.page, selector, session.allowedDomains, 30000);
     }
 
     const recordEntry = {
@@ -655,11 +690,14 @@ export class InteractiveSessionService implements OnApplicationShutdown {
     };
   }
 
-  getRecorderStatus(sessionId?: string, userId?: string): any {
+  getRecorderStatus(sessionId?: string, userId?: string, isSuperuser = false): any {
     if (sessionId) {
       const session = this.sessions.get(sessionId);
       if (!session) {
         return { is_recording: false, session_id: sessionId, total_actions: 0, actions: [] };
+      }
+      if (!isSuperuser && session.userId !== userId) {
+        throw new ForbiddenException(`Access denied to recorder session '${sessionId}'`);
       }
       return {
         is_recording: true,
@@ -670,12 +708,14 @@ export class InteractiveSessionService implements OnApplicationShutdown {
       };
     }
 
-    const activeList = Array.from(this.sessions.values()).map((s) => ({
-      session_id: s.sessionId,
-      project_id: s.projectId,
-      total_actions: s.recordingActions.length,
-      created_at: s.createdAt.toISOString(),
-    }));
+    const activeList = Array.from(this.sessions.values())
+      .filter((s) => isSuperuser || s.userId === userId)
+      .map((s) => ({
+        session_id: s.sessionId,
+        project_id: s.projectId,
+        total_actions: s.recordingActions.length,
+        created_at: s.createdAt.toISOString(),
+      }));
 
     return { active_recordings: activeList, count: activeList.length };
   }
@@ -711,6 +751,7 @@ export class InteractiveSessionService implements OnApplicationShutdown {
 
   async saveRecording(dto: SaveRecordingDto, userId: string, isSuperuser = false): Promise<any> {
     const session = this.getVerifiedSession(dto.session_id, userId, isSuperuser);
+    await this.projectsService.verifyProjectAccess(dto.project_id, userId, isSuperuser);
     const targetType = dto.target_type || 'test';
 
     let steps = session.recordingActions.map((act) => {
@@ -834,34 +875,50 @@ export class InteractiveSessionService implements OnApplicationShutdown {
   // DOM Explorer Endpoints
   // ---------------------------------------------------------------------------
 
-  async exploreDom(dto: DomExploreDto, userId: string): Promise<any> {
-    let url = dto.url.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = `https://${url}`;
+  async exploreDom(dto: DomExploreDto, userId: string, isSuperuser = false): Promise<any> {
+    if (dto.project_id) {
+      await this.projectsService.verifyProjectAccess(dto.project_id, userId, isSuperuser);
     }
-
     let session: ActiveSession | undefined;
     let page: any;
     let context: any;
-    let createdTransient = false;
 
     if (dto.session_id && this.sessions.has(dto.session_id)) {
-      session = this.sessions.get(dto.session_id);
-      page = session!.page;
-      context = session!.context;
-      session!.lastActiveAt = new Date();
-      // If the session is already active, only navigate if page is on about:blank
-      // or if an explicitly different domain/path is targeted, but preserve in-page transitions, query params, hash changes, modals
-      if (url && (page.url() === 'about:blank' || page.url() === 'about:blank/')) {
-        await page.goto(url, { timeout: 30000, waitUntil: 'load' });
+      session = this.getVerifiedSession(dto.session_id, userId, isSuperuser);
+      page = session.page;
+      context = session.context;
+      session.lastActiveAt = new Date();
+      if (dto.url && (page.url() === 'about:blank' || page.url() === 'about:blank/')) {
+        await this.navigateSafely(page, dto.url, session.allowedDomains, 30000);
       }
     } else {
-      // Create or reuse persistent interactive session so live interaction is possible
       const sessionId = dto.session_id || `sess_${crypto.randomUUID().replace(/-/g, '')}`;
+      const allowedDomains = ['*'];
+
+      let preUrl = (dto.url || '').trim();
+      if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(preUrl)) {
+        preUrl = `https://${preUrl}`;
+      }
+      const preCheck = await validateNavigationUrl(preUrl, allowedDomains);
+      if (!preCheck.allowed) {
+        throw new ForbiddenException(`Navigation blocked by security policy: ${preCheck.reason}`);
+      }
+
       const browser = await this.browserManager.getBrowser('chromium', true);
       context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
       page = await context.newPage();
-      
+
+      await attachPageSecurityPolicies(page, allowedDomains, (reason, urlStr) => {
+        this.logger.warn(`DOM explorer SSRF block: ${reason} (${urlStr})`);
+      });
+
+      try {
+        await this.navigateSafely(page, dto.url, allowedDomains, 30000);
+      } catch (err) {
+        await context.close().catch(() => {});
+        throw err;
+      }
+
       const newSession: ActiveSession = {
         sessionId,
         projectId: dto.project_id,
@@ -870,13 +927,11 @@ export class InteractiveSessionService implements OnApplicationShutdown {
         page,
         createdAt: new Date(),
         lastActiveAt: new Date(),
-        allowedDomains: ['*'],
+        allowedDomains,
         recordingActions: [],
       };
       this.sessions.set(sessionId, newSession);
       session = newSession;
-
-      await page.goto(url, { timeout: 30000, waitUntil: 'load' });
     }
 
     try {

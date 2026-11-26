@@ -60,7 +60,7 @@ export type ExecuteJobDto = z.infer<typeof ExecuteJobDtoSchema>;
 
 export interface ExecutionJobResult {
   execution_id: string;
-  status: 'passed' | 'failed' | 'cancelled';
+  status: 'passed' | 'failed' | 'cancelled' | 'timed_out';
   duration_ms: number;
   steps_total: number;
   steps_passed: number;

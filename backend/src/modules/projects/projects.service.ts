@@ -28,6 +28,10 @@ export class ProjectsService {
       return all.map((p) => this.formatProject(p));
     }
 
+    if (!userId) {
+      return [];
+    }
+
     // Projects owned by user
     const owned = await this.projectRepository.find({
       where: { ownerId: userId },
@@ -120,13 +124,31 @@ export class ProjectsService {
     }));
   }
 
+  private async verifyProjectAdmin(
+    projectId: string,
+    callerUserId: string,
+    isSuperuser = false,
+  ): Promise<ProjectEntity> {
+    const project = await this.verifyProjectAccess(projectId, callerUserId, isSuperuser);
+    if (isSuperuser || project.ownerId === callerUserId) {
+      return project;
+    }
+    const member = await this.memberRepository.findOne({
+      where: { projectId, userId: callerUserId },
+    });
+    if (!member || member.role !== 'admin') {
+      throw new ForbiddenException('Only project owners or project admins can manage members.');
+    }
+    return project;
+  }
+
   async addMember(
     projectId: string,
     dto: AddProjectMemberDto,
     callerUserId: string,
     isSuperuser = false,
   ): Promise<any> {
-    await this.verifyProjectAccess(projectId, callerUserId, isSuperuser);
+    await this.verifyProjectAdmin(projectId, callerUserId, isSuperuser);
 
     const targetUser = await this.userRepository.findOne({ where: { id: dto.user_id } });
     if (!targetUser) throw new NotFoundException(`User with ID ${dto.user_id} not found`);
@@ -153,7 +175,7 @@ export class ProjectsService {
     callerUserId: string,
     isSuperuser = false,
   ): Promise<void> {
-    await this.verifyProjectAccess(projectId, callerUserId, isSuperuser);
+    await this.verifyProjectAdmin(projectId, callerUserId, isSuperuser);
 
     const member = await this.memberRepository.findOne({
       where: { projectId, userId: targetUserId },
@@ -165,6 +187,7 @@ export class ProjectsService {
 
   async userHasAccess(projectId: string, userId: string, isSuperuser = false): Promise<boolean> {
     if (isSuperuser) return true;
+    if (!userId || !projectId) return false;
     const project = await this.projectRepository.findOne({ where: { id: projectId } });
     if (!project) return false;
     if (project.ownerId === userId) return true;

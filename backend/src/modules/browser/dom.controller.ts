@@ -32,6 +32,6 @@ export class DomController {
     @Body() dto: DomExploreDto,
     @CurrentUser() user: any,
   ) {
-    return this.sessionService.exploreDom(dto, user.id);
+    return this.sessionService.exploreDom(dto, user.id, user.isSuperuser);
   }
 }

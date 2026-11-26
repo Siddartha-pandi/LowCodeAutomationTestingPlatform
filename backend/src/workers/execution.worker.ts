@@ -13,6 +13,12 @@ import { PageManagerService } from '../modules/browser/page-manager.service';
 import { FlowExecutorService, FlowExecutionState } from '../modules/flows/flow-executor.service';
 import { EventPublisherService } from '../modules/monitoring/event-publisher.service';
 import { QueueService } from '../queue/queue.service';
+import {
+  boundTimeoutMs,
+  canTransitionExecutionStatus,
+  ExecutionStatus,
+  isTerminalExecutionStatus,
+} from '../modules/executions/execution-state';
 import { ExecutionEntity } from '../database/entities/execution.entity';
 import { ExecutionStepEntity } from '../database/entities/execution-step.entity';
 import { ExecutionLogEntity } from '../database/entities/execution-log.entity';
@@ -88,6 +94,35 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log(`Starting execution run ${executionId} (browser: ${payload.browser_config.browser_type})...`);
 
+    // 0. Idempotency & State Machine check
+    const existingExec = await this.executionRepo.findOne({ where: { id: executionId } }).catch(() => null);
+    if (existingExec && (isTerminalExecutionStatus(existingExec.status) || !canTransitionExecutionStatus(existingExec.status, 'running'))) {
+      this.logger.warn(`Skipping duplicate or terminal execution ${executionId} (current status: ${existingExec.status})`);
+      return {
+        execution_id: executionId,
+        status: existingExec.status as any,
+        duration_ms: existingExec.durationMs || 0,
+        steps_total: 0,
+        steps_passed: 0,
+        steps_failed: 0,
+        artifacts: { screenshots: [] },
+      };
+    }
+
+    if (await this.queueService.isExecutionCancelled(executionId)) {
+      await this.executionRepo.update(executionId, { status: 'cancelled', completedAt: new Date() }).catch(() => {});
+      return {
+        execution_id: executionId,
+        status: 'cancelled',
+        duration_ms: 0,
+        steps_total: 0,
+        steps_passed: 0,
+        steps_failed: 0,
+        error_message: 'Execution cancelled before start.',
+        artifacts: { screenshots: [] },
+      };
+    }
+
     // 1. Mark Execution as 'running' in Database
     await this.executionRepo.update(executionId, {
       status: 'running',
@@ -112,16 +147,26 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       storageDir,
     );
 
+    const stepTimeoutMs = boundTimeoutMs(
+      payload.browser_config?.timeout_ms,
+      this.configService.get<number>('app.defaultTimeoutMs') || 30000,
+      1000,
+      120_000,
+    );
+    const executionTimeoutMs = boundTimeoutMs(stepTimeoutMs * 10, 300_000, 10_000, 900_000);
+
     const state: FlowExecutionState = {
       executionId,
       storageDir,
       variables: { ...payload.variables },
       cancelled: false,
       isCancelled: () => this.queueService.isExecutionCancelled(executionId),
+      executionTimeoutMs,
+      stepTimeoutMs,
       stepResults: [],
     };
 
-    let resultStatus: 'passed' | 'failed' | 'cancelled' = 'passed';
+    let resultStatus: Extract<ExecutionStatus, 'passed' | 'failed' | 'cancelled' | 'timed_out'> = 'passed';
     let errorMessage: string | undefined;
 
     try {
@@ -189,19 +234,24 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
       }
     }
 
-    // 5. Finalize Execution record in PostgreSQL
-    await this.executionRepo.update(executionId, {
-      status: resultStatus,
-      completedAt: new Date(),
-      durationMs: duration_ms,
-      summary: {
-        engine: 'playwright',
-        steps_total: state.stepResults.length,
-        steps_passed: state.stepResults.filter((s) => s.status === 'passed').length,
-        steps_failed: state.stepResults.filter((s) => s.status === 'failed').length,
-        error_message: errorMessage || null,
-      } as any,
-    }).catch((e) => this.logger.warn(`Could not update execution terminal status: ${e.message}`));
+    // 5. Finalize Execution record in PostgreSQL (enforce valid state machine transitions)
+    const latestExec = await this.executionRepo.findOne({ where: { id: executionId } }).catch(() => null);
+    if (!latestExec || (!isTerminalExecutionStatus(latestExec.status) && canTransitionExecutionStatus(latestExec.status, resultStatus))) {
+      await this.executionRepo.update(executionId, {
+        status: resultStatus,
+        completedAt: new Date(),
+        durationMs: duration_ms,
+        summary: {
+          engine: 'playwright',
+          steps_total: state.stepResults.length,
+          steps_passed: state.stepResults.filter((s) => s.status === 'passed').length,
+          steps_failed: state.stepResults.filter((s) => s.status === 'failed').length,
+          error_message: errorMessage || null,
+        } as any,
+      }).catch((e) => this.logger.warn(`Could not update execution terminal status: ${e.message}`));
+    } else if (latestExec?.status === 'cancelled') {
+      resultStatus = 'cancelled';
+    }
 
     // 6. Publish Final Status Change to monitoring subscribers
     await this.eventPublisher.publish(executionId, ExecutionEventType.STATUS_CHANGE, {

@@ -35,7 +35,7 @@ export class ElementsController {
     @Body() dto: CreateElementProfileDto,
     @CurrentUser() user: any,
   ) {
-    return this.elementsService.createElementProfile(dto, user.id);
+    return this.elementsService.createElementProfile(dto, user.id, user.isSuperuser);
   }
 
   @Get()

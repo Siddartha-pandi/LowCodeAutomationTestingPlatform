@@ -8,6 +8,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HealingEventEntity } from '../../database/entities/healing-event.entity';
 import { ApprovalEntity } from '../../database/entities/approval.entity';
+import { ExecutionEntity } from '../../database/entities/execution.entity';
+import { ElementProfileEntity } from '../../database/entities/element-profile.entity';
+import { ProjectsService } from '../projects/projects.service';
 import { ListApprovalsDto, ListHealingEventsDto } from './dto/healing.dto';
 
 @Injectable()
@@ -19,10 +22,43 @@ export class HealingService {
     private readonly healingRepository: Repository<HealingEventEntity>,
     @InjectRepository(ApprovalEntity)
     private readonly approvalRepository: Repository<ApprovalEntity>,
+    @InjectRepository(ExecutionEntity)
+    private readonly executionRepository: Repository<ExecutionEntity>,
+    @InjectRepository(ElementProfileEntity)
+    private readonly profileRepository: Repository<ElementProfileEntity>,
+    private readonly projectsService: ProjectsService,
   ) {}
 
-  async listHealingEvents(dto: ListHealingEventsDto): Promise<any[]> {
-    const qb = this.healingRepository.createQueryBuilder('h');
+  private async resolveHealingProjectId(event: HealingEventEntity): Promise<string | null> {
+    if (event.executionId) {
+      const exec = await this.executionRepository.findOne({ where: { id: event.executionId } });
+      if (exec?.projectId) return exec.projectId;
+    }
+    if (event.elementProfileId) {
+      const prof = await this.profileRepository.findOne({ where: { id: event.elementProfileId } });
+      if (prof?.projectId) return prof.projectId;
+    }
+    return null;
+  }
+
+  async listHealingEvents(
+    dto: ListHealingEventsDto,
+    userId: string,
+    isSuperuser = false,
+  ): Promise<any[]> {
+    const qb = this.healingRepository
+      .createQueryBuilder('h')
+      .leftJoin(ExecutionEntity, 'exec', 'exec.id = h.executionId')
+      .leftJoin(ElementProfileEntity, 'prof', 'prof.id = h.elementProfileId');
+
+    if (!isSuperuser) {
+      const projects = await this.projectsService.listProjects(userId, false);
+      if (projects.length === 0) return [];
+      const projectIds = projects.map((p) => p.id);
+      qb.andWhere('(exec.projectId IN (:...projectIds) OR prof.projectId IN (:...projectIds))', {
+        projectIds,
+      });
+    }
 
     if (dto.execution_id) {
       qb.andWhere('h.executionId = :execId', { execId: dto.execution_id });
@@ -53,10 +89,25 @@ export class HealingService {
     }));
   }
 
-  async listApprovals(dto: ListApprovalsDto): Promise<any[]> {
+  async listApprovals(
+    dto: ListApprovalsDto,
+    userId: string,
+    isSuperuser = false,
+  ): Promise<any[]> {
     const qb = this.approvalRepository
       .createQueryBuilder('a')
-      .leftJoinAndSelect('a.healingEvent', 'healingEvent');
+      .leftJoinAndSelect('a.healingEvent', 'healingEvent')
+      .leftJoin(ExecutionEntity, 'exec', 'exec.id = healingEvent.executionId')
+      .leftJoin(ElementProfileEntity, 'prof', 'prof.id = healingEvent.elementProfileId');
+
+    if (!isSuperuser) {
+      const projects = await this.projectsService.listProjects(userId, false);
+      if (projects.length === 0) return [];
+      const projectIds = projects.map((p) => p.id);
+      qb.andWhere('(exec.projectId IN (:...projectIds) OR prof.projectId IN (:...projectIds))', {
+        projectIds,
+      });
+    }
 
     if (dto.status) {
       qb.andWhere('a.status = :status', { status: dto.status });
@@ -90,6 +141,7 @@ export class HealingService {
     id: string,
     decision: 'approved' | 'rejected',
     userId: string,
+    isSuperuser = false,
   ): Promise<any> {
     const approval = await this.approvalRepository.findOne({
       where: { id },
@@ -98,6 +150,13 @@ export class HealingService {
 
     if (!approval) {
       throw new NotFoundException(`Approval request '${id}' not found`);
+    }
+
+    if (approval.healingEvent) {
+      const projectId = await this.resolveHealingProjectId(approval.healingEvent);
+      if (projectId) {
+        await this.projectsService.verifyProjectAccess(projectId, userId, isSuperuser);
+      }
     }
 
     if (approval.status !== 'pending') {

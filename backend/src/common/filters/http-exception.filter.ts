@@ -37,7 +37,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         error = resObj.error || exception.name;
       }
     } else if (exception instanceof Error) {
-      message = exception.message;
+      message = process.env.NODE_ENV === 'production' ? 'Internal server error' : exception.message;
       error = exception.name;
       this.logger.error(`Unhandled Exception: ${exception.message}`, exception.stack);
     } else {

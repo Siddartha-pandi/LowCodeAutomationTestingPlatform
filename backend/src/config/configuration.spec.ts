@@ -1,4 +1,5 @@
 import { appConfig } from './configuration';
+import { validateEnvironment } from './env.validation';
 
 describe('App Configuration Foundation', () => {
   it('should load default configuration values correctly', () => {
@@ -62,5 +63,60 @@ describe('App Configuration Foundation', () => {
         delete process.env.JWT_SECRET_KEY;
       }
     }
+  });
+
+  describe('validateEnvironment (Production Security Guards)', () => {
+    const strongSecret = 'a'.repeat(32);
+
+    it('rejects weak or placeholder secrets in production', () => {
+      expect(() =>
+        validateEnvironment({
+          NODE_ENV: 'production',
+          JWT_SECRET: 'enterprise-production-jwt-secret-key-32chars',
+          APP_ENCRYPTION_KEY: strongSecret,
+          INTERNAL_SERVICE_KEY: strongSecret,
+          DATABASE_URL: 'postgresql://user:pass@db:5432/app',
+        }),
+      ).toThrow();
+    });
+
+    it('rejects ALLOW_LOCALHOST_AUTOMATION=true in production', () => {
+      expect(() =>
+        validateEnvironment({
+          NODE_ENV: 'production',
+          JWT_SECRET: strongSecret,
+          APP_ENCRYPTION_KEY: strongSecret,
+          INTERNAL_SERVICE_KEY: strongSecret,
+          DATABASE_URL: 'postgresql://user:pass@db:5432/app',
+          ALLOW_LOCALHOST_AUTOMATION: 'true',
+        }),
+      ).toThrow(/ALLOW_LOCALHOST_AUTOMATION/);
+    });
+
+    it('rejects DB_SYNCHRONIZE=true in production', () => {
+      expect(() =>
+        validateEnvironment({
+          NODE_ENV: 'production',
+          JWT_SECRET: strongSecret,
+          APP_ENCRYPTION_KEY: strongSecret,
+          INTERNAL_SERVICE_KEY: strongSecret,
+          DATABASE_URL: 'postgresql://user:pass@db:5432/app',
+          DB_SYNCHRONIZE: 'true',
+        }),
+      ).toThrow(/DB_SYNCHRONIZE/);
+    });
+
+    it('accepts valid strong production configuration', () => {
+      expect(() =>
+        validateEnvironment({
+          NODE_ENV: 'production',
+          JWT_SECRET: strongSecret,
+          APP_ENCRYPTION_KEY: strongSecret,
+          INTERNAL_SERVICE_KEY: strongSecret,
+          DATABASE_URL: 'postgresql://user:pass@db:5432/app',
+          DB_SYNCHRONIZE: 'false',
+        }),
+      ).not.toThrow();
+    });
   });
 });

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import dns from 'node:dns';
+import * as path from 'node:path';
 
 // Force Node.js to prefer IPv4 over IPv6. Prevents ETIMEDOUT on networks
 // without IPv6 routes when DNS returns both IPv6 and IPv4 addresses for cloud databases like Neon.
@@ -33,8 +34,11 @@ export function normalizeDatabaseUrl(url: string): string {
           autoLoadEntities: true,
           synchronize:
             process.env.NODE_ENV === 'production'
-              ? process.env.DB_SYNCHRONIZE === 'true'
-              : process.env.DB_SYNCHRONIZE !== 'false', // Auto-syncs schema in dev; requires explicit opt-in in production
+              ? false
+              : process.env.DB_SYNCHRONIZE !== 'false', // Never synchronize schema in production; use migrations
+          migrations: [path.join(__dirname, 'migrations/*{.ts,.js}')],
+          migrationsRun: process.env.RUN_MIGRATIONS === 'true',
+          migrationsTableName: 'typeorm_migrations',
           logging: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
           ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
           retryAttempts: 10,

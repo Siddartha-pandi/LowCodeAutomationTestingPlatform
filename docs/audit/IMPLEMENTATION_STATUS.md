@@ -1,18 +1,14 @@
-# Implementation Status — LowCodeAutomationTestingPlatform
+# Implementation Status (Reconciled) — LowCodeAutomationTestingPlatform
 
-| Feature / Subsystem | Status | Evidence & Notes |
+| Feature / Subsystem | Status | Notes |
 |---|---|---|
-| **Authentication (JWT + Cookie + Bcrypt)** | Implemented, Defects Found | `AuthController`, `AuthService`, `JwtStrategy` implemented and unit-tested (`auth.service.spec.ts`). Reset token stored plaintext; frontend lacks `credentials: 'include'`. |
-| **RBAC & User Management** | Partially Implemented | `RbacGuard` and `UsersController` implemented and tested (`rbac.guard.spec.ts`), but `RbacGuard` is missing from `AuditController` and other feature controllers. |
-| **Project & Workspace Isolation** | Broken (Fixable) | `ProjectsService` implements access checks, but 9 controllers pass `user.userId` (`undefined`) instead of `user.id`, and `SchedulesController`/`ReportsController` omit project checks. |
-| **Credential Vault (AES-256-GCM)** | Implemented & Unit Tested | `CryptoVaultService` tested (`crypto-vault.spec.ts`). Masks secrets in API. Missing key rotation & log redaction. |
-| **Visual Flow Builder & Validation** | Implemented, Defects Found | `@xyflow/react` builder + `FlowExecutorService` (`flow-validation.spec.ts`, `flow-checksum.spec.ts`). Cycles not rejected; conditional branching executes all branches. |
-| **Action Executor & Assertions** | Implemented, Not E2E Verified | `ActionExecutorService` & `AssertionExecutorService` cover core Playwright actions. Missing URL scheme/SSRF guard on `navigate`. |
-| **Locator Resolution & Self-Healing** | Implemented & Unit Tested | `LocatorResolverService` + `ChangeDetectorService` (`change-detector.service.spec.ts`, `selector-validation.spec.ts`). |
-| **Queue & Workers (BullMQ + Redis)** | Implemented, Defects Found | `QueueService`, `ExecutionWorker`, `SuiteWorker` implemented. Running execution cancellation is not polled/enforced; `app.storage.dir` config key bug. |
-| **Real-Time Monitoring (WebSockets)** | Implemented, Security Defect | `MonitoringGateway` + `EventPublisherService`. Dev auth bypass, `is_superuser` claim mismatch, per-client Redis connection. |
-| **Artifacts & Reports** | Implemented, Defects Found | `ArtifactsService` (`artifacts.service.spec.ts`), `ReportsService` (`reports.service.spec.ts`). Path traversal check bug; missing project auth on reports. |
-| **Scheduling (Cron)** | Implemented, Security Defect | `SchedulesService`, `ScheduleRunnerService`. Missing project authorization on list/get/update/delete/evaluate. |
-| **Browser Explorer & Recorder** | Implemented, Security Defect | `InteractiveSessionService`, `BrowserController`, `DomController`, `RecorderController`. SSRF bypass on `document` requests; `user.userId` bug. |
-| **Database & Migrations** | Partially Implemented | 21 TypeORM entities (`entities.spec.ts`). Zero migrations; relies on `DB_SYNCHRONIZE`. |
-| **Docker & Dev Container** | Partially Implemented | `.devcontainer/` works for dev, but `backend/Dockerfile` & `frontend/Dockerfile` are incomplete stubs; `Makefile` references missing root `docker-compose.yml`. |
+| **SSRF & Browser Network Security** | **VERIFIED** (Unit) | `url-security.ts` + `url-security.spec.ts` (7 tests) + `selector-validation.spec.ts` (6 tests). |
+| **Secret Management & Env Validation** | **VERIFIED** (Unit) | `env.validation.ts` wired to `AppModule` & `WorkerModule`; `configuration.spec.ts` (7 tests). |
+| **Authentication, Cookies, CSRF, CORS** | **VERIFIED** (Unit + Build) | `CsrfMiddleware` (`csrf.middleware.spec.ts`, 5 tests), `AuthService` (`auth.service.spec.ts`, 9 tests), frontend `next build` passes. |
+| **Authorization & Multi-Tenant Isolation** | **VERIFIED** (Unit) | `authorization.spec.ts` (5 tests) + `projects.service.spec.ts` (5 tests) + `rbac.guard.spec.ts`. |
+| **Execution Engine & Reliability** | **VERIFIED** (Unit) | `execution-state.ts` (`execution-state.spec.ts`, 3 tests) + `flow-validation.spec.ts` (11 tests). |
+| **WebSocket & Shared Redis Pub/Sub** | **VERIFIED** (Unit) | `EventPublisherService` shared subscriber + `MonitoringGateway` auth (`monitoring.gateway.spec.ts`, 3 tests). |
+| **Artifacts & Safe Retention** | **VERIFIED** (Unit) | Symlink/path checks (`artifacts.service.spec.ts`, 4 tests). |
+| **Database Migrations (TypeORM)** | **NOT_VERIFIED** (Runtime) | `data-source.ts` and `1732600000000-InitialSchema.ts` created & compiled; requires live PostgreSQL to run `migration:run`. |
+| **Production Dockerfiles & Compose** | **NOT_VERIFIED** (Runtime) | `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.prod.yml` authored; Docker CLI unavailable in sandbox. |
+| **Dev Container & HMR Optimization** | **FIXED** | Unconditional `WATCHPACK_POLLING=true` removed from `frontend/package.json`; `next.config.mjs` & `webpack-hmr.config.js` updated. |

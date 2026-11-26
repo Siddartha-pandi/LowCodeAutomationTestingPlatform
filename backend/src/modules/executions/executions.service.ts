@@ -1,12 +1,15 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as fs from 'fs';
+import * as path from 'path';
 import { ExecutionEntity } from '../../database/entities/execution.entity';
 import { ExecutionStepEntity } from '../../database/entities/execution-step.entity';
 import { ExecutionLogEntity } from '../../database/entities/execution-log.entity';
@@ -20,6 +23,7 @@ import {
   ListLogsQueryDto,
 } from './dto/execution.dto';
 import { ExecuteJobDto, ExecuteJobDtoSchema } from '../../contracts/execution.contract';
+import { isTerminalExecutionStatus } from './execution-state';
 
 @Injectable()
 export class ExecutionsService {
@@ -37,6 +41,7 @@ export class ExecutionsService {
     private readonly projectsService: ProjectsService,
     private readonly queueService: QueueService,
     private readonly browserManager: BrowserManagerService,
+    private readonly configService?: ConfigService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -121,7 +126,7 @@ export class ExecutionsService {
       await this.projectsService.verifyProjectAccess(execution.projectId, userId, isSuperuser);
     }
 
-    if (['passed', 'failed', 'cancelled'].includes(execution.status)) {
+    if (isTerminalExecutionStatus(execution.status)) {
       throw new BadRequestException(
         `Cannot cancel execution with terminal status '${execution.status}'`,
       );
@@ -294,6 +299,27 @@ export class ExecutionsService {
   // Live Viewport Snapshot
   // ---------------------------------------------------------------------------
 
+  private resolveSafeViewportPath(candidatePath: string): string | null {
+    const storageDir = path.resolve(
+      this.configService?.get<string>('app.storageDir') ||
+        this.configService?.get<string>('app.storage.dir') ||
+        'storage',
+    );
+    const resolved = path.resolve(candidatePath);
+    const rel = path.relative(storageDir, resolved);
+    if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+      throw new ForbiddenException('Viewport path is outside storage directory');
+    }
+    if (!fs.existsSync(resolved)) return null;
+    const realStorage = fs.realpathSync(storageDir);
+    const realTarget = fs.realpathSync(resolved);
+    const realRel = path.relative(realStorage, realTarget);
+    if (!realRel || realRel.startsWith('..') || path.isAbsolute(realRel)) {
+      throw new ForbiddenException('Viewport symlink resolves outside storage directory');
+    }
+    return realTarget;
+  }
+
   async getExecutionViewportPath(
     executionId: string,
     userId: string,
@@ -313,8 +339,9 @@ export class ExecutionsService {
       where: { executionId },
       order: { stepIndex: 'DESC' },
     });
-    if (latestStep?.screenshotPath && fs.existsSync(latestStep.screenshotPath)) {
-      return latestStep.screenshotPath;
+    if (latestStep?.screenshotPath) {
+      const safe = this.resolveSafeViewportPath(latestStep.screenshotPath);
+      if (safe) return safe;
     }
 
     // 2. Check latest screenshot artifact
@@ -322,8 +349,9 @@ export class ExecutionsService {
       where: { executionId, artifactType: 'screenshot' },
       order: { createdAt: 'DESC' },
     });
-    if (latestArtifact?.filePath && fs.existsSync(latestArtifact.filePath)) {
-      return latestArtifact.filePath;
+    if (latestArtifact?.filePath) {
+      const safe = this.resolveSafeViewportPath(latestArtifact.filePath);
+      if (safe) return safe;
     }
 
     throw new NotFoundException('No viewport screenshot available for this execution');

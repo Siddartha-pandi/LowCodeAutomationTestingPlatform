@@ -7,6 +7,7 @@ import { AssertionExecutorService } from '../assertions/assertion-executor.servi
 import { ArtifactManagerService } from '../screenshots/artifact-manager.service';
 import { EventPublisherService } from '../monitoring/event-publisher.service';
 import { PageManagerService } from '../browser/page-manager.service';
+import { boundTimeoutMs, ExecutionStatus } from '../executions/execution-state';
 
 export interface FlowExecutionState {
   executionId: string;
@@ -14,6 +15,8 @@ export interface FlowExecutionState {
   variables: Record<string, any>;
   cancelled: boolean;
   isCancelled?: () => Promise<boolean>;
+  executionTimeoutMs?: number;
+  stepTimeoutMs?: number;
   stepResults: Array<{
     nodeId: string;
     action: string;
@@ -214,12 +217,16 @@ export class FlowExecutorService {
     graph: FlowGraph,
     state: FlowExecutionState,
   ): Promise<{
-    status: 'passed' | 'failed' | 'cancelled';
+    status: Extract<ExecutionStatus, 'passed' | 'failed' | 'cancelled' | 'timed_out'>;
     stepsTotal: number;
     stepsPassed: number;
     stepsFailed: number;
     errorMessage?: string;
   }> {
+    const executionStart = Date.now();
+    const maxExecutionMs = boundTimeoutMs(state.executionTimeoutMs, 300_000, 1000, 900_000);
+    const defaultStepMs = boundTimeoutMs(state.stepTimeoutMs, 30_000, 1000, 120_000);
+
     // 1. Graph validation
     const validation = this.validateGraph(graph);
     if (!validation.valid) {
@@ -247,6 +254,18 @@ export class FlowExecutorService {
     let stepsFailed = 0;
 
     for (const node of sortedNodes) {
+      const elapsedMs = Date.now() - executionStart;
+      if (elapsedMs >= maxExecutionMs) {
+        this.logger.warn(`Execution ${state.executionId} timed out after ${elapsedMs}ms`);
+        return {
+          status: 'timed_out',
+          stepsTotal: sortedNodes.length,
+          stepsPassed,
+          stepsFailed,
+          errorMessage: `Execution timed out after ${maxExecutionMs}ms.`,
+        };
+      }
+
       const cancelledNow = state.isCancelled ? await state.isCancelled() : state.cancelled;
       if (cancelledNow) {
         state.cancelled = true;
@@ -306,43 +325,102 @@ export class FlowExecutorService {
         }
         stepSuccess = true;
       } else {
-        // Execute Action / Assertion with optional retry policy
+        // Execute Action / Assertion with bounded retry policy & step/execution timeout
+        const configuredStepMs = boundTimeoutMs(config.timeout_ms, defaultStepMs, 500, 120_000);
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          if (state.isCancelled && (await state.isCancelled())) {
+            state.cancelled = true;
+            return {
+              status: 'cancelled',
+              stepsTotal: sortedNodes.length,
+              stepsPassed,
+              stepsFailed,
+              errorMessage: 'Execution cancelled by user.',
+            };
+          }
+
+          const remainingExecMs = maxExecutionMs - (Date.now() - executionStart);
+          if (remainingExecMs <= 0) {
+            return {
+              status: 'timed_out',
+              stepsTotal: sortedNodes.length,
+              stepsPassed,
+              stepsFailed,
+              errorMessage: `Execution timed out after ${maxExecutionMs}ms.`,
+            };
+          }
+
+          const effectiveStepTimeout = Math.min(configuredStepMs, remainingExecMs);
+          let timeoutTimer: NodeJS.Timeout | undefined;
           try {
             const normalizedAction = this.normalizeAssertion(actionType);
-            if (this.isAssertion(normalizedAction)) {
-              const res = await this.assertionExecutor.execute(page, {
-                assertion: normalizedAction,
-                config,
-                variables: state.variables,
-              });
-              stepSuccess = res.success;
-              stepError = res.error;
-            } else {
-              const res = await this.actionExecutor.execute(page, {
-                action: actionType,
-                config,
-                variables: state.variables,
-              });
-              stepSuccess = res.success;
-              stepError = res.error;
+            const runPromise = this.isAssertion(normalizedAction)
+              ? this.assertionExecutor.execute(page, {
+                  assertion: normalizedAction,
+                  config,
+                  variables: state.variables,
+                })
+              : this.actionExecutor.execute(page, {
+                  action: actionType,
+                  config,
+                  variables: state.variables,
+                });
 
-              if (res.extracted_data) {
-                Object.assign(state.variables, res.extracted_data);
-              }
+            const timeoutPromise = new Promise<never>((_, reject) => {
+              timeoutTimer = setTimeout(() => {
+                reject(new Error(`Step '${actionType}' (${node.id}) timed out after ${effectiveStepTimeout}ms`));
+              }, effectiveStepTimeout);
+            });
+
+            const res: any = await Promise.race([runPromise, timeoutPromise]);
+            stepSuccess = res.success;
+            stepError = res.error;
+            if (res.extracted_data) {
+              Object.assign(state.variables, res.extracted_data);
             }
 
             if (stepSuccess) break;
 
             if (attempt < maxRetries) {
+              if (state.isCancelled && (await state.isCancelled())) {
+                state.cancelled = true;
+                return {
+                  status: 'cancelled',
+                  stepsTotal: sortedNodes.length,
+                  stepsPassed,
+                  stepsFailed,
+                  errorMessage: 'Execution cancelled by user.',
+                };
+              }
               this.logger.warn(`Step '${actionType}' (${node.id}) failed (attempt ${attempt + 1}). Retrying in 500ms...`);
-              await page.waitForTimeout(500);
+              await page.waitForTimeout(Math.min(500, Math.max(0, maxExecutionMs - (Date.now() - executionStart))));
             }
           } catch (err: any) {
             stepSuccess = false;
             stepError = err.message || String(err);
+            if (Date.now() - executionStart >= maxExecutionMs) {
+              return {
+                status: 'timed_out',
+                stepsTotal: sortedNodes.length,
+                stepsPassed,
+                stepsFailed,
+                errorMessage: `Execution timed out after ${maxExecutionMs}ms.`,
+              };
+            }
             if (attempt >= maxRetries) break;
+            if (state.isCancelled && (await state.isCancelled())) {
+              state.cancelled = true;
+              return {
+                status: 'cancelled',
+                stepsTotal: sortedNodes.length,
+                stepsPassed,
+                stepsFailed,
+                errorMessage: 'Execution cancelled by user.',
+              };
+            }
             await page.waitForTimeout(500);
+          } finally {
+            if (timeoutTimer) clearTimeout(timeoutTimer);
           }
         }
 

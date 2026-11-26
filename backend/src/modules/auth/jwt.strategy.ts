@@ -14,6 +14,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
   ) {
+    const jwtSecret = configService.get<string>('app.jwtSecret');
+    if (!jwtSecret) {
+      throw new Error('JWT secret is not configured in app.jwtSecret');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('app.jwtSecret') || 'enterprise-production-jwt-secret-key-32chars',
+      secretOrKey: jwtSecret,
     });
   }
 

@@ -10,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WebSocket } from 'ws';
-import Redis from 'ioredis';
 import { ExecutionEntity } from '../../database/entities/execution.entity';
 import { ExecutionStepEntity } from '../../database/entities/execution-step.entity';
 import { ProjectsService } from '../projects/projects.service';
@@ -19,8 +18,9 @@ import { EventPublisherService } from './event-publisher.service';
 interface ClientContext {
   executionId: string;
   userId: string;
-  redisSubscriber?: Redis;
-  unsubscribe?: () => void;
+  unsubscribeLocal?: () => void;
+  unsubscribeRemote?: () => Promise<void>;
+  seenEventIds: Set<string>;
 }
 
 @WebSocketGateway({ path: '/ws/executions' })
@@ -50,7 +50,6 @@ export class MonitoringGateway
       const url = new URL(request?.url || '', `ws://${host}`);
       const pathname = url.pathname;
 
-      // Extract execution_id from pathname /ws/executions/:id
       const match = pathname.match(/\/ws\/executions\/([a-zA-Z0-9_-]+)/);
       const executionId = match ? match[1] : null;
 
@@ -60,20 +59,30 @@ export class MonitoringGateway
         return;
       }
 
-      // Extract token from query param, cookies, or authorization header
-      let token = url.searchParams.get('token') || url.searchParams.get('auth_token');
-      if (!token && request.headers.cookie) {
+      // Extract token from cookies (preferred), Authorization header, or query fallback
+      let token: string | null = null;
+      if (request.headers?.cookie) {
         const cookies = request.headers.cookie.split(';');
         for (const cookie of cookies) {
-          const [k, v] = cookie.trim().split('=');
-          if (k === 'access_token' || k === 'auth_token' || k === 'token') token = v;
+          const idx = cookie.indexOf('=');
+          if (idx > 0) {
+            const k = cookie.slice(0, idx).trim();
+            const v = decodeURIComponent(cookie.slice(idx + 1).trim());
+            if (k === 'access_token' || k === 'auth_token' || k === 'token') {
+              token = v;
+              break;
+            }
+          }
         }
       }
-      if (!token && request.headers.authorization) {
+      if (!token && request.headers?.authorization) {
         const auth = request.headers.authorization;
         if (auth.toLowerCase().startsWith('bearer ')) {
           token = auth.slice(7).trim();
         }
+      }
+      if (!token) {
+        token = url.searchParams.get('token') || url.searchParams.get('auth_token');
       }
 
       if (!token) {
@@ -89,16 +98,19 @@ export class MonitoringGateway
           throw new Error('JWT secret is not configured');
         }
         payload = this.jwtService.verify(token, { secret: jwtSecret });
-      } catch (err: any) {
+      } catch {
         this.logger.warn(`Rejected WS connection: Invalid token for ${executionId}`);
         client.close(1008, 'Invalid token');
         return;
       }
 
-      const userId = payload.sub || payload.userId;
+      const userId = payload.sub;
       const isSuperuser = Boolean(payload.is_superuser);
+      if (!userId) {
+        client.close(1008, 'Invalid token subject');
+        return;
+      }
 
-      // Verify execution exists and user has project access
       const execution = await this.executionRepository.findOne({ where: { id: executionId } });
       if (!execution) {
         this.logger.warn(`Rejected WS connection: Execution '${executionId}' not found`);
@@ -116,48 +128,39 @@ export class MonitoringGateway
         }
       }
 
-      // Setup Redis Subscriber for this client
-      const redisConfig = this.configService.get('app.redis');
-      const redisSubscriber = new Redis({
-        host: redisConfig.host,
-        port: redisConfig.port,
-        password: redisConfig.password,
-        db: redisConfig.db,
-        lazyConnect: true,
-      });
-
-      // Register direct in-memory pub/sub listener (instant zero-latency streaming)
-      const unsub = this.eventPublisher.subscribe(executionId, (event) => {
-        if (client.readyState === WebSocket.OPEN) {
-          try {
-            client.send(JSON.stringify(event));
-          } catch {}
+      const seenEventIds = new Set<string>();
+      const forwardEvent = (event: any) => {
+        if (client.readyState !== WebSocket.OPEN) return;
+        const eid = event?.event_id;
+        if (eid) {
+          if (seenEventIds.has(eid)) return;
+          if (seenEventIds.size > 2000) seenEventIds.clear();
+          seenEventIds.add(eid);
         }
-      });
+        try {
+          client.send(JSON.stringify(event));
+        } catch {}
+      };
+
+      const unsubscribeLocal = this.eventPublisher.subscribe(executionId, forwardEvent);
+      const unsubscribeRemote = await this.eventPublisher.subscribeRemote(executionId, forwardEvent);
 
       const clientCtx: ClientContext = {
         executionId,
         userId,
-        redisSubscriber,
-        unsubscribe: unsub,
+        unsubscribeLocal,
+        unsubscribeRemote,
+        seenEventIds,
       };
       this.clients.set(client, clientCtx);
 
-      await redisSubscriber.connect().catch((e) => {
-        this.logger.warn(`Redis subscriber failed to connect: ${e.message}`);
+      client.on('close', () => {
+        void this.cleanupClient(client);
+      });
+      client.on('error', () => {
+        void this.cleanupClient(client);
       });
 
-      const channel1 = `execution:events:${executionId}`;
-      const channel2 = `execution:channel:${executionId}`;
-      await redisSubscriber.subscribe(channel1, channel2).catch(() => {});
-
-      redisSubscriber.on('message', (_chan, message) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(message);
-        }
-      });
-
-      // Send initial connected event to client
       client.send(
         JSON.stringify({
           type: 'connected',
@@ -168,11 +171,9 @@ export class MonitoringGateway
         }),
       );
 
-      // Listen for client incoming messages
       client.on('message', async (data: any) => {
         try {
-          const raw = data.toString();
-          const msg = JSON.parse(raw);
+          const msg = JSON.parse(data.toString());
           await this.handleClientMessage(client, clientCtx, msg);
         } catch {}
       });
@@ -185,17 +186,21 @@ export class MonitoringGateway
   }
 
   async handleDisconnect(client: WebSocket) {
+    await this.cleanupClient(client);
+  }
+
+  private async cleanupClient(client: WebSocket) {
     const ctx = this.clients.get(client);
-    if (ctx) {
-      if (ctx.unsubscribe) {
-        ctx.unsubscribe();
+    if (!ctx) return;
+    this.clients.delete(client);
+    try {
+      ctx.unsubscribeLocal?.();
+      if (ctx.unsubscribeRemote) {
+        await ctx.unsubscribeRemote();
       }
-      if (ctx.redisSubscriber) {
-        await ctx.redisSubscriber.quit().catch(() => {});
-      }
-      this.clients.delete(client);
-      this.logger.log(`Client disconnected from WS monitor for execution: ${ctx.executionId}`);
-    }
+    } catch {}
+    ctx.seenEventIds.clear();
+    this.logger.log(`Client disconnected from WS monitor for execution: ${ctx.executionId}`);
   }
 
   private async handleClientMessage(client: WebSocket, ctx: ClientContext, msg: any) {
@@ -236,7 +241,6 @@ export class MonitoringGateway
             type: 'viewport:frame',
             execution_id: ctx.executionId,
             data: {
-              artifact_path: latestStep.screenshotPath,
               viewport_url: `/api/v1/executions/${ctx.executionId}/viewport`,
               step_index: latestStep.stepIndex,
             },

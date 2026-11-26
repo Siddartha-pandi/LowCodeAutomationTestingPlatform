@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { AuditLogEntity } from '../../database/entities/audit-log.entity';
 import { ExecutionLogEntity } from '../../database/entities/execution-log.entity';
 import { ArtifactEntity } from '../../database/entities/artifact.entity';
@@ -33,6 +36,7 @@ export class AuditService {
     private readonly artifactRepository: Repository<ArtifactEntity>,
     @InjectRepository(DOMSnapshotEntity)
     private readonly domSnapshotRepository: Repository<DOMSnapshotEntity>,
+    private readonly configService?: ConfigService,
   ) {}
 
   async logAuditEvent(params: LogAuditParams): Promise<AuditLogEntity> {
@@ -119,22 +123,58 @@ export class AuditService {
     const domHorizon = new Date();
     domHorizon.setDate(domHorizon.getDate() - (dto.dom_days || 14));
 
-    const logsPurged = await this.executionLogRepository.delete({
-      timestamp: LessThan(logHorizon),
-    });
+    const logsPurged = await this.executionLogRepository
+      .createQueryBuilder()
+      .delete()
+      .where('timestamp < :horizon', { horizon: logHorizon })
+      .andWhere(
+        `execution_id NOT IN (SELECT id FROM executions WHERE status IN ('queued', 'running'))`,
+      )
+      .execute();
 
-    const screenshotsPurged = await this.artifactRepository.delete({
-      artifactType: 'screenshot',
-      createdAt: LessThan(screenshotHorizon),
-    });
+    // Fetch expired screenshots excluding active executions so we can unlink safely
+    const expiredArtifacts = await this.artifactRepository
+      .createQueryBuilder('art')
+      .where('art.artifactType = :type', { type: 'screenshot' })
+      .andWhere('art.createdAt < :horizon', { horizon: screenshotHorizon })
+      .andWhere(
+        `art.executionId NOT IN (SELECT id FROM executions WHERE status IN ('queued', 'running'))`,
+      )
+      .getMany();
 
-    const domPurged = await this.domSnapshotRepository.delete({
-      createdAt: LessThan(domHorizon),
-    });
+    const storageDir = path.resolve(
+      this.configService?.get<string>('app.storageDir') ||
+        this.configService?.get<string>('app.storage.dir') ||
+        'storage',
+    );
+    for (const art of expiredArtifacts) {
+      try {
+        const resolved = path.resolve(art.filePath);
+        const rel = path.relative(storageDir, resolved);
+        if (rel && !rel.startsWith('..') && !path.isAbsolute(rel) && fs.existsSync(resolved)) {
+          fs.unlinkSync(resolved);
+        }
+      } catch {}
+    }
+
+    let screenshotsPurgedCount = 0;
+    if (expiredArtifacts.length > 0) {
+      const delRes = await this.artifactRepository.delete(expiredArtifacts.map((a) => a.id));
+      screenshotsPurgedCount = delRes.affected || expiredArtifacts.length;
+    }
+
+    const domPurged = await this.domSnapshotRepository
+      .createQueryBuilder()
+      .delete()
+      .where('created_at < :horizon', { horizon: domHorizon })
+      .andWhere(
+        `execution_id NOT IN (SELECT id FROM executions WHERE status IN ('queued', 'running'))`,
+      )
+      .execute();
 
     const counts = {
       execution_logs: logsPurged.affected || 0,
-      screenshots: screenshotsPurged.affected || 0,
+      screenshots: screenshotsPurgedCount,
       dom_snapshots: domPurged.affected || 0,
     };
 

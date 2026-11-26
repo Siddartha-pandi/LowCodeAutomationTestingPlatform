@@ -112,6 +112,31 @@ describe('ArtifactsService (Security & Path Traversal)', () => {
     const result = await service.getSafeArtifactFile('art-valid', 'user-1', false);
     expect(result.filename).toBe('screenshot-123.png');
     expect(result.mimeType).toBe('image/png');
-    expect(result.filePath).toBe(path.resolve(validFile));
+    expect(result.filePath).toBe(fs.realpathSync(validFile));
+  });
+
+  it('should reject symlink traversal pointing outside storage directory', async () => {
+    const outsideFile = path.resolve('outside-secret-temp.txt');
+    const symlinkPath = path.join(testStorageDir, 'escape-link.txt');
+    fs.writeFileSync(outsideFile, 'secret');
+    try {
+      fs.symlinkSync(outsideFile, symlinkPath);
+      artifactRepo.findOne.mockResolvedValue({
+        id: 'art-symlink',
+        executionId: 'exec-1',
+        filePath: symlinkPath,
+        fileSizeBytes: 6,
+        mimeType: 'text/plain',
+        sha256Hash: 'dummy',
+      });
+      executionRepo.findOne.mockResolvedValue({ id: 'exec-1', projectId: 'proj-1' });
+
+      await expect(
+        service.getSafeArtifactFile('art-symlink', 'user-1', false),
+      ).rejects.toThrow(ForbiddenException);
+    } finally {
+      if (fs.existsSync(symlinkPath)) fs.unlinkSync(symlinkPath);
+      if (fs.existsSync(outsideFile)) fs.unlinkSync(outsideFile);
+    }
   });
 });

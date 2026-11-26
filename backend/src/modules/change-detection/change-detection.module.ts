@@ -4,6 +4,7 @@ import { ElementProfileEntity } from '../../database/entities/element-profile.en
 import { LocatorHistoryEntity } from '../../database/entities/locator-history.entity';
 import { HealingEventEntity } from '../../database/entities/healing-event.entity';
 import { ApprovalEntity } from '../../database/entities/approval.entity';
+import { ExecutionEntity } from '../../database/entities/execution.entity';
 import { ProjectsModule } from '../projects/projects.module';
 import { ChangeDetectorService } from './change-detector.service';
 import { ElementsService } from './elements.service';
@@ -18,6 +19,7 @@ import { HealingController } from './healing.controller';
       LocatorHistoryEntity,
       HealingEventEntity,
       ApprovalEntity,
+      ExecutionEntity,
     ]),
     ProjectsModule,
   ],
