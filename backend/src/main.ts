@@ -1,27 +1,6 @@
-import dns from 'node:dns';
+import { forceIpv4Dns } from './common/network/force-ipv4-dns';
 
-// Force Node.js to use IPv4 exclusively when resolving domain names.
-// In Node.js 18-20+, autoSelectFamily attempts dual-stack connect which causes
-// AggregateError [ETIMEDOUT] / ENETUNREACH on cloud databases (e.g. Neon) when IPv6 route is unreachable.
-if (typeof dns.setDefaultResultOrder === 'function') {
-  dns.setDefaultResultOrder('ipv4first');
-}
-const origLookup = dns.lookup;
-const ipv4Lookup = (hostname: string, options: any, callback?: any) => {
-  if (typeof options === 'function') {
-    callback = options;
-    options = {};
-  }
-  if (options && options.all) {
-    return origLookup(hostname, { ...options, family: 4 }, (err: NodeJS.ErrnoException | null, addresses: unknown) => {
-      if (err) return callback(err);
-      const list = Array.isArray(addresses) ? (addresses as dns.LookupAddress[]) : [];
-      callback(null, list.filter((a) => a.family === 4));
-    });
-  }
-  return origLookup(hostname, { ...options, family: 4 }, callback);
-};
-(dns as any).lookup = Object.assign(ipv4Lookup, origLookup);
+forceIpv4Dns();
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -41,6 +20,10 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') || 8000;
+  const trustProxy = configService.get<boolean>('app.trustProxy') ?? true;
+  if (trustProxy) {
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  }
   const corsOrigins = configService.get<string[]>('app.corsOrigins') || ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
   // 1. CORS Configuration (strict allowlist in production; never allow wildcard with credentials)

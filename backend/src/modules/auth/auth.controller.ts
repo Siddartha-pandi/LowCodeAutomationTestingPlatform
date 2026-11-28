@@ -36,25 +36,39 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
+  private getCookieOptions(maxAge?: number) {
+    const sameSite = this.configService.get<'lax' | 'strict' | 'none'>('app.cookie.sameSite') || 'lax';
+    const configuredSecure = this.configService.get<boolean>('app.cookie.secure');
+    const secure =
+      sameSite === 'none'
+        ? true
+        : configuredSecure !== undefined
+          ? configuredSecure
+          : process.env.NODE_ENV === 'production';
+    const domain = this.configService.get<string>('app.cookie.domain');
+
+    return {
+      sameSite,
+      secure,
+      path: '/',
+      ...(domain ? { domain } : {}),
+      ...(maxAge !== undefined ? { maxAge } : {}),
+    };
+  }
+
   private setAuthCookies(response: Response, token: string): string {
-    const isProd = process.env.NODE_ENV === 'production';
     const expiryMinutes = this.configService.get<number>('app.tokenExpiryMinutes') || 480;
     const maxAge = expiryMinutes * 60 * 1000;
     const csrfToken = crypto.randomBytes(32).toString('hex');
+    const cookieOpts = this.getCookieOptions(maxAge);
 
     response.cookie('access_token', token, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: isProd,
-      path: '/',
-      maxAge,
+      ...cookieOpts,
     });
     response.cookie('csrf_token', csrfToken, {
       httpOnly: false,
-      sameSite: 'lax',
-      secure: isProd,
-      path: '/',
-      maxAge,
+      ...cookieOpts,
     });
     return csrfToken;
   }
@@ -103,10 +117,7 @@ export class AuthController {
       const expiryMinutes = this.configService.get<number>('app.tokenExpiryMinutes') || 480;
       response.cookie('csrf_token', csrfToken, {
         httpOnly: false,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-        maxAge: expiryMinutes * 60 * 1000,
+        ...this.getCookieOptions(expiryMinutes * 60 * 1000),
       });
     }
     return { ...profile, csrf_token: csrfToken };
@@ -118,9 +129,9 @@ export class AuthController {
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Log out user and clear session cookie' })
   async logout(@Res({ passthrough: true }) response: Response) {
-    const isProd = process.env.NODE_ENV === 'production';
-    response.clearCookie('access_token', { path: '/', sameSite: 'lax', secure: isProd });
-    response.clearCookie('csrf_token', { path: '/', sameSite: 'lax', secure: isProd });
+    const clearOpts = this.getCookieOptions();
+    response.clearCookie('access_token', clearOpts);
+    response.clearCookie('csrf_token', clearOpts);
     return { status: 'logged_out', message: 'Session closed successfully' };
   }
 

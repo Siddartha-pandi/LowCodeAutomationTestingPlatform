@@ -1,14 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import dns from 'node:dns';
 import * as path from 'node:path';
+import { forceIpv4Dns } from '../common/network/force-ipv4-dns';
 
-// Force Node.js to prefer IPv4 over IPv6. Prevents ETIMEDOUT on networks
-// without IPv6 routes when DNS returns both IPv6 and IPv4 addresses for cloud databases like Neon.
-if (typeof dns.setDefaultResultOrder === 'function') {
-  dns.setDefaultResultOrder('ipv4first');
-}
+forceIpv4Dns();
 
 export function normalizeDatabaseUrl(url: string): string {
   if (!url) return url;
@@ -16,6 +12,16 @@ export function normalizeDatabaseUrl(url: string): string {
   // Remove sslmode query param so it doesn't conflict with TypeORM's explicit ssl config
   normalized = normalized.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '');
   return normalized;
+}
+
+export function shouldEnableDatabaseSsl(rawUrl: string, databaseSslFlag?: boolean | string): boolean {
+  if (databaseSslFlag === true || databaseSslFlag === 'true') {
+    return true;
+  }
+  if (rawUrl && /[?&]sslmode=(require|verify-ca|verify-full|no-verify)\b/i.test(rawUrl)) {
+    return true;
+  }
+  return false;
 }
 
 @Module({
@@ -27,10 +33,15 @@ export function normalizeDatabaseUrl(url: string): string {
         const rawUrl = configService.get<string>('app.databaseUrl');
         if (!rawUrl) throw new Error('DATABASE_URL is not set. Please configure it in your .env file.');
         const url = normalizeDatabaseUrl(rawUrl);
+        const sslEnabled = shouldEnableDatabaseSsl(
+          rawUrl,
+          configService.get<boolean>('app.databaseSsl') || process.env.DATABASE_SSL,
+        );
 
         return {
           type: 'postgres',
           url,
+          entities: [path.join(__dirname, 'entities/*.entity{.ts,.js}')],
           autoLoadEntities: true,
           synchronize:
             process.env.NODE_ENV === 'production'
@@ -40,7 +51,7 @@ export function normalizeDatabaseUrl(url: string): string {
           migrationsRun: process.env.RUN_MIGRATIONS === 'true',
           migrationsTableName: 'typeorm_migrations',
           logging: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-          ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+          ssl: sslEnabled ? { rejectUnauthorized: false } : false,
           retryAttempts: 10,
           retryDelay: 3000,
           extra: {

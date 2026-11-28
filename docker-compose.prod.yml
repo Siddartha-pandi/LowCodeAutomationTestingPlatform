@@ -3,10 +3,11 @@ name: lowcode-automation-prod
 services:
   postgres:
     image: postgres:16-alpine
+    profiles: ["local-db"]
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-automation_platform_db}
     volumes:
       - prod_postgres_data:/var/lib/postgresql/data
@@ -38,8 +39,6 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
@@ -48,14 +47,24 @@ services:
       EMBED_WORKER: "false"
       RUN_MIGRATIONS: "true"
       DB_SYNCHRONIZE: "false"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-automation_platform_db}
-      DATABASE_SSL: ${DATABASE_SSL:-false}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+      DATABASE_SSL: ${DATABASE_SSL:-true}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_URL: ${REDIS_URL:-}
+      REDIS_TLS: ${REDIS_TLS:-false}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?APP_ENCRYPTION_KEY must be set}
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY:?INTERNAL_SERVICE_KEY must be set}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-lax}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      ALLOWED_DOMAINS: ${ALLOWED_DOMAINS:-localhost,127.0.0.1,*.company.internal,*.company.local}
+      BROWSER_TIMEOUT_MS: ${BROWSER_TIMEOUT_MS:-30000}
+      DEFAULT_TIMEZONE: ${DEFAULT_TIMEZONE:-Asia/Kolkata}
       STORAGE_DIR: /app/storage
     volumes:
       - prod_storage:/app/storage
@@ -80,8 +89,6 @@ services:
     command: ["node", "dist/worker.js"]
     shm_size: "2gb"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       api:
@@ -89,14 +96,19 @@ services:
     environment:
       NODE_ENV: production
       DB_SYNCHRONIZE: "false"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-automation_platform_db}
-      DATABASE_SSL: ${DATABASE_SSL:-false}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+      DATABASE_SSL: ${DATABASE_SSL:-true}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_URL: ${REDIS_URL:-}
+      REDIS_TLS: ${REDIS_TLS:-false}
       JWT_SECRET: ${JWT_SECRET}
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+      ALLOWED_DOMAINS: ${ALLOWED_DOMAINS:-localhost,127.0.0.1,*.company.internal,*.company.local}
+      BROWSER_TIMEOUT_MS: ${BROWSER_TIMEOUT_MS:-30000}
+      DEFAULT_TIMEZONE: ${DEFAULT_TIMEZONE:-Asia/Kolkata}
       STORAGE_DIR: /app/storage
     volumes:
       - prod_storage:/app/storage

@@ -1,8 +1,6 @@
-import * as dns from 'node:dns';
+import { forceIpv4Dns } from '../common/network/force-ipv4-dns';
 
-if (dns && typeof dns.setDefaultResultOrder === 'function') {
-  dns.setDefaultResultOrder('ipv4first');
-}
+forceIpv4Dns();
 
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';

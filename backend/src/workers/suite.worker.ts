@@ -8,6 +8,7 @@ import { AutomationDefinitionEntity } from '../database/entities/automation-defi
 import { DefinitionVersionEntity } from '../database/entities/definition-version.entity';
 import { QueueService } from '../queue/queue.service';
 import { testCaseToGraphDefinition } from '../modules/test-cases/test-cases.service';
+import { buildRedisConnectionOptions } from '../common/network/redis-options';
 
 export interface SuiteJobPayload {
   suite_execution_id: string;
@@ -44,13 +45,9 @@ export class SuiteWorker implements OnModuleInit, OnModuleDestroy {
         return this.processSuiteJob(job);
       },
       {
-        connection: {
-          host: redis.host,
-          port: redis.port,
-          password: redis.password,
-          db: redis.db,
+        connection: buildRedisConnectionOptions(redis, {
           maxRetriesPerRequest: null,
-        },
+        }),
         concurrency: 1,
       },
     );

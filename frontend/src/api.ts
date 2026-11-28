@@ -14,8 +14,27 @@ export interface ApiRequestOptions {
 }
 
 const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
+  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000"
 ).replace(/\/$/, "");
+
+export function resolveWsBaseUrl(): string {
+  const configuredWs = process.env.NEXT_PUBLIC_WS_URL?.trim();
+  if (configuredWs) {
+    return configuredWs.replace(/\/$/, "");
+  }
+  const configuredApi = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (configuredApi) {
+    return configuredApi.replace(/^http/i, "ws").replace(/\/$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    if (process.env.NEXT_PUBLIC_API_URL === "") {
+      return `${wsProto}//${window.location.host}`;
+    }
+    return `${wsProto}//${window.location.hostname}:8000`;
+  }
+  return "ws://127.0.0.1:8000";
+}
 
 let memoryCsrfToken: string | null = null;
 

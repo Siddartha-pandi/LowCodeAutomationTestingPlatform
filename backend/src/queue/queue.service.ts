@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Queue, Job } from 'bullmq';
 import Redis from 'ioredis';
 import { ExecuteJobDto } from '../contracts/execution.contract';
+import { buildRedisConnectionOptions } from '../common/network/redis-options';
 
 @Injectable()
 export class QueueService implements OnModuleInit, OnModuleDestroy {
@@ -16,22 +17,16 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     const redis = this.configService.get('app.redis');
-    const redisConnection = {
-      host: redis.host,
-      port: redis.port,
-      password: redis.password,
-      db: redis.db,
+    const redisConnection = buildRedisConnectionOptions(redis, {
       maxRetriesPerRequest: null,
-    };
-
-    this.redisClient = new Redis({
-      host: redis.host,
-      port: redis.port,
-      password: redis.password,
-      db: redis.db,
-      lazyConnect: true,
-      maxRetriesPerRequest: 1,
     });
+
+    this.redisClient = new Redis(
+      buildRedisConnectionOptions(redis, {
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+      }),
+    );
     this.redisClient.on('error', (err) => {
       this.logger.warn(`Redis connection error: ${err.message}`);
     });

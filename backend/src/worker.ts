@@ -1,3 +1,7 @@
+import { forceIpv4Dns } from './common/network/force-ipv4-dns';
+
+forceIpv4Dns();
+
 import { NestFactory } from '@nestjs/core';
 import { WorkerModule } from './worker.module';
 import { Logger } from '@nestjs/common';

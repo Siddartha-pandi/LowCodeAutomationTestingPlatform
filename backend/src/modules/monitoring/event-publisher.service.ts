@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { ExecutionEventType } from '../../contracts/events.contract';
+import { buildRedisConnectionOptions } from '../../common/network/redis-options';
 
 const SENSITIVE_KEY_PATTERN = /^(password|secret|token|authorization|api_key|apikey|credential|private_key)$/i;
 
@@ -92,15 +93,13 @@ export class EventPublisherService implements OnModuleInit, OnModuleDestroy {
     const redisConfig = this.configService.get('app.redis');
     const retryStrategy = (times: number) => Math.min(times * 500, 10000);
 
-    this.redisClient = new Redis({
-      host: redisConfig.host,
-      port: redisConfig.port,
-      password: redisConfig.password,
-      db: redisConfig.db,
-      lazyConnect: true,
-      maxRetriesPerRequest: 1,
-      retryStrategy,
-    });
+    this.redisClient = new Redis(
+      buildRedisConnectionOptions(redisConfig, {
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        retryStrategy,
+      }),
+    );
     this.redisClient.on('error', (err) => {
       this.logger.debug(`Redis publisher error: ${err.message}`);
     });
@@ -108,15 +107,13 @@ export class EventPublisherService implements OnModuleInit, OnModuleDestroy {
       this.logger.warn(`Redis publisher failed to connect: ${err.message}. Operating in in-memory fallback.`);
     });
 
-    this.redisSubscriber = new Redis({
-      host: redisConfig.host,
-      port: redisConfig.port,
-      password: redisConfig.password,
-      db: redisConfig.db,
-      lazyConnect: true,
-      maxRetriesPerRequest: null,
-      retryStrategy,
-    });
+    this.redisSubscriber = new Redis(
+      buildRedisConnectionOptions(redisConfig, {
+        lazyConnect: true,
+        maxRetriesPerRequest: null,
+        retryStrategy,
+      }),
+    );
     this.redisSubscriber.on('error', (err) => {
       this.logger.debug(`Redis subscriber error: ${err.message}`);
     });

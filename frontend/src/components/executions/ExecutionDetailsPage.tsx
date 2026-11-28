@@ -23,7 +23,7 @@ import {
 import { useToast } from "../common/ToastProvider";
 import { useConfirm } from "../common/ConfirmModal";
 import { NavView } from "../layout/AppShell";
-import { executionsApi } from "@/api";
+import { executionsApi, resolveWsBaseUrl } from "@/api";
 
 interface ExecutionDetailsPageProps {
   executionId?: string;
@@ -62,9 +62,7 @@ export function ExecutionDetailsPage({
     }, 1500);
 
     // Live WebSocket connection for running executions (authenticated via HttpOnly cookie)
-    const wsProto = typeof window !== "undefined" && window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-    const baseWsUrl = (process.env.NEXT_PUBLIC_WS_URL || `${wsProto}//${wsHost}:8000`).replace(/\/$/, "");
+    const baseWsUrl = resolveWsBaseUrl();
     const wsUrl = `${baseWsUrl}/ws/executions/${executionId}`;
 
     let ws: WebSocket | null = null;

@@ -23,6 +23,7 @@ import { ExecutionEntity } from '../database/entities/execution.entity';
 import { ExecutionStepEntity } from '../database/entities/execution-step.entity';
 import { ExecutionLogEntity } from '../database/entities/execution-log.entity';
 import { ArtifactEntity } from '../database/entities/artifact.entity';
+import { buildRedisConnectionOptions } from '../common/network/redis-options';
 
 @Injectable()
 export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
@@ -57,13 +58,9 @@ export class ExecutionWorker implements OnModuleInit, OnModuleDestroy {
         return this.processJob(job);
       },
       {
-        connection: {
-          host: redis.host,
-          port: redis.port,
-          password: redis.password,
-          db: redis.db,
+        connection: buildRedisConnectionOptions(redis, {
           maxRetriesPerRequest: null,
-        },
+        }),
         concurrency,
       },
     );

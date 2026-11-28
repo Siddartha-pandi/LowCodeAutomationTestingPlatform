@@ -18,20 +18,42 @@ function isWeakSecret(val: unknown): boolean {
   return false;
 }
 
-export const environmentSchema = z.object({
-  PORT: z.string().optional().default('8000'),
-  DATABASE_URL: z.string().optional().default('postgresql://postgres:postgres@localhost:5432/automation_platform_db'),
-  REDIS_HOST: z.string().optional().default('127.0.0.1'),
-  REDIS_PORT: z.string().optional().default('6379'),
-  JWT_SECRET: z.string().optional(),
-  JWT_SECRET_KEY: z.string().optional(),
-  APP_ENCRYPTION_KEY: z.string().optional(),
-  CREDENTIALS_MASTER_KEY: z.string().optional(),
-  INTERNAL_SERVICE_KEY: z.string().optional(),
-  STORAGE_DIR: z.string().optional(),
-  ALLOW_LOCALHOST_AUTOMATION: z.string().optional(),
-  DB_SYNCHRONIZE: z.string().optional(),
-});
+export const environmentSchema = z
+  .object({
+    NODE_ENV: z.string().optional(),
+    PORT: z.string().optional().default('8000'),
+    DATABASE_URL: z.string().optional().default('postgresql://postgres:postgres@localhost:5432/automation_platform_db'),
+    DATABASE_SSL: z.string().optional(),
+    DB_SYNCHRONIZE: z.string().optional(),
+    RUN_MIGRATIONS: z.string().optional(),
+    REDIS_URL: z.string().optional(),
+    REDIS_HOST: z.string().optional().default('127.0.0.1'),
+    REDIS_PORT: z.string().optional().default('6379'),
+    REDIS_USERNAME: z.string().optional(),
+    REDIS_PASSWORD: z.string().optional(),
+    REDIS_DB: z.string().optional(),
+    REDIS_TLS: z.string().optional(),
+    FRONTEND_URL: z.string().optional(),
+    TRUST_PROXY: z.string().optional(),
+    COOKIE_SECURE: z.string().optional(),
+    COOKIE_SAME_SITE: z.string().optional(),
+    COOKIE_DOMAIN: z.string().optional(),
+    JWT_SECRET: z.string().optional(),
+    JWT_SECRET_KEY: z.string().optional(),
+    TOKEN_EXPIRY_MINUTES: z.string().optional(),
+    APP_ENCRYPTION_KEY: z.string().optional(),
+    CREDENTIALS_MASTER_KEY: z.string().optional(),
+    INTERNAL_SERVICE_KEY: z.string().optional(),
+    STORAGE_DIR: z.string().optional(),
+    ALLOW_LOCALHOST_AUTOMATION: z.string().optional(),
+    CORS_ORIGINS: z.string().optional(),
+    ALLOWED_DOMAINS: z.string().optional(),
+    EMBED_WORKER: z.string().optional(),
+    WORKER_CONCURRENCY: z.string().optional(),
+    BROWSER_TIMEOUT_MS: z.string().optional(),
+    DEFAULT_TIMEZONE: z.string().optional(),
+  })
+  .passthrough();
 
 export function validateEnvironment(config: Record<string, unknown>) {
   const parsed = environmentSchema.safeParse(config);

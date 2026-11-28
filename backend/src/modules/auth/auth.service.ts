@@ -202,10 +202,12 @@ export class AuthService {
     user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour validity
     await this.userRepository.save(user);
 
-    const frontendUrl =
+    const frontendUrl = (
+      this.configService.get<string>('app.frontendUrl') ||
       this.configService.get<string>('FRONTEND_URL') ||
       process.env.FRONTEND_URL ||
-      'http://localhost:3000';
+      'http://localhost:3000'
+    ).replace(/\/$/, '');
     const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`;
     this.logger.log(`Password reset link generated for ${user.email}`);
 

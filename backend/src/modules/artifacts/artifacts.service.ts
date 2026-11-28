@@ -27,15 +27,27 @@ export class ArtifactsService {
     private readonly projectsService: ProjectsService,
     private readonly configService: ConfigService,
   ) {
-    this.storageDir = path.resolve(
+    const configuredDir = path.resolve(
       this.configService.get<string>('app.storageDir') ||
         this.configService.get<string>('app.storage.dir') ||
         'storage',
     );
-    // Ensure base storage directory exists
-    if (!fs.existsSync(this.storageDir)) {
-      fs.mkdirSync(this.storageDir, { recursive: true });
+    let activeDir = configuredDir;
+    try {
+      if (!fs.existsSync(activeDir)) {
+        fs.mkdirSync(activeDir, { recursive: true });
+      }
+    } catch (err: any) {
+      const fallbackDir = path.resolve(process.cwd(), 'storage');
+      this.logger.warn(
+        `Cannot initialize storage directory '${activeDir}' (${err.message}); falling back to '${fallbackDir}'.`,
+      );
+      activeDir = fallbackDir;
+      if (!fs.existsSync(activeDir)) {
+        fs.mkdirSync(activeDir, { recursive: true });
+      }
     }
+    this.storageDir = activeDir;
   }
 
   async getArtifactMetadata(

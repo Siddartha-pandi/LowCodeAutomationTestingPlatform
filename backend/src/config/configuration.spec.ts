@@ -1,5 +1,6 @@
-import { appConfig } from './configuration';
+import { appConfig, resolveStorageDir } from './configuration';
 import { validateEnvironment } from './env.validation';
+import { buildRedisConnectionOptions, parseRedisConfig } from '../common/network/redis-options';
 
 describe('App Configuration Foundation', () => {
   it('should load default configuration values correctly', () => {
@@ -106,17 +107,66 @@ describe('App Configuration Foundation', () => {
       ).toThrow(/DB_SYNCHRONIZE/);
     });
 
-    it('accepts valid strong production configuration', () => {
-      expect(() =>
-        validateEnvironment({
-          NODE_ENV: 'production',
-          JWT_SECRET: strongSecret,
-          APP_ENCRYPTION_KEY: strongSecret,
-          INTERNAL_SERVICE_KEY: strongSecret,
-          DATABASE_URL: 'postgresql://user:pass@db:5432/app',
-          DB_SYNCHRONIZE: 'false',
-        }),
-      ).not.toThrow();
+    it('accepts valid strong production configuration and preserves DATABASE_SSL', () => {
+      const validated = validateEnvironment({
+        NODE_ENV: 'production',
+        JWT_SECRET: strongSecret,
+        APP_ENCRYPTION_KEY: strongSecret,
+        INTERNAL_SERVICE_KEY: strongSecret,
+        DATABASE_URL: 'postgresql://user:pass@db:5432/app?sslmode=require',
+        DATABASE_SSL: 'true',
+        DB_SYNCHRONIZE: 'false',
+        CUSTOM_VAR: 'preserved',
+      });
+      expect(validated.DATABASE_SSL).toBe('true');
+      expect((validated as any).CUSTOM_VAR).toBe('preserved');
+    });
+
+    it('falls back to local storage directory when /workspaces container path does not exist locally', () => {
+      const resolved = resolveStorageDir('/workspaces/LowCodeAutomationTestingPlatform/storage');
+      expect(resolved).toContain('storage');
+    });
+
+    it('parses REDIS_URL including rediss TLS and ACL credentials', () => {
+      const parsed = parseRedisConfig({
+        REDIS_URL: 'rediss://default:secret%40pass@redis.example.com:6380/2',
+      } as NodeJS.ProcessEnv);
+      expect(parsed).toEqual({
+        host: 'redis.example.com',
+        port: 6380,
+        username: 'default',
+        password: 'secret@pass',
+        db: 2,
+        tls: true,
+      });
+
+      const conn = buildRedisConnectionOptions(parsed, { maxRetriesPerRequest: null });
+      expect(conn).toMatchObject({
+        host: 'redis.example.com',
+        port: 6380,
+        username: 'default',
+        password: 'secret@pass',
+        db: 2,
+        tls: {},
+        maxRetriesPerRequest: null,
+      });
+    });
+
+    it('forces secure=true when COOKIE_SAME_SITE=none', () => {
+      const origSameSite = process.env.COOKIE_SAME_SITE;
+      const origSecure = process.env.COOKIE_SECURE;
+      try {
+        process.env.COOKIE_SAME_SITE = 'none';
+        delete process.env.COOKIE_SECURE;
+        const cfg = appConfig();
+        expect(cfg.cookie.sameSite).toBe('none');
+        expect(cfg.cookie.secure).toBe(true);
+      } finally {
+        if (origSameSite !== undefined) process.env.COOKIE_SAME_SITE = origSameSite;
+        else delete process.env.COOKIE_SAME_SITE;
+        if (origSecure !== undefined) process.env.COOKIE_SECURE = origSecure;
+        else delete process.env.COOKIE_SECURE;
+      }
     });
   });
 });
